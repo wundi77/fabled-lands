@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fabled Lands">
+<link rel="manifest" href="manifest.json">
+<title>Fabled Lands</title>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
+<style>
+  @font-face {
+    font-family: 'CinzelFallback';
+    src: local('Palatino'), local('Palatino Linotype'), local('Book Antiqua'), local('Georgia');
+  }
+  :root {
+    --gold: #c9a84c; --gold2: #e8c96a; --dark: #1a1208; --parch: #f0e2bc;
+    --brown: #5c3a1e; --red: #8b1a1a; --ink: #2a1a08; --border: #7a5c2e;
+    --title-font: Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+    --body-font: Palatino, Georgia, 'Times New Roman', serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: var(--body-font);
+    min-height: 100vh;
+    background-color: #3d2008;
+    color: var(--ink);
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      repeating-linear-gradient(179deg,
+        transparent 0px, transparent 3px,
+        rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px,
+        transparent 4px, transparent 8px,
+        rgba(255,180,80,0.07) 8px, rgba(255,180,80,0.07) 9px,
+        transparent 9px, transparent 15px,
+        rgba(0,0,0,0.12) 15px, rgba(0,0,0,0.12) 16px,
+        transparent 16px, transparent 24px,
+        rgba(0,0,0,0.06) 24px, rgba(0,0,0,0.06) 25px,
+        transparent 25px, transparent 34px,
+        rgba(255,160,60,0.09) 34px, rgba(255,160,60,0.09) 35px,
+        transparent 35px, transparent 44px,
+        rgba(0,0,0,0.14) 44px, rgba(0,0,0,0.14) 45px,
+        transparent 45px, transparent 55px
+      ),
+      repeating-linear-gradient(177deg,
+        transparent 0px, transparent 20px,
+        rgba(180,100,20,0.06) 20px, rgba(180,100,20,0.06) 21px,
+        transparent 21px, transparent 45px,
+        rgba(0,0,0,0.08) 45px, rgba(0,0,0,0.08) 46px,
+        transparent 46px, transparent 70px
+      ),
+      linear-gradient(175deg,
+        #5a2e0a 0%, #4a2208 12%, #3a1a06 25%,
+        #4e2a0c 38%, #3d1e08 50%, #5a3010 62%,
+        #3e1e07 75%, #4a2608 88%, #3a1a06 100%
+      );
+  }
+
+  /* NAV */
+  #topnav {
+    background: linear-gradient(180deg, #1e1005 0%, #2a1608 100%);
+    border-bottom: 3px solid var(--gold);
+    padding: 0.5rem 0.8rem;
+    display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 3px 12px #00000088;
+  }
+  #topnav > span {
+    color: var(--gold2); font-family: var(--title-font);
+    font-size: 0.95rem; font-weight: 700; margin-right: 0.4rem;
+    white-space: nowrap; text-shadow: 0 0 12px #c9a84c66; letter-spacing: 1px;
+  }
+  .nav-btn {
+    background: linear-gradient(180deg, #3a2510 0%, #2a1a08 100%);
+    color: var(--gold); border: 1px solid #7a5c2e;
+    padding: 0.3rem 0.6rem; border-radius: 3px; cursor: pointer;
+    font-family: var(--title-font); font-size: 0.72rem; letter-spacing: 0.3px;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover, .nav-btn:active { background: linear-gradient(180deg, #5a3a18 0%, #3a2510 100%); color: var(--gold2); border-color: var(--gold); }
+  .nav-btn.active { background: linear-gradient(180deg, #7a5c2e 0%, #5a3a18 100%); color: var(--dark); border-color: var(--gold2); font-weight: 700; }
+
+  /* SAVE BAR */
+  #savebar {
+    background: linear-gradient(180deg, #1a0f05 0%, #140c04 100%);
+    border-bottom: 2px solid #5c3a1e;
+    padding: 0.45rem 0.8rem; display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;
+    position: relative; z-index: 99;
+  }
+  #savebar label { color: var(--gold); font-family: var(--title-font); font-size: 0.72rem; letter-spacing: 0.3px; }
+  #savebar input[type=text] {
+    background: #2a1a08; color: var(--parch); border: 1px solid var(--border);
+    padding: 0.3rem 0.6rem; border-radius: 3px; font-size: 0.8rem; width: 140px;
+    font-family: var(--body-font);
+  }
+  .sb-btn {
+    background: linear-gradient(180deg, #3a2810 0%, #2a1a08 100%);
+    color: var(--gold); border: 1px solid var(--border);
+    padding: 0.3rem 0.7rem; border-radius: 3px; cursor: pointer;
+    font-family: var(--title-font); font-size: 0.72rem; letter-spacing: 0.3px; transition: all 0.2s;
+  }
+  .sb-btn:hover, .sb-btn:active { background: linear-gradient(180deg, #5a3a18 0%, #3a2510 100%); color: var(--gold2); border-color: var(--gold); }
+  #savemsg { color: #8aba8a; font-size: 0.78rem; font-style: italic; }
+  #saveselect {
+    background: #2a1a08; color: var(--parch); border: 1px solid var(--border);
+    padding: 0.3rem; border-radius: 3px; font-size: 0.75rem; max-width: 140px;
+  }
+  #resetAll {
+    background: linear-gradient(180deg, #4a1010 0%, #2a0808 100%);
+    color: #e88; border: 1px solid #803; padding: 0.3rem 0.7rem;
+    border-radius: 3px; cursor: pointer; font-family: var(--title-font); font-size: 0.72rem;
+  }
+
+  /* IMPORT/EXPORT */
+  .io-btn {
+    background: linear-gradient(180deg, #1a2a10 0%, #0e1a08 100%);
+    color: #8aba8a; border: 1px solid #4a7a2e;
+    padding: 0.3rem 0.7rem; border-radius: 3px; cursor: pointer;
+    font-family: var(--title-font); font-size: 0.72rem; transition: all 0.2s;
+  }
+  .io-btn:hover, .io-btn:active { background: linear-gradient(180deg, #2a4a18 0%, #1a2e0a 100%); color: #aada9a; }
+
+  /* PAGES */
+  .page { display: none; padding: 1.2rem; max-width: 960px; margin: 0 auto; position: relative; z-index: 1; padding-bottom: 3rem; }
+  .page.active { display: block; }
+
+  h1.page-title {
+    font-family: var(--title-font); color: var(--gold2); font-size: 1.5rem;
+    text-align: center; margin-bottom: 1.2rem;
+    text-shadow: 0 0 20px #c9a84c88, 2px 2px 8px #000a;
+    letter-spacing: 2px; position: relative;
+  }
+  h1.page-title::before, h1.page-title::after { content: '✦'; color: var(--gold); font-size: 0.85rem; margin: 0 0.7rem; opacity: 0.7; vertical-align: middle; }
+
+  .card {
+    background: linear-gradient(160deg, #f5e9c8 0%, #ede0b0 40%, #f0e5c0 100%);
+    border: 2px solid #a07840; border-radius: 4px;
+    padding: 1.1rem 1.3rem; margin-bottom: 1.2rem; position: relative;
+    box-shadow: 0 4px 20px #00000077, inset 0 1px 0 rgba(255,255,255,0.4);
+  }
+  .card::before {
+    content: ''; position: absolute; inset: 4px;
+    border: 1px solid rgba(160,120,60,0.25); border-radius: 2px; pointer-events: none;
+  }
+  .card-title {
+    font-family: var(--title-font); font-size: 0.9rem; font-weight: 700; color: var(--red);
+    border-bottom: 2px solid; border-image: linear-gradient(90deg, var(--gold), #c9a84c44, transparent) 1;
+    padding-bottom: 0.4rem; margin-bottom: 0.9rem;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    display: flex; align-items: center; justify-content: space-between;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
+  }
+
+  .field-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.55rem; flex-wrap: wrap; }
+  .field-label { color: var(--brown); font-family: var(--title-font); font-size: 0.75rem; font-weight: 700; min-width: 130px; letter-spacing: 0.3px; }
+  .field-input {
+    background: rgba(255,251,232,0.85); border: 1px solid #b89050; border-radius: 2px;
+    padding: 0.25rem 0.5rem; font-size: 0.9rem; color: var(--ink);
+    font-family: var(--body-font); flex: 1; min-width: 80px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .field-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 2px rgba(201,168,76,0.25); }
+  .field-num { width: 70px; flex: none; text-align: center; }
+
+  .abilities-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.2rem; }
+  .ability-row { display: flex; align-items: center; gap: 0.5rem; }
+  .ability-num {
+    width: 24px; height: 24px;
+    background: radial-gradient(circle at 35% 35%, #b02020, #6a0f0f);
+    color: #f5d070; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: bold; flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    font-family: var(--title-font);
+  }
+  .ability-label { min-width: 85px; font-size: 0.78rem; color: var(--brown); font-weight: 700; font-family: var(--title-font); letter-spacing: 0.3px; }
+  .ability-val { width: 55px; flex: none; }
+
+  .possess-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+  .possess-input {
+    background: rgba(255,251,232,0.85); border: 1px solid #b89050; border-radius: 2px;
+    padding: 0.2rem 0.5rem; font-size: 0.88rem; color: var(--ink);
+    font-family: var(--body-font); width: 100%;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .possess-input:focus { outline: none; border-color: var(--gold); }
+
+  .cw-section { margin-bottom: 0.9rem; }
+  .cw-letter { font-family: var(--title-font); font-size: 1.05rem; font-weight: 700; color: var(--red); margin-bottom: 0.35rem; padding-bottom: 0.15rem; border-bottom: 1px solid rgba(201,168,76,0.4); letter-spacing: 2px; }
+  .cw-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 0.25rem 0.4rem; }
+  .cw-item { display: flex; align-items: center; gap: 0.25rem; }
+  .cw-item label { font-size: 0.8rem; color: var(--ink); cursor: pointer; user-select: none; font-family: var(--body-font); }
+  .cw-cb { width: 14px; height: 14px; cursor: pointer; accent-color: var(--red); flex-shrink: 0; }
+  .cw-item.checked label { color: var(--red); font-weight: 700; }
+
+  .para-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.3rem; }
+  .para-item { display: flex; align-items: center; gap: 0.3rem; }
+  .para-item label { font-size: 0.8rem; color: var(--ink); font-weight: 600; cursor: pointer; font-family: var(--title-font); }
+  .para-item.checked label { text-decoration: line-through; color: #999; }
+  .para-note { font-size: 0.65rem; color: #7a5c2e; margin-left: 2px; font-style: italic; }
+
+  .notes-area {
+    width: 100%; min-height: 80px;
+    background: rgba(255,251,232,0.85); border: 1px solid #b89050; border-radius: 2px;
+    padding: 0.4rem 0.5rem; font-size: 0.9rem; color: var(--ink);
+    font-family: var(--body-font); resize: vertical;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .notes-area:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 2px rgba(201,168,76,0.2); }
+
+  .ship-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.1rem; }
+  .money-row { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: flex-start; margin-bottom: 0.5rem; }
+  .money-label { font-size: 0.75rem; color: var(--brown); font-weight: 700; min-width: 80px; font-family: var(--title-font); padding-top: 0.3rem; }
+
+  .clear-btn {
+    background: none; border: 1px solid #b0905050; color: #a07040;
+    padding: 0.15rem 0.5rem; border-radius: 2px; cursor: pointer;
+    font-size: 0.7rem; font-family: var(--title-font); transition: all 0.2s;
+  }
+  .clear-btn:hover { background: rgba(139,26,26,0.08); border-color: var(--red); color: var(--red); }
+
+  .page-links { display: grid; grid-template-columns: repeat(auto-fill,minmax(175px,1fr)); gap: 0.6rem; }
+  .page-link-btn {
+    background: linear-gradient(160deg, #2e1c08 0%, #1e1005 100%);
+    border: 2px solid #7a5c2e; color: var(--gold);
+    padding: 0.75rem 0.9rem; border-radius: 4px; cursor: pointer;
+    font-family: var(--title-font); font-size: 0.8rem; text-align: center;
+    transition: all 0.25s; letter-spacing: 0.4px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+  }
+  .page-link-btn:hover, .page-link-btn:active {
+    background: linear-gradient(160deg, #5a3a18 0%, #3a2510 100%);
+    border-color: var(--gold); color: var(--gold2); transform: translateY(-1px);
+  }
+  .page-link-btn .pl-sub { font-size: 0.65rem; opacity: 0.7; display: block; margin-top: 0.25rem; font-style: italic; letter-spacing: 0; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  /* IMPORT overlay */
+  #import-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    z-index: 200; align-items: center; justify-content: center;
+  }
+  #import-overlay.show { display: flex; }
+  #import-box {
+    background: linear-gradient(160deg, #f5e9c8, #ede0b0);
+    border: 2px solid var(--gold); border-radius: 6px;
+    padding: 1.5rem; max-width: 380px; width: 90%;
+    box-shadow: 0 8px 30px #000a;
+  }
+  #import-box h3 { font-family: var(--title-font); color: var(--red); margin-bottom: 0.8rem; font-size: 1rem; letter-spacing: 1px; }
+  #import-box p { font-size: 0.85rem; color: var(--brown); margin-bottom: 1rem; }
+  #import-textarea {
+    width: 100%; height: 120px; font-size: 0.75rem; font-family: monospace;
+    border: 1px solid #b89050; border-radius: 2px; padding: 0.4rem;
+    background: rgba(255,251,232,0.9); color: var(--ink); resize: vertical; margin-bottom: 0.8rem;
+  }
+  #import-box .btn-row { display: flex; gap: 0.5rem; justify-content: flex-end; }
+
+  @media(max-width:600px) {
+    .two-col { grid-template-columns: 1fr; }
+    .cw-grid { grid-template-columns: repeat(3,1fr); }
+    .para-grid { grid-template-columns: repeat(2,1fr); }
+    .abilities-grid { grid-template-columns: 1fr; }
+    .possess-grid { grid-template-columns: 1fr; }
+    .ship-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="topnav">
+  <span>⚔ Fabled Lands</span>
+  <button class="nav-btn active" onclick="showPage('p0')">Character</button>
+  <button class="nav-btn" onclick="showPage('pq')">Quests</button>
+  <button class="nav-btn" onclick="showPage('p1')">Ship's Manifest</button>
+  <button class="nav-btn" onclick="showPage('p2')">Codewords</button>
+  <button class="nav-btn" onclick="showPage('p4')">Book 1</button>
+  <button class="nav-btn" onclick="showPage('p5')">Book 2</button>
+  <button class="nav-btn" onclick="showPage('p6')">Book 3</button>
+  <button class="nav-btn" onclick="showPage('p7')">Book 4</button>
+  <button class="nav-btn" onclick="showPage('p8')">Book 5</button>
+  <button class="nav-btn" onclick="showPage('p9')">Book 6</button>
+  <button class="nav-btn" onclick="showPage('p10')">Book 7</button>
+</div>
+
+<div id="savebar">
+  <label>Save:</label>
+  <input type="text" id="saveName" placeholder="Save name…">
+  <button class="sb-btn" onclick="saveState()">💾 Save</button>
+  <select id="saveselect"><option value="">– Load –</option></select>
+  <button class="sb-btn" onclick="loadState()">📂 Load</button>
+  <button class="sb-btn" onclick="deleteState()">🗑 Delete</button>
+  <button class="io-btn" onclick="exportSaves()">⬆ Export</button>
+  <button class="io-btn" onclick="showImport()">⬇ Import</button>
+  <span id="savemsg"></span>
+  <button id="resetAll" onclick="resetAll()">✖ Reset</button>
+</div>
+
+<!-- IMPORT OVERLAY -->
+<div id="import-overlay">
+  <div id="import-box">
+    <h3>⬇ Import Save Data</h3>
+    <p>Paste the contents of a previously exported <code>.json</code> file here:</p>
+    <textarea id="import-textarea" placeholder="Paste JSON here…"></textarea>
+    <div class="btn-row">
+      <button class="clear-btn" onclick="hideImport()">Cancel</button>
+      <button class="sb-btn" onclick="doImport()">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHARACTER -->
+<div id="p0" class="page active">
+  <h1 class="page-title">Adventure Sheet</h1>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Basic Info</div>
+      <div class="field-row"><span class="field-label">Name</span><input class="field-input" id="f_name" placeholder="Character name…"></div>
+      <div class="field-row"><span class="field-label">Profession</span><input class="field-input" id="f_prof" placeholder="Warrior, Priest…"></div>
+      <div class="field-row"><span class="field-label">God</span><input class="field-input" id="f_god" placeholder="Deity…"></div>
+      <div class="field-row"><span class="field-label">Rank</span><input class="field-input field-num" id="f_rank" type="number" min="1" value=""></div>
+      <div class="field-row"><span class="field-label">Defence</span><input class="field-input field-num" id="f_def" type="number" value=""></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Abilities &amp; Stamina</div>
+      <div class="abilities-grid">
+        <div class="ability-row"><div class="ability-num">1</div><span class="ability-label">Charisma</span><input class="field-input ability-val" id="ab1" type="number" value=""></div>
+        <div class="ability-row"><div class="ability-num">2</div><span class="ability-label">Combat</span><input class="field-input ability-val" id="ab2" type="number" value=""></div>
+        <div class="ability-row"><div class="ability-num">3</div><span class="ability-label">Magic</span><input class="field-input ability-val" id="ab3" type="number" value=""></div>
+        <div class="ability-row"><div class="ability-num">4</div><span class="ability-label">Sanctity</span><input class="field-input ability-val" id="ab4" type="number" value=""></div>
+        <div class="ability-row"><div class="ability-num">5</div><span class="ability-label">Scouting</span><input class="field-input ability-val" id="ab5" type="number" value=""></div>
+        <div class="ability-row"><div class="ability-num">6</div><span class="ability-label">Thievery</span><input class="field-input ability-val" id="ab6" type="number" value=""></div>
+      </div>
+      <div style="margin-top:0.7rem;">
+        <div class="field-row"><span class="field-label">Current Stamina</span><input class="field-input field-num" id="stam_cur" type="number" value=""></div>
+        <div class="field-row"><span class="field-label">Maximum Stamina</span><input class="field-input field-num" id="stam_max" type="number" value=""></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>Possessions</span>
+      <span style="display:flex;gap:0.4rem;">
+        <button class="sb-btn" style="font-size:0.7rem;padding:0.2rem 0.6rem;" onclick="addPossession()">+ Add Item</button>
+        <button class="clear-btn" onclick="clearPossessions()">Clear All</button>
+      </span>
+    </div>
+    <div class="possess-grid" id="possess-grid"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Money &amp; Honours</div>
+    <div class="money-row">
+      <span class="money-label">Money</span><input class="field-input field-num" id="money" type="number" value="">
+      <span class="money-label" style="margin-left:0.5rem;">Blessings</span>
+      <textarea class="field-input notes-area" id="blessings" placeholder="Note blessings…" style="width:200px;min-height:2rem;height:auto;" oninput="autoResize(this)"></textarea>
+    </div>
+    <div class="field-row" style="align-items:flex-start;">
+      <span class="field-label" style="padding-top:0.3rem;">Resurrection</span>
+      <textarea class="field-input notes-area" id="resurrection" placeholder="Resurrection location / arrangement…" style="min-height:2.5rem;height:auto;" oninput="autoResize(this)"></textarea>
+    </div>
+    <div class="field-row" style="align-items:flex-start;">
+      <span class="field-label" style="padding-top:0.3rem;">Titles &amp; Honours</span>
+      <textarea class="field-input notes-area" id="titles" placeholder="Titles earned…" style="min-height:2.5rem;height:auto;" oninput="autoResize(this)"></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Navigate to All Sheets</div>
+    <div class="page-links">
+      <button class="page-link-btn" onclick="showPage('pq')">📋 Quests<span class="pl-sub">Track your quests</span></button>
+      <button class="page-link-btn" onclick="showPage('p1')">🚢 Ship's Manifest<span class="pl-sub">Ship, Crew, Cargo</span></button>
+      <button class="page-link-btn" onclick="showPage('p2')">📜 Codewords<span class="pl-sub">Acid – Gush</span></button>
+      <button class="page-link-btn" onclick="showPage('p4')">📖 Book 1<span class="pl-sub">Paragraphs &amp; Notes</span></button>
+      <button class="page-link-btn" onclick="showPage('p5')">📖 Book 2<span class="pl-sub">Paragraphs &amp; Notes</span></button>
+      <button class="page-link-btn" onclick="showPage('p6')">📖 Book 3<span class="pl-sub">Paragraphs &amp; Notes</span></button>
+      <button class="page-link-btn" onclick="showPage('p7')">📖 Book 4<span class="pl-sub">Paragraphs &amp; Notes</span></button>
+      <button class="page-link-btn" onclick="showPage('p8')">📖 Book 5<span class="pl-sub">Paragraphs &amp; Notes</span></button>
+      <button class="page-link-btn" onclick="showPage('p9')">📖 Book 6<span class="pl-sub">Paragraphs &amp; Notes</span></button>
+      <button class="page-link-btn" onclick="showPage('p10')">📖 Book 7<span class="pl-sub">Paragraphs &amp; Notes</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- QUESTS -->
+<div id="pq" class="page">
+  <h1 class="page-title">Quests</h1>
+  <div class="card">
+    <div class="card-title">Active Quests</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr) auto;gap:0.4rem;margin-bottom:0.5rem;">
+      <div style="font-family:var(--title-font);font-size:0.72rem;font-weight:700;color:var(--brown);">What</div>
+      <div style="font-family:var(--title-font);font-size:0.72rem;font-weight:700;color:var(--brown);">From</div>
+      <div style="font-family:var(--title-font);font-size:0.72rem;font-weight:700;color:var(--brown);">Where</div>
+      <div style="font-family:var(--title-font);font-size:0.72rem;font-weight:700;color:var(--brown);">For</div>
+      <div></div>
+    </div>
+    <div id="quests-container"></div>
+    <button class="sb-btn" style="margin-top:0.7rem;font-size:0.8rem;padding:0.45rem 1.1rem;" onclick="addQuest()">+ Add Quest</button>
+  </div>
+</div>
+
+<!-- SHIP -->
+<div id="p1" class="page">
+  <h1 class="page-title">Ship's Manifest</h1>
+  <div id="ships-container"></div>
+  <button class="sb-btn" style="margin-bottom:1.5rem;font-size:0.85rem;padding:0.5rem 1.1rem;" onclick="addShip()">+ Add Ship</button>
+</div>
+
+<!-- CODEWORDS -->
+<div id="p2" class="page">
+  <h1 class="page-title">Codewords</h1>
+  <div class="card">
+    <div class="card-title"><span>Codewords (Acid – Gush)</span><button class="clear-btn" onclick="clearCW()">Uncheck All</button></div>
+    <div id="cw-all"></div>
+  </div>
+</div>
+
+<!-- BOOK PAGES -->
+<div id="p4" class="page"><h1 class="page-title">Book 1 – Paragraphs &amp; Notes</h1><div id="book1"></div></div>
+<div id="p5" class="page"><h1 class="page-title">Book 2 – Paragraphs &amp; Notes</h1><div id="book2"></div></div>
+<div id="p6" class="page"><h1 class="page-title">Book 3 – Paragraphs &amp; Notes</h1><div id="book3"></div></div>
+<div id="p7" class="page"><h1 class="page-title">Book 4 – Paragraphs &amp; Notes</h1><div id="book4"></div></div>
+<div id="p8" class="page"><h1 class="page-title">Book 5 – Paragraphs &amp; Notes</h1><div id="book5"></div></div>
+<div id="p9" class="page"><h1 class="page-title">Book 6 – Paragraphs &amp; Notes</h1><div id="book6"></div></div>
+<div id="p10" class="page"><h1 class="page-title">Book 7 – Paragraphs &amp; Notes</h1><div id="book7a"></div><div id="book7b"></div></div>
+
+<script>
+const CW_PAGE1=["Acid","Afraid","Ague","Aid","Aklar","Alissia","Almanac","Aloft","Altitude","Altruist","Ambuscade","Amcha","Amends","Anchor","Anger","Animal","Anthem","Anvil","Apache","Appease","Apple","Ark","Armour","Artefact","Artery","Ashen","Aspen","Assassin","Assault","Assist","Attar","Auric","Avenge","Avert","Axe","Azure","Bait","Baluster","Barnacle","Bashful","Bastion","Beach","Beltane","Bilge","Bisect","Blemish","Bobbin","Bones","Bookworm","Bosky","Bounty","Boysen","Bridoon","Brisket","Brush","Bullion","Bullseye","Bumble","Bunting","Buzz","Cacogast","Calcium","Callid","Cancel","Catalyst","Cenotaph","Certain","Cerumen","Chance","Cheese","Cheops","Chill","Church","Cithara","Citrus","Civil","Clanger","Clutch","Colour","Coracle","Cosy","Covet","Crag","Crocus","Cruel","Cull","Curdle","Cushat","Cutlass","Cyclops","Cynosure","Dangle","Dare","Dark","Dawn","Dead","Deathless","Deep","Defend","Deliver","Diamond","Dim","Dirk","Dirty","Discover","Dismal","Dispel","Divest","Dog","Dotage","Double","Dove","Dragon","Drake","Drape","Draw","Dread","Dregs","Drifter","Drink","Drizzle","Drop","Duress","Dwarf","Earth","East","Ebb","Ebony","Echo","Eclipse","Ectoplasm","Ecumenical","Edifice","Edify","Eerie","Efreet","Egret","Elan","Eldritch","Elegant","Element","Elephant","Elite","Elk","Elude","Ember","Emerald","Enamel","Endless","Energy","Enigma","Entropy","Envoy","Epicure","Epistle","Erebus","Errant","Eternal","Ethereal","Evade","Evergreen","Evict","Evil","Exorcise","Expunge","Extinguish","Exultant","Face","Faded","Farm","Feral","Fern","Fire","Fist","Flag","Fleet","Flimsy","Flood","Flux","Fog","Foment","Fortress","Fossil","Fracas","Frame","Fresco","Fright","Friz","Frog","Fruit"];
+const CW_PAGE2=["Fuchsia","Fuligin","Fusty","Future","Gaggle","Gain","Gale","Gallivant","Gamble","Game","Gander","Gannet","Gargoyle","Garland","Gather","Gauche","Gauntlet","Gazelle","Genius","Gentle","Genuflect","Geode","Geyser","Ghastly","Giant","Gibbet","Giggle","Gin","Glacier","Gladden","Glade","Glass","Glide","Glimmer","Glimpse","Glitter","Gloat","Gloom","Glory","Glove","Glutton","Gnash","Gnat","Gnome","Gnu","Goblet","Golem","Gone","Goose","Gore","Gosling","Gossamer","Gourd","Govern","Grace","Graft","Grain","Granite","Granule","Grape","Grapple","Grateful","Grebe","Green","Grief","Grimace","Grime","Grind","Grog","Grotto","Grove","Growl","Grub","Guard","Guilt","Guise","Gulf","Gully","Gush"];
+const ALL_CW=[...CW_PAGE1,...CW_PAGE2];
+const CW_INDEX={};ALL_CW.forEach((w,i)=>CW_INDEX[w]=i);
+
+const BOOKS={
+  book1:{paras:["10","16","19","91","100","116","160","169","175","199","207","232","233","264","305","310","331","337","361","398","403","409","446","454","473","496","504","542","610","612","619","635","645","649","655","667"],notes_map:{"10":"(4×) | Money Invested","91":"104 Money Invested","100":"(Town House)","169":"177 Items in Town House","232":"300 Items in Town House","310":"327 Items in Cache","398":"400 Items in Town House","454":"434 Items in Town House","542":"605 Money Banked"},multi:{"10":4,"19":3}},
+  book2:{paras:["2","48","57","71","160","217","253","254","391","416","443","465","542","547","567","586","648","679","710","718","727","728","754","757","760","762","777"],notes_map:{"2":"(Town House) | 36 Money Banked","48":"(Town House)","71":"(Town House) | 39 Money Invested","253":"49 Money Invested","416":"85 Money Invested","542":"(3×) | 154 Money Invested","567":"Amulet / Tresses / Katana","648":"211 Items in Town House","718":"278 Items in Town House","754":"348 Items in Town House","762":"661 Locker Box"},multi:{"542":3}},
+  book3:{paras:["44","49","56","57","68","84","105","120","143","183","216","351","466","470","477","494","509","515","572","576","651","659","680","692","719"],notes_map:{"44":"(Shack) | 74 Items in Shack","143":"335 Items in House","351":"(3×)","509":"607 Items in College","572":"(College)","719":"652 Money Invested"},multi:{"351":3}},
+  book4:{paras:["10","40","63","127","173","181","195","210","243","259","265","326","360","376","395","428","429","437","440","467","491","500","513","522","545","583","605","704"],notes_map:{"10":"(Town House) | 450 Items Protected by Brotherhood","195":"468 Items in Hordeth's Villa","360":"509 Items in Town House","440":"(3×) | 526 Money Invested","467":"(3×)","545":"586 Items Left Behind","704":"600 Money Banked"},multi:{"440":3,"467":3}},
+  book5:{paras:["16","44","93","113","120","126","153","165","195","204","216","227","239","247","269","325","335","467","493","498","520","534","584","592","596","602","622","644","648","672","697","714"],notes_map:{"16":"115 Money Invested","126":"245 Items in Castle","216":"401 Status Points","325":"560 Items in Cellar","520":"586 Items in Room","602":"601 Money Banked","697":"624 Palace Rooms"},multi:{}},
+  book6:{paras:["68","79","92","106","109","123","155","164","174","233","244","258","263","328","345","517","539","569","604","650","668"],notes_map:{"68":"175 Money Invested","79":"(Town House)","109":"238 Items in Town House","155":"(Town House)","164":"(4×)","174":"276 Worldly Goods","263":"284 Items in Town House","539":"414 Items in Town House","668":"440 Money Invested"},multi:{"164":4}},
+  book7a:{paras:["17","23","34","40","42","58","94","117","120","124","132","135","141","146","161","178","204","225","233","266","270","292","299","305","307","313","316","333","354","356","407","412","424","426","486","506","557","560","588"],notes_map:{"17":"129 Items in Town House","23":"(4×)","42":"(Town House)","120":"250 Items Held in Storage","141":"250 Duties Remaining","204":"263 Items Held in Spire","225":"(Town House)","270":"307 Items Held in Theatre","307":"(2×) | 405 Items in Town House","333":"(Town House)","354":"486 Items in Town House","560":"Sword / Storm / Horse","588":"2nd/3rd/4th Trial | 150 Items in Quarters"},multi:{"23":4,"307":2}},
+  book7b:{paras:["610","618","629","635","645","653","690","694","729","777","793","847","865","880","899","911","912","927","946","947","962","963","976","1043","1057","1061","1067","1136","1145","1184","1189","1190"],notes_map:{"610":"599 Items in Atotl's Home","694":"624 Items in Clifftop House","777":"(3×)","899":"788 Flask of Oblivion","963":"974 Stolen Items","1061":"(2×)","1145":"1150 Items in Town House","1190":"(5×)"},multi:{"777":3,"1061":2,"1190":5}}
+};
+
+function autoResize(el){el.style.height='auto';el.style.height=el.scrollHeight+'px';}
+
+// ---- QUESTS ----
+let questCount=0;
+function addQuest(data){
+  const idx=questCount++;const qid='quest_'+idx;
+  const row=document.createElement('div');row.id=qid;
+  row.style.cssText='display:grid;grid-template-columns:repeat(4,1fr) auto;gap:0.4rem;margin-bottom:0.5rem;align-items:start;';
+  ['what','from','where','for'].forEach(f=>{
+    const ta=document.createElement('textarea');ta.className='notes-area';ta.id=`${qid}_${f}`;
+    ta.placeholder=f.charAt(0).toUpperCase()+f.slice(1)+'…';
+    ta.style.cssText='min-height:2.2rem;height:auto;resize:none;';
+    ta.oninput=function(){autoResize(this);};
+    if(data&&data[f]){ta.value=data[f];setTimeout(()=>autoResize(ta),0);}
+    row.appendChild(ta);
+  });
+  const btn=document.createElement('button');btn.className='clear-btn';
+  btn.style.cssText='border-color:#a03;color:#a03;padding:0.3rem 0.5rem;margin-top:0.1rem;';
+  btn.textContent='✖';btn.onclick=()=>row.remove();
+  row.appendChild(btn);
+  document.getElementById('quests-container').appendChild(row);
+}
+function collectQuests(){return Array.from(document.querySelectorAll('#quests-container > div')).map(row=>{const id=row.id;return{what:document.getElementById(id+'_what')?.value||'',from:document.getElementById(id+'_from')?.value||'',where:document.getElementById(id+'_where')?.value||'',for:document.getElementById(id+'_for')?.value||''};});}
+function applyQuests(arr){document.getElementById('quests-container').innerHTML='';questCount=0;if(!arr||!arr.length){addQuest();return;}arr.forEach(q=>addQuest(q));}
+
+// ---- SHIPS ----
+let shipCount=0;
+function addShip(data){
+  const idx=shipCount++;const sid='ship_'+idx;
+  const card=document.createElement('div');card.className='card';card.id=sid;
+  card.innerHTML=`<div class="card-title"><span>Ship #${idx+1}</span><button class="clear-btn" style="border-color:#a03;color:#a03;" onclick="removeShip('${sid}')">✖ Remove</button></div>
+    <div class="ship-grid">
+      <div class="field-row"><span class="field-label">Ship Type</span><input class="field-input" id="${sid}_type" placeholder="e.g. Galleon, Junk…"></div>
+      <div class="field-row"><span class="field-label">Ship Name</span><input class="field-input" id="${sid}_name" placeholder="Name of your ship…"></div>
+      <div class="field-row"><span class="field-label">Crew Quality</span><input class="field-input field-num" id="${sid}_crew" type="number" value=""></div>
+      <div class="field-row"><span class="field-label">Cargo Capacity</span><input class="field-input field-num" id="${sid}_cap" type="number" value=""></div>
+      <div class="field-row"><span class="field-label">Current Cargo</span><input class="field-input" id="${sid}_cargo" placeholder="Note cargo…"></div>
+      <div class="field-row"><span class="field-label">Where Docked</span><input class="field-input" id="${sid}_dock" placeholder="Port / Location…"></div>
+    </div>
+    <div style="margin-top:0.5rem;"><div style="font-family:var(--title-font);font-size:0.75rem;color:var(--brown);font-weight:700;margin-bottom:0.3rem;">Notes</div>
+    <textarea class="notes-area" id="${sid}_notes" placeholder="Ship notes…"></textarea></div>`;
+  document.getElementById('ships-container').appendChild(card);
+  if(data){['type','name','crew','cap','cargo','dock','notes'].forEach(f=>{const el=document.getElementById(`${sid}_${f}`);if(el&&data[f]!==undefined)el.value=data[f];});}
+  renumberShips();
+}
+function removeShip(sid){const el=document.getElementById(sid);if(el)el.remove();renumberShips();}
+function renumberShips(){document.querySelectorAll('#ships-container .card').forEach((c,i)=>{const t=c.querySelector('.card-title span');if(t)t.textContent='Ship #'+(i+1);});}
+function collectShips(){return Array.from(document.querySelectorAll('#ships-container .card')).map(card=>{const sid=card.id;const s={};['type','name','crew','cap','cargo','dock','notes'].forEach(f=>{const el=document.getElementById(`${sid}_${f}`);if(el)s[f]=el.value;});return s;});}
+function applyShips(ships){document.getElementById('ships-container').innerHTML='';shipCount=0;if(!ships||!ships.length){addShip();return;}ships.forEach(s=>addShip(s));}
+
+// ---- POSSESSIONS ----
+let possCount=0;
+function addPossession(val){
+  const g=document.getElementById('possess-grid');const idx=possCount++;
+  const wrap=document.createElement('div');wrap.id='posw_'+idx;wrap.style.cssText='display:flex;align-items:center;gap:0.3rem;';
+  wrap.innerHTML=`<input class="possess-input" id="pos_${idx}" placeholder="Item…" style="flex:1;" value="${(val||'').replace(/"/g,'&quot;')}"><button class="clear-btn" style="flex-shrink:0;padding:0.15rem 0.4rem;" onclick="removePossession('posw_${idx}')">✖</button>`;
+  g.appendChild(wrap);
+}
+function removePossession(wid){const el=document.getElementById(wid);if(el)el.remove();}
+function clearPossessions(){document.querySelectorAll('#possess-grid input').forEach(el=>el.value='');}
+function collectPossessions(){return Array.from(document.querySelectorAll('#possess-grid input')).map(el=>el.value);}
+function applyPossessions(arr){document.getElementById('possess-grid').innerHTML='';possCount=0;const items=(arr&&arr.length)?arr:Array(12).fill('');items.forEach(v=>addPossession(v));}
+
+// ---- CODEWORDS ----
+function initCWGrouped(){
+  const container=document.getElementById('cw-all');const groups={};
+  ALL_CW.forEach(w=>{const l=w[0].toUpperCase();if(!groups[l])groups[l]=[];groups[l].push(w);});
+  Object.keys(groups).sort().forEach(letter=>{
+    const sec=document.createElement('div');sec.className='cw-section';
+    const hdr=document.createElement('div');hdr.className='cw-letter';hdr.textContent=letter;sec.appendChild(hdr);
+    const grid=document.createElement('div');grid.className='cw-grid';
+    groups[letter].forEach(word=>{
+      const i=CW_INDEX[word];const id='cw_'+i;
+      const div=document.createElement('div');div.className='cw-item';div.id='cwd_'+i;
+      div.innerHTML=`<input type="checkbox" class="cw-cb" id="${id}" onchange="toggleCWFlat(this,${i})"><label for="${id}">${word}</label>`;
+      grid.appendChild(div);
+    });
+    sec.appendChild(grid);container.appendChild(sec);
+  });
+}
+function toggleCWFlat(cb,i){const div=document.getElementById('cwd_'+i);if(cb.checked)div.classList.add('checked');else div.classList.remove('checked');}
+function clearCW(){ALL_CW.forEach((_,i)=>{const cb=document.getElementById('cw_'+i);if(cb){cb.checked=false;document.getElementById('cwd_'+i).classList.remove('checked');}});}
+
+// ---- BOOKS ----
+function initBook(bookKey,containerId){
+  const data=BOOKS[bookKey];const container=document.getElementById(containerId);
+  const card=document.createElement('div');card.className='card';
+  card.innerHTML=`<div class="card-title"><span>Paragraphs Visited</span><button class="clear-btn" onclick="clearParas('${bookKey}')">Reset All</button></div>`;
+  const grid=document.createElement('div');grid.className='para-grid';
+  data.paras.forEach(p=>{
+    const multi=data.multi&&data.multi[p]?data.multi[p]:1;
+    const note=data.notes_map&&data.notes_map[p]?data.notes_map[p]:'';
+    for(let m=0;m<multi;m++){
+      const id=`para_${bookKey}_${p}_${m}`;
+      const div=document.createElement('div');div.className='para-item';div.id='parad_'+id;
+      div.innerHTML=`<input type="checkbox" class="cw-cb" id="${id}" onchange="togglePara(this,'${id}')"><label for="${id}">${p}${multi>1?' <small>'+(m+1)+'/'+multi+'</small>':''}</label>${note&&m===0?'<span class="para-note">'+note+'</span>':''}`;
+      grid.appendChild(div);
+    }
+  });
+  card.appendChild(grid);
+  const nc=document.createElement('div');nc.className='card';
+  nc.innerHTML=`<div class="card-title">Notes</div><textarea class="notes-area" id="notes_${bookKey}" placeholder="Free notes for this book…" style="min-height:80px;height:auto;" oninput="autoResize(this)"></textarea>`;
+  container.appendChild(card);container.appendChild(nc);
+}
+function togglePara(cb,id){const div=document.getElementById('parad_'+id);if(cb.checked)div.classList.add('checked');else div.classList.remove('checked');}
+function clearParas(bk){const data=BOOKS[bk];data.paras.forEach(p=>{const multi=data.multi&&data.multi[p]?data.multi[p]:1;for(let m=0;m<multi;m++){const id=`para_${bk}_${p}_${m}`;const cb=document.getElementById(id);if(cb){cb.checked=false;document.getElementById('parad_'+id).classList.remove('checked');}}});}
+
+// ---- NAV ----
+function showPage(pid){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(pid).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.getAttribute('onclick')===`showPage('${pid}')`));
+  window.scrollTo(0,0);
+}
+
+// ---- STATE ----
+function collectState(){
+  const s={};
+  ['f_name','f_prof','f_god','f_rank','f_def','ab1','ab2','ab3','ab4','ab5','ab6','stam_cur','stam_max','money'].forEach(id=>{const el=document.getElementById(id);if(el)s[id]=el.value;});
+  ['blessings','resurrection','titles'].forEach(id=>{const el=document.getElementById(id);if(el)s[id]=el.value;});
+  s.possessions=collectPossessions();s.quests=collectQuests();s.ships=collectShips();
+  ALL_CW.forEach((_,i)=>{const cb=document.getElementById('cw_'+i);if(cb)s['cw_'+i]=cb.checked;});
+  Object.keys(BOOKS).forEach(bk=>{
+    const data=BOOKS[bk];
+    data.paras.forEach(p=>{const multi=data.multi&&data.multi[p]?data.multi[p]:1;for(let m=0;m<multi;m++){const id=`para_${bk}_${p}_${m}`;const cb=document.getElementById(id);if(cb)s[id]=cb.checked;}});
+    const nt=document.getElementById('notes_'+bk);if(nt)s['notes_'+bk]=nt.value;
+  });
+  return s;
+}
+function applyState(s){
+  ['f_name','f_prof','f_god','f_rank','f_def','ab1','ab2','ab3','ab4','ab5','ab6','stam_cur','stam_max','money'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=s[id]||'';});
+  ['blessings','resurrection','titles'].forEach(id=>{const el=document.getElementById(id);if(el){el.value=s[id]||'';setTimeout(()=>autoResize(el),0);}});
+  applyPossessions(s.possessions);applyQuests(s.quests);applyShips(s.ships);
+  ALL_CW.forEach((_,i)=>{const cb=document.getElementById('cw_'+i);if(cb){cb.checked=!!s['cw_'+i];toggleCWFlat(cb,i);}});
+  Object.keys(BOOKS).forEach(bk=>{
+    const data=BOOKS[bk];
+    data.paras.forEach(p=>{const multi=data.multi&&data.multi[p]?data.multi[p]:1;for(let m=0;m<multi;m++){const id=`para_${bk}_${p}_${m}`;const cb=document.getElementById(id);if(cb){cb.checked=!!s[id];togglePara(cb,id);}}});
+    const nt=document.getElementById('notes_'+bk);if(nt){nt.value=s['notes_'+bk]||'';setTimeout(()=>autoResize(nt),0);}
+  });
+}
+
+// ---- SAVE / LOAD (localStorage) ----
+function getSaves(){try{return JSON.parse(localStorage.getItem('fl_saves')||'{}');}catch(e){return{};}}
+function setSaves(obj){try{localStorage.setItem('fl_saves',JSON.stringify(obj));}catch(e){showMsg('Storage full! Use Export to back up.',false);}}
+function refreshSelect(){const sel=document.getElementById('saveselect');const saves=getSaves();sel.innerHTML='<option value="">– Load –</option>';Object.keys(saves).sort().forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=k;sel.appendChild(o);});}
+function showMsg(msg,ok=true){const el=document.getElementById('savemsg');el.textContent=msg;el.style.color=ok?'#8aba8a':'#e07070';setTimeout(()=>el.textContent='',3500);}
+function saveState(){const name=document.getElementById('saveName').value.trim();if(!name){showMsg('Enter a save name!',false);return;}const saves=getSaves();saves[name]=collectState();setSaves(saves);refreshSelect();showMsg('✔ Saved as "'+name+'"');}
+function loadState(){const name=document.getElementById('saveselect').value;if(!name){showMsg('Select a save!',false);return;}const saves=getSaves();if(!saves[name]){showMsg('Not found!',false);return;}applyState(saves[name]);document.getElementById('saveName').value=name;showMsg('✔ Loaded "'+name+'"');}
+function deleteState(){const name=document.getElementById('saveselect').value;if(!name){showMsg('Select a save!',false);return;}const saves=getSaves();delete saves[name];setSaves(saves);refreshSelect();showMsg('Deleted "'+name+'"');}
+function resetAll(){applyState({});document.querySelectorAll('.field-input,.possess-input,.notes-area').forEach(el=>el.value='');clearCW();Object.keys(BOOKS).forEach(bk=>clearParas(bk));showMsg('All fields reset');}
+
+// ---- EXPORT / IMPORT ----
+function exportSaves(){
+  const saves=getSaves();
+  if(!Object.keys(saves).length){showMsg('No saves to export!',false);return;}
+  const json=JSON.stringify(saves,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const d=new Date();
+  a.download=`fabled-lands-saves-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showMsg('✔ Saves exported!');
+}
+function showImport(){document.getElementById('import-overlay').classList.add('show');document.getElementById('import-textarea').value='';}
+function hideImport(){document.getElementById('import-overlay').classList.remove('show');}
+function doImport(){
+  try{
+    const raw=document.getElementById('import-textarea').value.trim();
+    const data=JSON.parse(raw);
+    const saves=getSaves();
+    Object.assign(saves,data);
+    setSaves(saves);refreshSelect();hideImport();
+    showMsg('✔ Import successful! '+Object.keys(data).length+' save(s) imported.');
+  }catch(e){showMsg('Invalid JSON – check the file!',false);}
+}
+
+// ---- INIT ----
+addQuest();addShip();applyPossessions([]);
+initCWGrouped();
+['book1','book2','book3','book4','book5','book6','book7a','book7b'].forEach(bk=>initBook(bk,bk));
+refreshSelect();
+</script>
+</body>
+</html>

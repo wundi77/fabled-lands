@@ -1,0 +1,25 @@
+{
+  "name": "Fabled Lands",
+  "short_name": "Fabled Lands",
+  "description": "Interactive character sheet for the Fabled Lands gamebook series",
+  "start_url": "/fabled-lands/",
+  "scope": "/fabled-lands/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#3d2008",
+  "theme_color": "#1e1005",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
