@@ -1,7 +1,7 @@
 # Fabled Lands – Interaktiver Charakterbogen
 ## Projektstand & Entwicklungsnotizen
 
-**Letzter Stand:** Juni 2026 – CLAUDE.md hinzugefügt (Projektanweisungen für Claude Code)  
+**Letzter Stand:** 02.07.2026 – CLAUDE.md erweitert (Session-Start-Überblick, Kontext-Komprimierung ab 40%, direktes Arbeiten auf main statt Feature-Branches, Skill-Check)  
 **Live-URL:** https://wundi77.github.io/fabled-lands/  
 **Repository:** https://github.com/wundi77/fabled-lands  
 
