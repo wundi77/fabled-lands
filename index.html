@@ -1,636 +1,1275 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fabled Lands</title>
+<meta name="description" content="Adventure sheet, codewords, paragraph tracker and dice for the Fabled Lands gamebooks.">
+<meta name="theme-color" content="#1E140B">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Fabled Lands">
 <link rel="manifest" href="manifest.json">
-<title>Fabled Lands</title>
-<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
 <style>
-  @font-face {
-    font-family: 'CinzelFallback';
-    src: local('Palatino'), local('Palatino Linotype'), local('Book Antiqua'), local('Georgia');
-  }
-  :root {
-    --gold: #c9a84c; --gold2: #e8c96a; --dark: #1a1208; --parch: #f0e2bc;
-    --brown: #5c3a1e; --red: #8b1a1a; --ink: #2a1a08; --border: #7a5c2e;
-    --title-font: Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
-    --body-font: Palatino, Georgia, 'Times New Roman', serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+/* Layout: one fluid column (max 1920px) with masonry-like card columns; navigation lives in fixed tabs on the right edge.
+   Single deliberate look: parchment pages, leather chrome, seal-red accent. */
+:root {
+  color-scheme: light;
+  --parch: #EFE5CC;
+  --card: #FBF6E8;
+  --card2: #F6EED9;
+  --field: #FFFDF6;
+  --line: #DCCBA4;
+  --line2: #E4D6B6;
+  --line3: #EADDC0;
+  --fieldline: #D3C097;
+  --ink: #2B1D10;
+  --muted: #6B5537;
+  --label: #7A5A1E;
+  --red: #8E2A1E;
+  --red-d: #6E1F15;
+  --on-red: #FBF1DC;
+  --leather: #1E140B;
+  --leather2: #2B1D10;
+  --leather3: #3A2814;
+  --leather4: #2E2012;
+  --stitch: #5A4326;
+  --gold: #D4AF5A;
+  --cream: #F3E8CC;
+  --tan: #BFAE8C;
+  --tan2: #A8977A;
+  --ok: #2F5D3A;
+  --danger: #C2412D;
+  --chip: #EFE1BC;
+  --display: 'Cinzel', 'Palatino Linotype', Palatino, Georgia, serif;
+  --body: 'EB Garamond', 'Palatino Linotype', Palatino, Georgia, serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--parch);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.35;
+  font-variant-numeric: lining-nums;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--parch); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid #B8860B; outline-offset: 2px; }
+h1, h2, h3 { text-wrap: balance; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-  body {
-    font-family: var(--body-font);
-    min-height: 100vh;
-    background-color: #3d2008;
-    color: var(--ink);
-  }
-  body::before {
-    content: '';
-    position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background-image:
-      repeating-linear-gradient(179deg,
-        transparent 0px, transparent 3px,
-        rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px,
-        transparent 4px, transparent 8px,
-        rgba(255,180,80,0.07) 8px, rgba(255,180,80,0.07) 9px,
-        transparent 9px, transparent 15px,
-        rgba(0,0,0,0.12) 15px, rgba(0,0,0,0.12) 16px,
-        transparent 16px, transparent 24px,
-        rgba(0,0,0,0.06) 24px, rgba(0,0,0,0.06) 25px,
-        transparent 25px, transparent 34px,
-        rgba(255,160,60,0.09) 34px, rgba(255,160,60,0.09) 35px,
-        transparent 35px, transparent 44px,
-        rgba(0,0,0,0.14) 44px, rgba(0,0,0,0.14) 45px,
-        transparent 45px, transparent 55px
-      ),
-      repeating-linear-gradient(177deg,
-        transparent 0px, transparent 20px,
-        rgba(180,100,20,0.06) 20px, rgba(180,100,20,0.06) 21px,
-        transparent 21px, transparent 45px,
-        rgba(0,0,0,0.08) 45px, rgba(0,0,0,0.08) 46px,
-        transparent 46px, transparent 70px
-      ),
-      linear-gradient(175deg,
-        #5a2e0a 0%, #4a2208 12%, #3a1a06 25%,
-        #4e2a0c 38%, #3d1e08 50%, #5a3010 62%,
-        #3e1e07 75%, #4a2608 88%, #3a1a06 100%
-      );
-  }
+.wrap {
+  max-width: 1920px;
+  margin: 0 auto;
+  padding-block: 22px 140px;
+  padding-left: max(clamp(16px, 3vw, 48px), env(safe-area-inset-left, 0px));
+  padding-right: max(clamp(16px, 3vw, 48px), env(safe-area-inset-right, 0px));
+}
+.head { padding-right: 52px; margin-bottom: 18px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+.eyebrow { font-family: var(--display); font-size: 12px; letter-spacing: 0.16em; color: var(--label); text-transform: uppercase; }
+.title { margin: 2px 0 0; font-family: var(--display); font-weight: 600; font-size: clamp(26px, 2.4vw, 36px); line-height: 1.15; }
+.sub { font-size: 17px; color: var(--muted); }
 
-  /* NAV */
-  #topnav {
-    background: linear-gradient(180deg, #1e1005 0%, #2a1608 100%);
-    border-bottom: 3px solid var(--gold);
-    padding: 0.5rem 0.8rem;
-    display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;
-    position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 3px 12px #00000088;
-  }
-  #topnav > span {
-    color: var(--gold2); font-family: var(--title-font);
-    font-size: 0.95rem; font-weight: 700; margin-right: 0.4rem;
-    white-space: nowrap; text-shadow: 0 0 12px #c9a84c66; letter-spacing: 1px;
-  }
-  .nav-btn {
-    background: linear-gradient(180deg, #3a2510 0%, #2a1a08 100%);
-    color: var(--gold); border: 1px solid #7a5c2e;
-    padding: 0.3rem 0.6rem; border-radius: 3px; cursor: pointer;
-    font-family: var(--title-font); font-size: 0.72rem; letter-spacing: 0.3px;
-    transition: all 0.2s;
-  }
-  .nav-btn:hover, .nav-btn:active { background: linear-gradient(180deg, #5a3a18 0%, #3a2510 100%); color: var(--gold2); border-color: var(--gold); }
-  .nav-btn.active { background: linear-gradient(180deg, #7a5c2e 0%, #5a3a18 100%); color: var(--dark); border-color: var(--gold2); font-weight: 700; }
+.cols { columns: 340px 4; column-gap: 16px; }
+.cols > * { break-inside: avoid; margin: 0 0 16px; }
+.cols.c3 { columns: 360px 3; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.dark { background: var(--leather2); color: var(--cream); border-color: var(--leather2); box-shadow: 0 8px 22px -14px rgba(43,29,16,0.6); }
+.card.warn { border-color: #E2C2B4; }
+.h2 { margin: 0; font-family: var(--display); font-size: 13px; letter-spacing: 0.14em; color: var(--red); text-transform: uppercase; font-weight: 600; }
+.dark .h2 { color: var(--gold); }
+.muted { color: var(--muted); }
+.dark .muted { color: var(--tan); }
+.small { font-size: 14px; }
+.s15 { font-size: 15px; }
+.big { font-family: var(--display); font-weight: 600; font-size: 28px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.huge { font-family: var(--display); font-weight: 600; font-size: 42px; line-height: 1; font-variant-numeric: tabular-nums; }
+.row { display: flex; gap: 8px; align-items: center; }
+.row.wrapr { flex-wrap: wrap; }
+.row.between { justify-content: space-between; }
+.row.base { align-items: baseline; }
+.grow { flex: 1; min-width: 0; }
+.stack { display: flex; flex-direction: column; gap: 8px; }
+.g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.g3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.g4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.sep { border-top: 1px solid var(--line3); padding-top: 12px; }
 
-  /* SAVE BAR */
-  #savebar {
-    background: linear-gradient(180deg, #1a0f05 0%, #140c04 100%);
-    border-bottom: 2px solid #5c3a1e;
-    padding: 0.45rem 0.8rem; display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;
-    position: relative; z-index: 99;
-  }
-  #savebar label { color: var(--gold); font-family: var(--title-font); font-size: 0.72rem; letter-spacing: 0.3px; }
-  #savebar input[type=text] {
-    background: #2a1a08; color: var(--parch); border: 1px solid var(--border);
-    padding: 0.3rem 0.6rem; border-radius: 3px; font-size: 0.8rem; width: 140px;
-    font-family: var(--body-font);
-  }
-  .sb-btn {
-    background: linear-gradient(180deg, #3a2810 0%, #2a1a08 100%);
-    color: var(--gold); border: 1px solid var(--border);
-    padding: 0.3rem 0.7rem; border-radius: 3px; cursor: pointer;
-    font-family: var(--title-font); font-size: 0.72rem; letter-spacing: 0.3px; transition: all 0.2s;
-  }
-  .sb-btn:hover, .sb-btn:active { background: linear-gradient(180deg, #5a3a18 0%, #3a2510 100%); color: var(--gold2); border-color: var(--gold); }
-  #savemsg { color: #8aba8a; font-size: 0.78rem; font-style: italic; }
-  #saveselect {
-    background: #2a1a08; color: var(--parch); border: 1px solid var(--border);
-    padding: 0.3rem; border-radius: 3px; font-size: 0.75rem; max-width: 140px;
-  }
-  #resetAll {
-    background: linear-gradient(180deg, #4a1010 0%, #2a0808 100%);
-    color: #e88; border: 1px solid #803; padding: 0.3rem 0.7rem;
-    border-radius: 3px; cursor: pointer; font-family: var(--title-font); font-size: 0.72rem;
-  }
+.btn { min-height: 44px; border-radius: 10px; border: 1px solid var(--fieldline); background: var(--field); color: var(--ink); font-size: 16px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; line-height: 1.1; }
+.btn.primary { background: var(--red); border-color: var(--red); color: var(--on-red); }
+.btn.ink { background: var(--ink); border-color: var(--ink); color: var(--cream); }
+.btn.gold { background: var(--gold); border-color: var(--gold); color: var(--ink); font-weight: 600; }
+.btn.ghost { background: transparent; }
+.btn.danger { background: transparent; border-color: var(--red); color: var(--red); }
+.btn.lg { min-height: 52px; font-size: 18px; font-weight: 600; }
+.btn.sq { width: 44px; padding: 0; }
+.btn.pill { border-radius: 999px; }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.dark .btn { background: var(--leather3); border-color: var(--stitch); color: var(--cream); }
+.dark .btn.gold { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+.dark .btn.dashed { background: transparent; border-style: dashed; border-color: #8C6F3E; }
+.x { width: 44px; height: 44px; flex: none; border: 0; background: transparent; color: #8A7250; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
 
-  /* IMPORT/EXPORT */
-  .io-btn {
-    background: linear-gradient(180deg, #1a2a10 0%, #0e1a08 100%);
-    color: #8aba8a; border: 1px solid #4a7a2e;
-    padding: 0.3rem 0.7rem; border-radius: 3px; cursor: pointer;
-    font-family: var(--title-font); font-size: 0.72rem; transition: all 0.2s;
-  }
-  .io-btn:hover, .io-btn:active { background: linear-gradient(180deg, #2a4a18 0%, #1a2e0a 100%); color: #aada9a; }
+.field { height: 44px; padding: 0 12px; border: 1px solid var(--fieldline); border-radius: 10px; background: var(--field); color: var(--ink); font-size: 17px; width: 100%; min-width: 0; }
+textarea.field { height: auto; min-height: 120px; padding: 10px 12px; line-height: 1.4; resize: vertical; }
+select.field { padding: 0 8px; font-size: 16px; }
+.field.num { width: 64px; text-align: center; font-family: var(--display); font-size: 19px; padding: 0 4px; }
+.dark .field { background: var(--leather3); border-color: var(--stitch); color: var(--cream); }
+.lbl { display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--muted); min-width: 0; }
+.dark .lbl { color: var(--tan); }
 
-  /* PAGES */
-  .page { display: none; padding: 1.2rem; max-width: 960px; margin: 0 auto; position: relative; z-index: 1; padding-bottom: 3rem; }
-  .page.active { display: block; }
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 999px; background: var(--chip); font-size: 16px; }
+.chip .x { width: 32px; height: 32px; margin: -6px -8px -6px 0; }
+.bar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--red); border-radius: 4px; }
+.dark .bar { background: #46331C; }
+.dark .bar > i { background: var(--gold); }
+.dark .bar.low > i { background: var(--danger); }
+.tile { display: flex; flex-direction: column; padding: 10px 12px; border-radius: 12px; background: var(--card2); border: 1px solid var(--line2); }
+.tile .k { font-family: var(--display); font-size: 11px; letter-spacing: 0.12em; color: var(--muted); }
+.tile.dark { background: var(--leather2); border-color: var(--leather2); color: var(--cream); }
+.tile.dark .k { color: var(--gold); }
+.banner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 12px 16px; margin-bottom: 16px; border-radius: 14px; background: var(--chip); padding-right: 56px; }
 
-  h1.page-title {
-    font-family: var(--title-font); color: var(--gold2); font-size: 1.5rem;
-    text-align: center; margin-bottom: 1.2rem;
-    text-shadow: 0 0 20px #c9a84c88, 2px 2px 8px #000a;
-    letter-spacing: 2px; position: relative;
-  }
-  h1.page-title::before, h1.page-title::after { content: '✦'; color: var(--gold); font-size: 0.85rem; margin: 0 0.7rem; opacity: 0.7; vertical-align: middle; }
+.seg { display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 3px; background: var(--line2); border-radius: 12px; max-width: 100%; }
+.seg button { min-height: 40px; border: 0; border-radius: 9px; background: transparent; font-size: 16px; color: var(--ink); padding: 0 14px; }
+.seg button[aria-pressed="true"] { background: var(--card); }
+.switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line2); background: var(--card2); font-size: 16px; text-align: left; width: 100%; }
+.switch .t { width: 40px; height: 24px; border-radius: 12px; background: #C9B488; display: flex; align-items: center; padding: 2px; flex: none; }
+.switch .t::after { content: ""; width: 20px; height: 20px; border-radius: 50%; background: var(--field); }
+.switch[aria-pressed="true"] .t { background: var(--red); justify-content: flex-end; }
 
-  .card {
-    background: linear-gradient(160deg, #f5e9c8 0%, #ede0b0 40%, #f0e5c0 100%);
-    border: 2px solid #a07840; border-radius: 4px;
-    padding: 1.1rem 1.3rem; margin-bottom: 1.2rem; position: relative;
-    box-shadow: 0 4px 20px #00000077, inset 0 1px 0 rgba(255,255,255,0.4);
-  }
-  .card::before {
-    content: ''; position: absolute; inset: 4px;
-    border: 1px solid rgba(160,120,60,0.25); border-radius: 2px; pointer-events: none;
-  }
-  .card-title {
-    font-family: var(--title-font); font-size: 0.9rem; font-weight: 700; color: var(--red);
-    border-bottom: 2px solid; border-image: linear-gradient(90deg, var(--gold), #c9a84c44, transparent) 1;
-    padding-bottom: 0.4rem; margin-bottom: 0.9rem;
-    text-transform: uppercase; letter-spacing: 1.5px;
-    display: flex; align-items: center; justify-content: space-between;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
-  }
+.list-row { display: flex; align-items: center; gap: 8px; min-height: 46px; border-bottom: 1px solid var(--line3); }
+.list-row:last-child { border-bottom: 0; }
+.bonus { font-size: 13px; padding: 2px 8px; border-radius: 999px; background: var(--ink); color: var(--cream); white-space: nowrap; }
+.bonus.off { background: var(--line3); color: #7A6447; }
 
-  .field-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.55rem; flex-wrap: wrap; }
-  .field-label { color: var(--brown); font-family: var(--title-font); font-size: 0.75rem; font-weight: 700; min-width: 130px; letter-spacing: 0.3px; }
-  .field-input {
-    background: rgba(255,251,232,0.85); border: 1px solid #b89050; border-radius: 2px;
-    padding: 0.25rem 0.5rem; font-size: 0.9rem; color: var(--ink);
-    font-family: var(--body-font); flex: 1; min-width: 80px;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-  }
-  .field-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 2px rgba(201,168,76,0.25); }
-  .field-num { width: 70px; flex: none; text-align: center; }
+/* abilities */
+.abgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(146px, 1fr)); gap: 8px; }
+.ab { display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px solid var(--line2); border-radius: 12px; background: var(--card2); }
+.ab .v { font-family: var(--display); font-size: 28px; font-weight: 600; line-height: 1; }
+.ab .d { font-size: 13px; line-height: 1.2; color: var(--muted); min-height: 16px; }
+.ab .row .btn { min-height: 40px; }
+.ab .row .btn.sq { width: 38px; }
 
-  .abilities-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.2rem; }
-  .ability-row { display: flex; align-items: center; gap: 0.5rem; }
-  .ability-num {
-    width: 24px; height: 24px;
-    background: radial-gradient(circle at 35% 35%, #b02020, #6a0f0f);
-    color: #f5d070; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.72rem; font-weight: bold; flex-shrink: 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-    font-family: var(--title-font);
-  }
-  .ability-label { min-width: 85px; font-size: 0.78rem; color: var(--brown); font-weight: 700; font-family: var(--title-font); letter-spacing: 0.3px; }
-  .ability-val { width: 55px; flex: none; }
+/* codewords */
+.cw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 6px; }
+.cw { height: 44px; padding: 0 6px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.cw[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: var(--on-red); font-weight: 600; }
+.sticky { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--parch); padding: 8px 52px 12px 0; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
+.search { display: flex; align-items: center; gap: 8px; height: 46px; max-width: 640px; padding: 0 12px; border: 1px solid var(--fieldline); border-radius: 12px; background: var(--field); color: var(--muted); }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; font-size: 17px; outline: none; color: var(--ink); }
+.letter { display: flex; align-items: baseline; gap: 8px; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+.letter h2 { margin: 0; font-family: var(--display); font-size: 22px; color: var(--red); }
 
-  .possess-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
-  .possess-input {
-    background: rgba(255,251,232,0.85); border: 1px solid #b89050; border-radius: 2px;
-    padding: 0.2rem 0.5rem; font-size: 0.88rem; color: var(--ink);
-    font-family: var(--body-font); width: 100%;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
-  }
-  .possess-input:focus { outline: none; border-color: var(--gold); }
+/* paragraphs */
+.bookbar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; padding-right: 52px; margin-bottom: 14px; }
+.bookbar button { flex: none; min-height: 40px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); font-size: 15px; color: var(--ink); white-space: nowrap; }
+.bookbar button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--cream); }
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); gap: 8px; }
+.para { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; min-height: 80px; padding: 9px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--ink); text-align: left; }
+.para .n { font-family: var(--display); font-size: 19px; font-weight: 600; line-height: 1; display: flex; justify-content: space-between; width: 100%; }
+.para .note { font-size: 13px; line-height: 1.2; color: var(--muted); }
+.para .pips { display: flex; gap: 4px; }
+.para .pips i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--red); }
+.para .pips i.on { background: var(--red); }
+.para.part { background: #F3E3C4; border-color: #C9A267; }
+.para.full { background: var(--ink); border-color: var(--ink); color: var(--cream); }
+.para.full .note { color: #CDBB97; }
+.para.full .pips i { border-color: var(--cream); }
+.para.full .pips i.on { background: var(--cream); }
+.split { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+.split > .main { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.split > .side { flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+.bm-btn { min-height: 52px; background: var(--ink); color: var(--cream); border: 0; border-radius: 16px; padding: 8px 14px; display: flex; align-items: center; gap: 12px; text-align: left; }
+.bm-btn .v { font-family: var(--display); font-size: 22px; font-weight: 600; }
 
-  .cw-section { margin-bottom: 0.9rem; }
-  .cw-letter { font-family: var(--title-font); font-size: 1.05rem; font-weight: 700; color: var(--red); margin-bottom: 0.35rem; padding-bottom: 0.15rem; border-bottom: 1px solid rgba(201,168,76,0.4); letter-spacing: 2px; }
-  .cw-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 0.25rem 0.4rem; }
-  .cw-item { display: flex; align-items: center; gap: 0.25rem; }
-  .cw-item label { font-size: 0.8rem; color: var(--ink); cursor: pointer; user-select: none; font-family: var(--body-font); }
-  .cw-cb { width: 14px; height: 14px; cursor: pointer; accent-color: var(--red); flex-shrink: 0; }
-  .cw-item.checked label { color: var(--red); font-weight: 700; }
+/* quests, ships, saves, wizard */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 16px; align-items: start; }
+.quest.done { opacity: 0.72; }
+.quest.done .qtitle { text-decoration: line-through; }
+.badge { width: 38px; height: 38px; flex: none; border-radius: 10px; background: var(--chip); color: #6B4A12; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 700; }
+.badge.on { background: var(--red); color: var(--on-red); }
+.pill-tag { font-size: 13px; padding: 3px 9px; border-radius: 999px; background: var(--chip); color: #6B4A12; }
+.prof-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 12px; }
+.prof { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 16px; border: 2px solid var(--line); background: var(--card); text-align: left; color: var(--ink); }
+.prof[aria-pressed="true"] { border-color: var(--red); background: #FFF8E8; }
+.prof .pbar { display: grid; grid-template-columns: 82px minmax(0, 1fr) 16px; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+.prof .pbar b { font-family: var(--display); color: var(--ink); text-align: right; }
+.prof .pbar span.b { height: 8px; border-radius: 4px; background: var(--line2); overflow: hidden; }
+.prof .pbar span.b i { display: block; height: 100%; background: #B8975A; }
+.prof .pbar span.b i.hi { background: var(--red); }
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; max-width: 420px; }
+.steps i { height: 6px; border-radius: 3px; background: var(--line); }
+.steps i.on { background: var(--red); }
+.narrow { max-width: 560px; }
 
-  .para-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.3rem; }
-  .para-item { display: flex; align-items: center; gap: 0.3rem; }
-  .para-item label { font-size: 0.8rem; color: var(--ink); font-weight: 600; cursor: pointer; font-family: var(--title-font); }
-  .para-item.checked label { text-decoration: line-through; color: #999; }
-  .para-note { font-size: 0.65rem; color: #7a5c2e; margin-left: 2px; font-style: italic; }
+/* fixed chrome */
+.etab { position: fixed; right: 0; z-index: 25; width: calc(40px + env(safe-area-inset-right, 0px)); padding-right: env(safe-area-inset-right, 0px); border: 0; border-radius: 12px 0 0 12px; box-shadow: -6px 6px 16px -6px rgba(30,20,11,0.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+#tab-dice { top: calc(130px + env(safe-area-inset-top, 0px)); height: 52px; background: var(--leather2); color: var(--gold); }
+#tab-bm { top: calc(190px + env(safe-area-inset-top, 0px)); min-height: 76px; padding-block: 8px; background: var(--gold); color: var(--leather); }
+#tab-bm span { writing-mode: vertical-rl; font-family: var(--display); font-size: 13px; font-weight: 700; }
+#scrim { position: fixed; inset: 0; z-index: 48; border: 0; padding: 0; background: rgba(20,12,5,0.5); }
+#menu { position: fixed; top: calc(18px + env(safe-area-inset-top, 0px)); right: 0; width: min(320px, 84vw); z-index: 50; transform: translateX(100%); transition: transform 260ms cubic-bezier(.2,.8,.2,1); }
+#menu.open { transform: none; }
+#tab-menu { position: absolute; left: -40px; top: 0; width: 40px; height: 104px; border: 0; padding: 0; border-radius: 14px 0 0 14px; background: var(--red); color: var(--on-red); box-shadow: -6px 6px 16px -6px rgba(30,20,11,0.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+#tab-menu span { writing-mode: vertical-rl; font-family: var(--display); font-size: 11px; font-weight: 700; letter-spacing: 0.2em; }
+#menu-body { background: var(--leather); color: #E9DDBF; border-radius: 0 0 0 18px; padding: 16px 16px 18px; padding-right: max(16px, env(safe-area-inset-right, 0px)); max-height: calc(100vh - 36px - env(safe-area-inset-top, 0px)); overflow: auto; display: flex; flex-direction: column; gap: 14px; box-shadow: -10px 10px 30px -10px rgba(0,0,0,0.6); }
+.nlabel { font-family: var(--display); font-size: 11px; letter-spacing: 0.16em; color: var(--tan2); text-transform: uppercase; }
+.nitem { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 10px; background: transparent; color: #D9CBA8; font-size: 17px; text-align: left; width: 100%; }
+.nitem[aria-current="page"] { background: var(--leather3); color: var(--on-red); }
+.nitem[aria-current="page"] svg { color: var(--gold); }
+.nitem .cnt { margin-left: auto; font-size: 13px; background: var(--leather3); border-radius: 999px; padding: 1px 8px; }
+.jump { min-height: 40px; display: inline-flex; align-items: center; padding: 0 12px; border-radius: 999px; border: 0; background: var(--leather4); color: var(--cream); font-size: 15px; }
+.bookt { height: 50px; border: 0; border-radius: 10px; background: var(--leather4); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0; }
+.bookt b { font-family: var(--display); font-size: 17px; color: var(--gold); }
+.bookt span { font-size: 12px; color: var(--tan); }
+.bookt[aria-current="page"] { background: var(--gold); }
+.bookt[aria-current="page"] b { color: var(--leather); }
+.bookt[aria-current="page"] span { color: var(--ink); }
+.letters a, .letters button { height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 0; background: var(--leather4); font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--gold); }
+#menu-body .switch { background: transparent; border-color: #3D2C18; color: #E9DDBF; }
+#menu-body .switch .t { background: var(--stitch); }
+#menu-body .switch[aria-pressed="true"] .t { background: var(--red); }
+.savesbtn { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 12px; border-radius: 12px; border: 1px solid #3D2C18; background: transparent; color: #E9DDBF; text-align: left; }
+.savesbtn[aria-current="page"] { background: var(--leather3); }
 
-  .notes-area {
-    width: 100%; min-height: 80px;
-    background: rgba(255,251,232,0.85); border: 1px solid #b89050; border-radius: 2px;
-    padding: 0.4rem 0.5rem; font-size: 0.9rem; color: var(--ink);
-    font-family: var(--body-font); resize: vertical;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-  }
-  .notes-area:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 2px rgba(201,168,76,0.2); }
+#dice { position: fixed; right: 0; bottom: 0; z-index: 40; width: min(100vw, 440px); max-height: min(88vh, 860px); overflow: auto; background: var(--card); border: 1px solid #C9B488; border-radius: 20px 20px 0 0; box-shadow: 0 -12px 40px -10px rgba(30,20,11,0.5); padding: 12px 16px calc(20px + env(safe-area-inset-bottom, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 12px; transform: translateY(110%); visibility: hidden; transition: transform 240ms cubic-bezier(.2,.8,.2,1), visibility 0s linear 240ms; }
+#dice.open { transform: none; visibility: visible; transition: transform 240ms cubic-bezier(.2,.8,.2,1); }
+.die { width: 44px; height: 44px; border-radius: 10px; background: var(--field); color: var(--ink); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 22px; font-weight: 700; flex: none; }
+.result { border-radius: 14px; padding: 14px; color: var(--on-red); display: flex; flex-direction: column; gap: 10px; }
+.result.ok { background: var(--ok); }
+.result.bad { background: var(--red); }
+.result.neutral { background: var(--stitch); }
+.result .btn { background: transparent; border-color: currentColor; color: inherit; }
+.abpick { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 58px; border-radius: 12px; border: 1px solid var(--line2); background: var(--card2); color: var(--ink); padding: 0; }
+.abpick small { font-family: var(--display); font-size: 10px; letter-spacing: 0.08em; }
+.abpick b { font-family: var(--display); font-size: 20px; }
+.abpick[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--cream); }
+.log { font-size: 15px; line-height: 1.3; }
+.log.enemy { color: var(--red); }
 
-  .ship-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.1rem; }
-  .money-row { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: flex-start; margin-bottom: 0.5rem; }
-  .money-label { font-size: 0.75rem; color: var(--brown); font-weight: 700; min-width: 80px; font-family: var(--title-font); padding-top: 0.3rem; }
+#bm-pop { position: fixed; right: calc(48px + env(safe-area-inset-right, 0px)); top: calc(130px + env(safe-area-inset-top, 0px)); z-index: 35; width: min(320px, calc(100vw - 64px)); background: var(--leather); color: #E9DDBF; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 16px 40px -12px rgba(0,0,0,0.6); max-height: calc(100vh - 150px); overflow: auto; }
+#bm-pop .g7 { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+#bm-pop .g7 button { height: 40px; border: 0; border-radius: 8px; background: var(--leather4); color: var(--gold); font-family: var(--display); font-weight: 700; font-size: 16px; padding: 0; }
+#bm-pop .g7 button[aria-pressed="true"] { background: var(--gold); color: var(--leather); }
+#bm-pop .pfield { flex: 1; display: flex; align-items: center; gap: 6px; height: 48px; padding: 0 12px; border: 1px solid var(--stitch); border-radius: 12px; background: var(--leather2); }
+#bm-pop .pfield input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--cream); font-family: var(--display); font-size: 22px; font-weight: 600; outline: none; }
+.modal-wrap { position: fixed; inset: 0; z-index: 60; background: rgba(20,12,5,0.6); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal { width: min(100%, 440px); background: var(--card); border-radius: 20px; padding: 22px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 20px 50px -12px rgba(0,0,0,0.6); }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 45; width: min(92vw, 480px); background: var(--leather2); color: var(--cream); border-radius: 16px; padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; box-shadow: 0 12px 30px -10px rgba(0,0,0,0.6); }
+.toast .btn { background: transparent; border-color: var(--stitch); color: var(--cream); }
+.toast .btn.primary { background: var(--danger); border-color: var(--danger); color: #FFF6EC; }
 
-  .clear-btn {
-    background: none; border: 1px solid #b0905050; color: #a07040;
-    padding: 0.15rem 0.5rem; border-radius: 2px; cursor: pointer;
-    font-size: 0.7rem; font-family: var(--title-font); transition: all 0.2s;
-  }
-  .clear-btn:hover { background: rgba(139,26,26,0.08); border-color: var(--red); color: var(--red); }
+@media (prefers-reduced-motion: reduce) {
+  #menu, #dice, #dice.open { transition: none; }
+}
 
-  .page-links { display: grid; grid-template-columns: repeat(auto-fill,minmax(175px,1fr)); gap: 0.6rem; }
-  .page-link-btn {
-    background: linear-gradient(160deg, #2e1c08 0%, #1e1005 100%);
-    border: 2px solid #7a5c2e; color: var(--gold);
-    padding: 0.75rem 0.9rem; border-radius: 4px; cursor: pointer;
-    font-family: var(--title-font); font-size: 0.8rem; text-align: center;
-    transition: all 0.25s; letter-spacing: 0.4px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
-  }
-  .page-link-btn:hover, .page-link-btn:active {
-    background: linear-gradient(160deg, #5a3a18 0%, #3a2510 100%);
-    border-color: var(--gold); color: var(--gold2); transform: translateY(-1px);
-  }
-  .page-link-btn .pl-sub { font-size: 0.65rem; opacity: 0.7; display: block; margin-top: 0.25rem; font-style: italic; letter-spacing: 0; }
-
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-
-  /* IMPORT overlay */
-  #import-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
-    z-index: 200; align-items: center; justify-content: center;
-  }
-  #import-overlay.show { display: flex; }
-  #import-box {
-    background: linear-gradient(160deg, #f5e9c8, #ede0b0);
-    border: 2px solid var(--gold); border-radius: 6px;
-    padding: 1.5rem; max-width: 380px; width: 90%;
-    box-shadow: 0 8px 30px #000a;
-  }
-  #import-box h3 { font-family: var(--title-font); color: var(--red); margin-bottom: 0.8rem; font-size: 1rem; letter-spacing: 1px; }
-  #import-box p { font-size: 0.85rem; color: var(--brown); margin-bottom: 1rem; }
-  #import-textarea {
-    width: 100%; height: 120px; font-size: 0.75rem; font-family: monospace;
-    border: 1px solid #b89050; border-radius: 2px; padding: 0.4rem;
-    background: rgba(255,251,232,0.9); color: var(--ink); resize: vertical; margin-bottom: 0.8rem;
-  }
-  #import-box .btn-row { display: flex; gap: 0.5rem; justify-content: flex-end; }
-
-  @media(max-width:600px) {
-    .two-col { grid-template-columns: 1fr; }
-    .cw-grid { grid-template-columns: repeat(3,1fr); }
-    .para-grid { grid-template-columns: repeat(2,1fr); }
-    .abilities-grid { grid-template-columns: 1fr; }
-    .possess-grid { grid-template-columns: 1fr; }
-    .ship-grid { grid-template-columns: 1fr; }
-  }
 </style>
 </head>
 <body>
-
-<div id="topnav">
-  <span>⚔ Fabled Lands</span>
-  <button class="nav-btn active" onclick="showPage('p0')">Character</button>
-  <button class="nav-btn" onclick="showPage('pq')">Quests</button>
-  <button class="nav-btn" onclick="showPage('p1')">Ship's Manifest</button>
-  <button class="nav-btn" onclick="showPage('p2')">Codewords</button>
-  <button class="nav-btn" onclick="showPage('p4')">Book 1</button>
-  <button class="nav-btn" onclick="showPage('p5')">Book 2</button>
-  <button class="nav-btn" onclick="showPage('p6')">Book 3</button>
-  <button class="nav-btn" onclick="showPage('p7')">Book 4</button>
-  <button class="nav-btn" onclick="showPage('p8')">Book 5</button>
-  <button class="nav-btn" onclick="showPage('p9')">Book 6</button>
-  <button class="nav-btn" onclick="showPage('p10')">Book 7</button>
+<main id="main" class="wrap"></main>
+<button id="scrim" type="button" hidden aria-label="Close menu" data-act="menu-close"></button>
+<div id="menu">
+  <button id="tab-menu" type="button" data-act="menu-toggle" aria-expanded="false" aria-controls="menu-body" aria-label="Open menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"></path></svg>
+    <span id="tab-menu-text">MENU</span>
+  </button>
+  <nav id="menu-body" aria-label="Main" inert></nav>
 </div>
-
-<div id="savebar">
-  <label>Save:</label>
-  <input type="text" id="saveName" placeholder="Save name…">
-  <button class="sb-btn" onclick="saveState()">💾 Save</button>
-  <select id="saveselect"><option value="">– Load –</option></select>
-  <button class="sb-btn" onclick="loadState()">📂 Load</button>
-  <button class="sb-btn" onclick="deleteState()">🗑 Delete</button>
-  <button class="io-btn" onclick="exportSaves()">⬆ Export</button>
-  <button class="io-btn" onclick="showImport()">⬇ Import</button>
-  <span id="savemsg"></span>
-  <button id="resetAll" onclick="resetAll()">✖ Reset</button>
-</div>
-
-<!-- IMPORT OVERLAY -->
-<div id="import-overlay">
-  <div id="import-box">
-    <h3>⬇ Import Save Data</h3>
-    <p>Paste the contents of a previously exported <code>.json</code> file here:</p>
-    <textarea id="import-textarea" placeholder="Paste JSON here…"></textarea>
-    <div class="btn-row">
-      <button class="clear-btn" onclick="hideImport()">Cancel</button>
-      <button class="sb-btn" onclick="doImport()">Import</button>
-    </div>
-  </div>
-</div>
-
-<!-- CHARACTER -->
-<div id="p0" class="page active">
-  <h1 class="page-title">Adventure Sheet</h1>
-  <div class="two-col">
-    <div class="card">
-      <div class="card-title">Basic Info</div>
-      <div class="field-row"><span class="field-label">Name</span><input class="field-input" id="f_name" placeholder="Character name…"></div>
-      <div class="field-row"><span class="field-label">Profession</span><input class="field-input" id="f_prof" placeholder="Warrior, Priest…"></div>
-      <div class="field-row"><span class="field-label">God</span><input class="field-input" id="f_god" placeholder="Deity…"></div>
-      <div class="field-row"><span class="field-label">Rank</span><input class="field-input field-num" id="f_rank" type="number" min="1" value=""></div>
-      <div class="field-row"><span class="field-label">Defence</span><input class="field-input field-num" id="f_def" type="number" value=""></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Abilities &amp; Stamina</div>
-      <div class="abilities-grid">
-        <div class="ability-row"><div class="ability-num">1</div><span class="ability-label">Charisma</span><input class="field-input ability-val" id="ab1" type="number" value=""></div>
-        <div class="ability-row"><div class="ability-num">2</div><span class="ability-label">Combat</span><input class="field-input ability-val" id="ab2" type="number" value=""></div>
-        <div class="ability-row"><div class="ability-num">3</div><span class="ability-label">Magic</span><input class="field-input ability-val" id="ab3" type="number" value=""></div>
-        <div class="ability-row"><div class="ability-num">4</div><span class="ability-label">Sanctity</span><input class="field-input ability-val" id="ab4" type="number" value=""></div>
-        <div class="ability-row"><div class="ability-num">5</div><span class="ability-label">Scouting</span><input class="field-input ability-val" id="ab5" type="number" value=""></div>
-        <div class="ability-row"><div class="ability-num">6</div><span class="ability-label">Thievery</span><input class="field-input ability-val" id="ab6" type="number" value=""></div>
-      </div>
-      <div style="margin-top:0.7rem;">
-        <div class="field-row"><span class="field-label">Current Stamina</span><input class="field-input field-num" id="stam_cur" type="number" value=""></div>
-        <div class="field-row"><span class="field-label">Maximum Stamina</span><input class="field-input field-num" id="stam_max" type="number" value=""></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title"><span>Possessions</span>
-      <span style="display:flex;gap:0.4rem;">
-        <button class="sb-btn" style="font-size:0.7rem;padding:0.2rem 0.6rem;" onclick="addPossession()">+ Add Item</button>
-        <button class="clear-btn" onclick="clearPossessions()">Clear All</button>
-      </span>
-    </div>
-    <div class="possess-grid" id="possess-grid"></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Money &amp; Honours</div>
-    <div class="money-row">
-      <span class="money-label">Money</span><input class="field-input field-num" id="money" type="number" value="">
-      <span class="money-label" style="margin-left:0.5rem;">Blessings</span>
-      <textarea class="field-input notes-area" id="blessings" placeholder="Note blessings…" style="width:200px;min-height:2rem;height:auto;" oninput="autoResize(this)"></textarea>
-    </div>
-    <div class="field-row" style="align-items:flex-start;">
-      <span class="field-label" style="padding-top:0.3rem;">Resurrection</span>
-      <textarea class="field-input notes-area" id="resurrection" placeholder="Resurrection location / arrangement…" style="min-height:2.5rem;height:auto;" oninput="autoResize(this)"></textarea>
-    </div>
-    <div class="field-row" style="align-items:flex-start;">
-      <span class="field-label" style="padding-top:0.3rem;">Titles &amp; Honours</span>
-      <textarea class="field-input notes-area" id="titles" placeholder="Titles earned…" style="min-height:2.5rem;height:auto;" oninput="autoResize(this)"></textarea>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Navigate to All Sheets</div>
-    <div class="page-links">
-      <button class="page-link-btn" onclick="showPage('pq')">📋 Quests<span class="pl-sub">Track your quests</span></button>
-      <button class="page-link-btn" onclick="showPage('p1')">🚢 Ship's Manifest<span class="pl-sub">Ship, Crew, Cargo</span></button>
-      <button class="page-link-btn" onclick="showPage('p2')">📜 Codewords<span class="pl-sub">Acid – Gush</span></button>
-      <button class="page-link-btn" onclick="showPage('p4')">📖 Book 1<span class="pl-sub">Paragraphs &amp; Notes</span></button>
-      <button class="page-link-btn" onclick="showPage('p5')">📖 Book 2<span class="pl-sub">Paragraphs &amp; Notes</span></button>
-      <button class="page-link-btn" onclick="showPage('p6')">📖 Book 3<span class="pl-sub">Paragraphs &amp; Notes</span></button>
-      <button class="page-link-btn" onclick="showPage('p7')">📖 Book 4<span class="pl-sub">Paragraphs &amp; Notes</span></button>
-      <button class="page-link-btn" onclick="showPage('p8')">📖 Book 5<span class="pl-sub">Paragraphs &amp; Notes</span></button>
-      <button class="page-link-btn" onclick="showPage('p9')">📖 Book 6<span class="pl-sub">Paragraphs &amp; Notes</span></button>
-      <button class="page-link-btn" onclick="showPage('p10')">📖 Book 7<span class="pl-sub">Paragraphs &amp; Notes</span></button>
-    </div>
-  </div>
-</div>
-
-<!-- QUESTS -->
-<div id="pq" class="page">
-  <h1 class="page-title">Quests</h1>
-  <div class="card">
-    <div class="card-title">Active Quests</div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr) auto;gap:0.4rem;margin-bottom:0.5rem;">
-      <div style="font-family:var(--title-font);font-size:0.72rem;font-weight:700;color:var(--brown);">What</div>
-      <div style="font-family:var(--title-font);font-size:0.72rem;font-weight:700;color:var(--brown);">From</div>
-      <div style="font-family:var(--title-font);font-size:0.72rem;font-weight:700;color:var(--brown);">Where</div>
-      <div style="font-family:var(--title-font);font-size:0.72rem;font-weight:700;color:var(--brown);">For</div>
-      <div></div>
-    </div>
-    <div id="quests-container"></div>
-    <button class="sb-btn" style="margin-top:0.7rem;font-size:0.8rem;padding:0.45rem 1.1rem;" onclick="addQuest()">+ Add Quest</button>
-  </div>
-</div>
-
-<!-- SHIP -->
-<div id="p1" class="page">
-  <h1 class="page-title">Ship's Manifest</h1>
-  <div id="ships-container"></div>
-  <button class="sb-btn" style="margin-bottom:1.5rem;font-size:0.85rem;padding:0.5rem 1.1rem;" onclick="addShip()">+ Add Ship</button>
-</div>
-
-<!-- CODEWORDS -->
-<div id="p2" class="page">
-  <h1 class="page-title">Codewords</h1>
-  <div class="card">
-    <div class="card-title"><span>Codewords (Acid – Gush)</span><button class="clear-btn" onclick="clearCW()">Uncheck All</button></div>
-    <div id="cw-all"></div>
-  </div>
-</div>
-
-<!-- BOOK PAGES -->
-<div id="p4" class="page"><h1 class="page-title">Book 1 – Paragraphs &amp; Notes</h1><div id="book1"></div></div>
-<div id="p5" class="page"><h1 class="page-title">Book 2 – Paragraphs &amp; Notes</h1><div id="book2"></div></div>
-<div id="p6" class="page"><h1 class="page-title">Book 3 – Paragraphs &amp; Notes</h1><div id="book3"></div></div>
-<div id="p7" class="page"><h1 class="page-title">Book 4 – Paragraphs &amp; Notes</h1><div id="book4"></div></div>
-<div id="p8" class="page"><h1 class="page-title">Book 5 – Paragraphs &amp; Notes</h1><div id="book5"></div></div>
-<div id="p9" class="page"><h1 class="page-title">Book 6 – Paragraphs &amp; Notes</h1><div id="book6"></div></div>
-<div id="p10" class="page"><h1 class="page-title">Book 7 – Paragraphs &amp; Notes</h1><div id="book7a"></div><div id="book7b"></div></div>
+<button id="tab-dice" class="etab" type="button" data-act="dice-toggle" aria-label="Dice" aria-expanded="false" aria-controls="dice">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"></rect><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor"></circle><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor"></circle><circle cx="12" cy="12" r="1.3" fill="currentColor"></circle></svg>
+</button>
+<button id="tab-bm" class="etab" type="button" data-act="bm-toggle" aria-label="Bookmark" aria-expanded="false">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"></path></svg>
+  <span id="tab-bm-text">§1</span>
+</button>
+<section id="dice" role="dialog" aria-label="Dice" inert></section>
+<div id="layer"></div>
+<input type="file" id="import-file" accept="application/json,.json" hidden>
 
 <script>
-const CW_PAGE1=["Acid","Afraid","Ague","Aid","Aklar","Alissia","Almanac","Aloft","Altitude","Altruist","Ambuscade","Amcha","Amends","Anchor","Anger","Animal","Anthem","Anvil","Apache","Appease","Apple","Ark","Armour","Artefact","Artery","Ashen","Aspen","Assassin","Assault","Assist","Attar","Auric","Avenge","Avert","Axe","Azure","Bait","Baluster","Barnacle","Bashful","Bastion","Beach","Beltane","Bilge","Bisect","Blemish","Bobbin","Bones","Bookworm","Bosky","Bounty","Boysen","Bridoon","Brisket","Brush","Bullion","Bullseye","Bumble","Bunting","Buzz","Cacogast","Calcium","Callid","Cancel","Catalyst","Cenotaph","Certain","Cerumen","Chance","Cheese","Cheops","Chill","Church","Cithara","Citrus","Civil","Clanger","Clutch","Colour","Coracle","Cosy","Covet","Crag","Crocus","Cruel","Cull","Curdle","Cushat","Cutlass","Cyclops","Cynosure","Dangle","Dare","Dark","Dawn","Dead","Deathless","Deep","Defend","Deliver","Diamond","Dim","Dirk","Dirty","Discover","Dismal","Dispel","Divest","Dog","Dotage","Double","Dove","Dragon","Drake","Drape","Draw","Dread","Dregs","Drifter","Drink","Drizzle","Drop","Duress","Dwarf","Earth","East","Ebb","Ebony","Echo","Eclipse","Ectoplasm","Ecumenical","Edifice","Edify","Eerie","Efreet","Egret","Elan","Eldritch","Elegant","Element","Elephant","Elite","Elk","Elude","Ember","Emerald","Enamel","Endless","Energy","Enigma","Entropy","Envoy","Epicure","Epistle","Erebus","Errant","Eternal","Ethereal","Evade","Evergreen","Evict","Evil","Exorcise","Expunge","Extinguish","Exultant","Face","Faded","Farm","Feral","Fern","Fire","Fist","Flag","Fleet","Flimsy","Flood","Flux","Fog","Foment","Fortress","Fossil","Fracas","Frame","Fresco","Fright","Friz","Frog","Fruit"];
-const CW_PAGE2=["Fuchsia","Fuligin","Fusty","Future","Gaggle","Gain","Gale","Gallivant","Gamble","Game","Gander","Gannet","Gargoyle","Garland","Gather","Gauche","Gauntlet","Gazelle","Genius","Gentle","Genuflect","Geode","Geyser","Ghastly","Giant","Gibbet","Giggle","Gin","Glacier","Gladden","Glade","Glass","Glide","Glimmer","Glimpse","Glitter","Gloat","Gloom","Glory","Glove","Glutton","Gnash","Gnat","Gnome","Gnu","Goblet","Golem","Gone","Goose","Gore","Gosling","Gossamer","Gourd","Govern","Grace","Graft","Grain","Granite","Granule","Grape","Grapple","Grateful","Grebe","Green","Grief","Grimace","Grime","Grind","Grog","Grotto","Grove","Growl","Grub","Guard","Guilt","Guise","Gulf","Gully","Gush"];
-const ALL_CW=[...CW_PAGE1,...CW_PAGE2];
-const CW_INDEX={};ALL_CW.forEach((w,i)=>CW_INDEX[w]=i);
+(function () {
+'use strict';
 
-const BOOKS={
-  book1:{paras:["10","16","19","91","100","116","160","169","175","199","207","232","233","264","305","310","331","337","361","398","403","409","446","454","473","496","504","542","610","612","619","635","645","649","655","667"],notes_map:{"10":"(4×) | Money Invested","91":"104 Money Invested","100":"(Town House)","169":"177 Items in Town House","232":"300 Items in Town House","310":"327 Items in Cache","398":"400 Items in Town House","454":"434 Items in Town House","542":"605 Money Banked"},multi:{"10":4,"19":3}},
-  book2:{paras:["2","48","57","71","160","217","253","254","391","416","443","465","542","547","567","586","648","679","710","718","727","728","754","757","760","762","777"],notes_map:{"2":"(Town House) | 36 Money Banked","48":"(Town House)","71":"(Town House) | 39 Money Invested","253":"49 Money Invested","416":"85 Money Invested","542":"(3×) | 154 Money Invested","567":"Amulet / Tresses / Katana","648":"211 Items in Town House","718":"278 Items in Town House","754":"348 Items in Town House","762":"661 Locker Box"},multi:{"542":3}},
-  book3:{paras:["44","49","56","57","68","84","105","120","143","183","216","351","466","470","477","494","509","515","572","576","651","659","680","692","719"],notes_map:{"44":"(Shack) | 74 Items in Shack","143":"335 Items in House","351":"(3×)","509":"607 Items in College","572":"(College)","719":"652 Money Invested"},multi:{"351":3}},
-  book4:{paras:["10","40","63","127","173","181","195","210","243","259","265","326","360","376","395","428","429","437","440","467","491","500","513","522","545","583","605","704"],notes_map:{"10":"(Town House) | 450 Items Protected by Brotherhood","195":"468 Items in Hordeth's Villa","360":"509 Items in Town House","440":"(3×) | 526 Money Invested","467":"(3×)","545":"586 Items Left Behind","704":"600 Money Banked"},multi:{"440":3,"467":3}},
-  book5:{paras:["16","44","93","113","120","126","153","165","195","204","216","227","239","247","269","325","335","467","493","498","520","534","584","592","596","602","622","644","648","672","697","714"],notes_map:{"16":"115 Money Invested","126":"245 Items in Castle","216":"401 Status Points","325":"560 Items in Cellar","520":"586 Items in Room","602":"601 Money Banked","697":"624 Palace Rooms"},multi:{}},
-  book6:{paras:["68","79","92","106","109","123","155","164","174","233","244","258","263","328","345","517","539","569","604","650","668"],notes_map:{"68":"175 Money Invested","79":"(Town House)","109":"238 Items in Town House","155":"(Town House)","164":"(4×)","174":"276 Worldly Goods","263":"284 Items in Town House","539":"414 Items in Town House","668":"440 Money Invested"},multi:{"164":4}},
-  book7a:{paras:["17","23","34","40","42","58","94","117","120","124","132","135","141","146","161","178","204","225","233","266","270","292","299","305","307","313","316","333","354","356","407","412","424","426","486","506","557","560","588"],notes_map:{"17":"129 Items in Town House","23":"(4×)","42":"(Town House)","120":"250 Items Held in Storage","141":"250 Duties Remaining","204":"263 Items Held in Spire","225":"(Town House)","270":"307 Items Held in Theatre","307":"(2×) | 405 Items in Town House","333":"(Town House)","354":"486 Items in Town House","560":"Sword / Storm / Horse","588":"2nd/3rd/4th Trial | 150 Items in Quarters"},multi:{"23":4,"307":2}},
-  book7b:{paras:["610","618","629","635","645","653","690","694","729","777","793","847","865","880","899","911","912","927","946","947","962","963","976","1043","1057","1061","1067","1136","1145","1184","1189","1190"],notes_map:{"610":"599 Items in Atotl's Home","694":"624 Items in Clifftop House","777":"(3×)","899":"788 Flask of Oblivion","963":"974 Stolen Items","1061":"(2×)","1145":"1150 Items in Town House","1190":"(5×)"},multi:{"777":3,"1061":2,"1190":5}}
+/* ---------- helpers ---------- */
+const $ = (s) => document.querySelector(s);
+const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const int = (v) => { const n = parseInt(v, 10); return isNaN(n) ? null : n; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const uid = () => Math.random().toString(36).slice(2, 9);
+const d6 = () => 1 + Math.floor(Math.random() * 6);
+const pressed = (b) => (b ? 'true' : 'false');
+
+/* ---------- rules data ---------- */
+const AB = ['Charisma', 'Combat', 'Magic', 'Sanctity', 'Scouting', 'Thievery'];
+const PROFS = {
+  Priest: [4, 2, 3, 6, 4, 2], Mage: [2, 2, 6, 1, 5, 3], Rogue: [5, 4, 4, 1, 2, 6],
+  Troubadour: [6, 3, 4, 3, 2, 4], Warrior: [3, 6, 2, 4, 3, 2], Wayfarer: [2, 5, 2, 3, 6, 4]
+};
+const BLESS = ['Charisma', 'Combat', 'Magic', 'Sanctity', 'Scouting', 'Thievery', 'Immunity to Disease', 'Safety from Storms'];
+const WAYS = [0, 0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1];
+const CREW = ['Poor', 'Average', 'Good', 'Excellent'];
+const BOOK_TITLES = { 1: 'The War-Torn Kingdom', 2: 'Cities of Gold and Glory', 3: 'Over the Blood-Dark Sea', 4: 'The Plains of Howling Darkness', 5: 'The Court of Hidden Faces', 6: 'Lords of the Rising Sun', 7: "The Serpent King's Domain" };
+const BOOKS = {
+  1: { paras: ['10','16','19','91','100','116','160','169','175','199','207','232','233','264','305','310','331','337','361','398','403','409','446','454','473','496','504','542','610','612','619','635','645','649','655','667'], notes: { '10': '(4×) | Money Invested', '91': '104 Money Invested', '100': '(Town House)', '169': '177 Items in Town House', '232': '300 Items in Town House', '310': '327 Items in Cache', '398': '400 Items in Town House', '454': '434 Items in Town House', '542': '605 Money Banked' }, multi: { '10': 4, '19': 3 } },
+  2: { paras: ['2','48','57','71','160','217','253','254','391','416','443','465','542','547','567','586','648','679','710','718','727','728','754','757','760','762','777'], notes: { '2': '(Town House) | 36 Money Banked', '48': '(Town House)', '71': '(Town House) | 39 Money Invested', '253': '49 Money Invested', '416': '85 Money Invested', '542': '(3×) | 154 Money Invested', '567': 'Amulet / Tresses / Katana', '648': '211 Items in Town House', '718': '278 Items in Town House', '754': '348 Items in Town House', '762': '661 Locker Box' }, multi: { '542': 3 } },
+  3: { paras: ['44','49','56','57','68','84','105','120','143','183','216','351','466','470','477','494','509','515','572','576','651','659','680','692','719'], notes: { '44': '(Shack) | 74 Items in Shack', '143': '335 Items in House', '351': '(3×)', '509': '607 Items in College', '572': '(College)', '719': '652 Money Invested' }, multi: { '351': 3 } },
+  4: { paras: ['10','40','63','127','173','181','195','210','243','259','265','326','360','376','395','428','429','437','440','467','491','500','513','522','545','583','605','704'], notes: { '10': '(Town House) | 450 Items Protected by Brotherhood', '195': "468 Items in Hordeth's Villa", '360': '509 Items in Town House', '440': '(3×) | 526 Money Invested', '467': '(3×)', '545': '586 Items Left Behind', '704': '600 Money Banked' }, multi: { '440': 3, '467': 3 } },
+  5: { paras: ['16','44','93','113','120','126','153','165','195','204','216','227','239','247','269','325','335','467','493','498','520','534','584','592','596','602','622','644','648','672','697','714'], notes: { '16': '115 Money Invested', '126': '245 Items in Castle', '216': '401 Status Points', '325': '560 Items in Cellar', '520': '586 Items in Room', '602': '601 Money Banked', '697': '624 Palace Rooms' }, multi: {} },
+  6: { paras: ['68','79','92','106','109','123','155','164','174','233','244','258','263','328','345','517','539','569','604','650','668'], notes: { '68': '175 Money Invested', '79': '(Town House)', '109': '238 Items in Town House', '155': '(Town House)', '164': '(4×)', '174': '276 Worldly Goods', '263': '284 Items in Town House', '539': '414 Items in Town House', '668': '440 Money Invested' }, multi: { '164': 4 } },
+  7: { paras: ['17','23','34','40','42','58','94','117','120','124','132','135','141','146','161','178','204','225','233','266','270','292','299','305','307','313','316','333','354','356','407','412','424','426','486','506','557','560','588','610','618','629','635','645','653','690','694','729','777','793','847','865','880','899','911','912','927','946','947','962','963','976','1043','1057','1061','1067','1136','1145','1184','1189','1190'], notes: { '17': '129 Items in Town House', '23': '(4×)', '42': '(Town House)', '120': '250 Items Held in Storage', '141': '250 Duties Remaining', '204': '263 Items Held in Spire', '225': '(Town House)', '270': '307 Items Held in Theatre', '307': '(2×) | 405 Items in Town House', '333': '(Town House)', '354': '486 Items in Town House', '560': 'Sword / Storm / Horse', '588': '2nd/3rd/4th Trial | 150 Items in Quarters', '610': "599 Items in Atotl's Home", '694': '624 Items in Clifftop House', '777': '(3×)', '899': '788 Flask of Oblivion', '963': '974 Stolen Items', '1061': '(2×)', '1145': '1150 Items in Town House', '1190': '(5×)' }, multi: { '23': 4, '307': 2, '777': 3, '1061': 2, '1190': 5 } }
+};
+const CW = ['Acid','Afraid','Ague','Aid','Aklar','Alissia','Almanac','Aloft','Altitude','Altruist','Ambuscade','Amcha','Amends','Anchor','Anger','Animal','Anthem','Anvil','Apache','Appease','Apple','Ark','Armour','Artefact','Artery','Ashen','Aspen','Assassin','Assault','Assist','Attar','Auric','Avenge','Avert','Axe','Azure','Bait','Baluster','Barnacle','Bashful','Bastion','Beach','Beltane','Bilge','Bisect','Blemish','Bobbin','Bones','Bookworm','Bosky','Bounty','Boysen','Bridoon','Brisket','Brush','Bullion','Bullseye','Bumble','Bunting','Buzz','Cacogast','Calcium','Callid','Cancel','Catalyst','Cenotaph','Certain','Cerumen','Chance','Cheese','Cheops','Chill','Church','Cithara','Citrus','Civil','Clanger','Clutch','Colour','Coracle','Cosy','Covet','Crag','Crocus','Cruel','Cull','Curdle','Cushat','Cutlass','Cyclops','Cynosure','Dangle','Dare','Dark','Dawn','Dead','Deathless','Deep','Defend','Deliver','Diamond','Dim','Dirk','Dirty','Discover','Dismal','Dispel','Divest','Dog','Dotage','Double','Dove','Dragon','Drake','Drape','Draw','Dread','Dregs','Drifter','Drink','Drizzle','Drop','Duress','Dwarf','Earth','East','Ebb','Ebony','Echo','Eclipse','Ectoplasm','Ecumenical','Edifice','Edify','Eerie','Efreet','Egret','Elan','Eldritch','Elegant','Element','Elephant','Elite','Elk','Elude','Ember','Emerald','Enamel','Endless','Energy','Enigma','Entropy','Envoy','Epicure','Epistle','Erebus','Errant','Eternal','Ethereal','Evade','Evergreen','Evict','Evil','Exorcise','Expunge','Extinguish','Exultant','Face','Faded','Farm','Feral','Fern','Fire','Fist','Flag','Fleet','Flimsy','Flood','Flux','Fog','Foment','Fortress','Fossil','Fracas','Frame','Fresco','Fright','Friz','Frog','Fruit','Fuchsia','Fuligin','Fusty','Future','Gaggle','Gain','Gale','Gallivant','Gamble','Game','Gander','Gannet','Gargoyle','Garland','Gather','Gauche','Gauntlet','Gazelle','Genius','Gentle','Genuflect','Geode','Geyser','Ghastly','Giant','Gibbet','Giggle','Gin','Glacier','Gladden','Glade','Glass','Glide','Glimmer','Glimpse','Glitter','Gloat','Gloom','Glory','Glove','Glutton','Gnash','Gnat','Gnome','Gnu','Goblet','Golem','Gone','Goose','Gore','Gosling','Gossamer','Gourd','Govern','Grace','Graft','Grain','Granite','Granule','Grape','Grapple','Grateful','Grebe','Green','Grief','Grimace','Grime','Grind','Grog','Grotto','Grove','Growl','Grub','Guard','Guilt','Guise','Gulf','Gully','Gush'];
+
+function pAtLeast(n) {
+  if (n <= 2) return 1;
+  if (n > 12) return 0;
+  let w = 0;
+  for (let k = n; k <= 12; k++) w += WAYS[k];
+  return w / 36;
+}
+const pct = (p) => Math.round(p * 100) + ' %';
+function cleanNote(raw) {
+  return (raw || '').replace(/\(\d+×\)\s*\|?\s*/g, '').replace(/^\(|\)$/g, '').replace(/\s*\|\s*/g, ' · ').trim();
+}
+
+/* ---------- icons ---------- */
+const svg = (d, w) => `<svg width="${w || 20}" height="${w || 20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const IC = {
+  user: svg('<circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path>'),
+  flag: svg('<path d="M5 21V4"></path><path d="M5 4h12l-2.5 4L17 12H5"></path>'),
+  ship: svg('<circle cx="12" cy="5" r="2"></circle><path d="M12 7v14"></path><path d="M5 13H3a9 8 0 0 0 18 0h-2"></path><path d="M8 11h8"></path>'),
+  key: svg('<circle cx="8" cy="15" r="4"></circle><path d="M10.8 12.2 20 3"></path><path d="M17 6l3 3"></path><path d="M14.5 8.5l2 2"></path>'),
+  box: svg('<rect x="3" y="4" width="18" height="5" rx="1"></rect><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9"></path><path d="M10 13h4"></path>'),
+  mark: svg('<path d="M6 3h12v18l-6-4-6 4z"></path>', 16),
+  x: svg('<path d="M6 6l12 12M18 6 6 18"></path>', 18),
+  check: svg('<path d="m5 12 5 5 9-10"></path>', 16),
+  search: svg('<circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path>', 18),
+  die: svg('<rect x="3" y="3" width="18" height="18" rx="4"></rect><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor"></circle><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor"></circle>', 15),
+  trash: svg('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path>', 18)
 };
 
-function autoResize(el){el.style.height='auto';el.style.height=el.scrollHeight+'px';}
-
-// ---- QUESTS ----
-let questCount=0;
-function addQuest(data){
-  const idx=questCount++;const qid='quest_'+idx;
-  const row=document.createElement('div');row.id=qid;
-  row.style.cssText='display:grid;grid-template-columns:repeat(4,1fr) auto;gap:0.4rem;margin-bottom:0.5rem;align-items:start;';
-  ['what','from','where','for'].forEach(f=>{
-    const ta=document.createElement('textarea');ta.className='notes-area';ta.id=`${qid}_${f}`;
-    ta.placeholder=f.charAt(0).toUpperCase()+f.slice(1)+'…';
-    ta.style.cssText='min-height:2.2rem;height:auto;resize:none;';
-    ta.oninput=function(){autoResize(this);};
-    if(data&&data[f]){ta.value=data[f];setTimeout(()=>autoResize(ta),0);}
-    row.appendChild(ta);
-  });
-  const btn=document.createElement('button');btn.className='clear-btn';
-  btn.style.cssText='border-color:#a03;color:#a03;padding:0.3rem 0.5rem;margin-top:0.1rem;';
-  btn.textContent='✖';btn.onclick=()=>row.remove();
-  row.appendChild(btn);
-  document.getElementById('quests-container').appendChild(row);
+/* ---------- game state ---------- */
+function newGame(o) {
+  const base = {};
+  AB.forEach((a, i) => { base[a] = PROFS[o.prof][i]; });
+  return {
+    v: 1, example: false, savedAt: Date.now(),
+    char: {
+      name: o.name, prof: o.prof, god: o.god || '', rank: 1, base, stam: 9, max: 9, money: 16, defAdj: 0,
+      items: [{ id: uid(), name: 'Sword', type: '', bonus: 0 }, { id: uid(), name: 'Leather jerkin', type: 'Defence', bonus: 1 }],
+      blessings: {}, titles: [], resText: '', resBook: '', resPara: ''
+    },
+    codewords: {}, ticks: {}, notes: {},
+    bookmark: { book: '1', para: '1' }, history: [{ book: '1', para: '1' }], places: [],
+    quests: [], ships: []
+  };
 }
-function collectQuests(){return Array.from(document.querySelectorAll('#quests-container > div')).map(row=>{const id=row.id;return{what:document.getElementById(id+'_what')?.value||'',from:document.getElementById(id+'_from')?.value||'',where:document.getElementById(id+'_where')?.value||'',for:document.getElementById(id+'_for')?.value||''};});}
-function applyQuests(arr){document.getElementById('quests-container').innerHTML='';questCount=0;if(!arr||!arr.length){addQuest();return;}arr.forEach(q=>addQuest(q));}
+function exampleGame() {
+  const g = newGame({ name: 'Aldric Vane', prof: 'Wayfarer', god: 'Tyrnai' });
+  g.example = true;
+  Object.assign(g.char, { rank: 3, stam: 12, max: 16, money: 47, resText: 'Temple of Tyrnai, Marlock City', resBook: '1', resPara: '100' });
+  g.char.items.push(
+    { id: uid(), name: 'Lockpicks', type: 'Thievery', bonus: 1 },
+    { id: uid(), name: 'Magic lockpicks', type: 'Thievery', bonus: 2 },
+    { id: uid(), name: 'Lantern', type: '', bonus: 0 },
+    { id: uid(), name: 'Rope', type: '', bonus: 0 },
+    { id: uid(), name: 'Map of Sokara', type: '', bonus: 0 },
+    { id: uid(), name: 'Silver holy symbol', type: 'Sanctity', bonus: 1 }
+  );
+  g.char.blessings = { Combat: true, 'Safety from Storms': true };
+  g.char.titles = ['Initiate of Tyrnai'];
+  ['Aklar', 'Anchor', 'Assassin', 'Bounty', 'Coracle', 'Dirk', 'Eldritch', 'Fog', 'Gauntlet'].forEach((w) => { g.codewords[w] = true; });
+  g.ticks = { 1: { '10': 2, '19': 1, '100': 1, '175': 1, '232': 1, '305': 1, '542': 1, '610': 1 } };
+  g.notes = { 1: 'Example notes: blessing bought in Marlock. Ask about the ring in Yellowport.' };
+  g.bookmark = { book: '1', para: '175' };
+  g.history = [{ book: '1', para: '175' }, { book: '1', para: '169' }, { book: '1', para: '160' }, { book: '1', para: '10' }, { book: '1', para: '100' }];
+  g.places = [{ id: uid(), name: 'Yellowport', book: '1', para: '10' }, { id: uid(), name: 'Marlock City', book: '1', para: '100' }];
+  g.quests = [
+    { id: uid(), what: 'Deliver the sealed letter', from: 'Guard captain, Marlock City', where: 'Yellowport', for: '50 Shards', done: false },
+    { id: uid(), what: 'Find the lost amulet', from: 'Old priest', where: 'Shadar Tor', for: 'Blessing', done: true }
+  ];
+  g.ships = [{ id: uid(), name: 'Grey Gull', type: 'Barque', crew: 'Average', cap: '1', cargo: 'Grain', dock: 'Yellowport', notes: '' }];
+  return g;
+}
 
-// ---- SHIPS ----
-let shipCount=0;
-function addShip(data){
-  const idx=shipCount++;const sid='ship_'+idx;
-  const card=document.createElement('div');card.className='card';card.id=sid;
-  card.innerHTML=`<div class="card-title"><span>Ship #${idx+1}</span><button class="clear-btn" style="border-color:#a03;color:#a03;" onclick="removeShip('${sid}')">✖ Remove</button></div>
-    <div class="ship-grid">
-      <div class="field-row"><span class="field-label">Ship Type</span><input class="field-input" id="${sid}_type" placeholder="e.g. Galleon, Junk…"></div>
-      <div class="field-row"><span class="field-label">Ship Name</span><input class="field-input" id="${sid}_name" placeholder="Name of your ship…"></div>
-      <div class="field-row"><span class="field-label">Crew Quality</span><input class="field-input field-num" id="${sid}_crew" type="number" value=""></div>
-      <div class="field-row"><span class="field-label">Cargo Capacity</span><input class="field-input field-num" id="${sid}_cap" type="number" value=""></div>
-      <div class="field-row"><span class="field-label">Current Cargo</span><input class="field-input" id="${sid}_cargo" placeholder="Note cargo…"></div>
-      <div class="field-row"><span class="field-label">Where Docked</span><input class="field-input" id="${sid}_dock" placeholder="Port / Location…"></div>
+/* ---------- storage ---------- */
+const LS_SLOTS = 'flc_slots';
+const LS_ACTIVE = 'flc_active';
+function lsGet(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+let slots = lsGet(LS_SLOTS);
+if (!slots || typeof slots !== 'object') slots = {};
+let active = lsGet(LS_ACTIVE);
+if (!active || !slots[active]) {
+  const names = Object.keys(slots);
+  if (names.length) active = names[0];
+  else { active = 'Example – Aldric Vane'; slots[active] = exampleGame(); }
+}
+let G = slots[active];
+let saveTimer = null;
+let storageOk = true;
+function flush() { storageOk = lsSet(LS_SLOTS, slots) && lsSet(LS_ACTIVE, active); }
+function save() {
+  G.savedAt = Date.now();
+  slots[active] = G;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(flush, 250);
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { clearTimeout(saveTimer); flush(); } });
+
+/* ---------- UI state ---------- */
+const SCREENS = ['character', 'quests', 'ships', 'codewords', 'book', 'saves', 'create'];
+const UI = {
+  screen: 'character', book: G.bookmark.book || '1',
+  menu: false, dice: null, bm: false, bmBook: '1', bmDraft: '',
+  dead: false, confirm: null, toast: '', rankDlg: false, rankGain: '',
+  q: '', onlyMarked: false, paraFilter: 'all', questFilter: 'open',
+  item: { name: '', type: '', bonus: '1' }, title: '', money: '', place: { name: '', para: '' },
+  quest: { what: '', from: '', where: '', for: '' }, snap: '',
+  wiz: { step: 1, name: '', prof: '', god: '', err: '' },
+  phys: false, pd1: '', pd2: '', diceErr: '',
+  checkAb: 'Combat', diff: 9, check: null,
+  enemy: { name: '', combat: '', def: '', stam: '', first: 'you' }, fErr: '', fight: null
+};
+let toastTimer = null;
+function toast(msg) { UI.toast = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => { UI.toast = ''; renderLayer(); }, 2600); }
+
+/* ---------- derived ---------- */
+function best(type) {
+  let b = 0, src = '', id = null;
+  G.char.items.forEach((it) => { if (it.type === type && it.bonus > b) { b = it.bonus; src = it.name; id = it.id; } });
+  return { b, src, id };
+}
+const eff = (a) => clamp(G.char.base[a] + best(a).b, 1, 12);
+const defence = () => eff('Combat') + G.char.rank + best('Defence').b + G.char.defAdj;
+function bookStats(n) {
+  const B = BOOKS[n], t = G.ticks[n] || {};
+  let done = 0, boxes = 0;
+  B.paras.forEach((p) => { const m = B.multi[p] || 1; boxes += m; done += Math.min(m, t[p] || 0); });
+  return { done, boxes };
+}
+function setStam(v) {
+  const n = Math.max(0, v);
+  if (n <= 0 && G.char.stam > 0) UI.dead = true;
+  G.char.stam = n;
+  return n;
+}
+function setBookmark(b, p) {
+  b = String(b); p = String(p);
+  G.bookmark = { book: b, para: p };
+  G.history = [{ book: b, para: p }].concat(G.history.filter((h) => !(h.book === b && h.para === p))).slice(0, 10);
+}
+const markedCount = () => Object.keys(G.codewords).length;
+
+/* ---------- screens ---------- */
+function header(eyebrow, title, sub, right) {
+  return `<header class="head" id="top"><div><div class="eyebrow">${eyebrow}</div><h1 class="title">${title}</h1>${sub ? `<div class="sub">${sub}</div>` : ''}</div>${right || ''}</header>`;
+}
+
+function scrCharacter() {
+  const c = G.char;
+  const sp = c.max ? clamp(Math.round(100 * c.stam / c.max), 0, 100) : 0;
+  const low = c.stam <= 3;
+  const arm = best('Defence');
+  const effC = eff('Combat');
+  const adj = c.defAdj ? ` ${c.defAdj > 0 ? '+' : '−'} ${Math.abs(c.defAdj)} adjustment` : '';
+  const counted = {};
+  ['Defence'].concat(AB).forEach((t) => { const b = best(t); if (b.id) counted[t] = b.id; });
+  return `
+  ${G.example ? `<div class="banner"><span>This is an example adventurer to look around. Your own progress starts with a new character.</span><button class="btn primary" data-act="go-create">Start your own</button></div>` : ''}
+  ${header('Adventure sheet', esc(c.name), `${esc(c.prof)} · Rank ${c.rank} · ${esc(c.god || 'No god')}`,
+    `<button class="btn ink pill" data-act="nav" data-to="book" data-book="${esc(G.bookmark.book)}">${IC.mark} Continue · Book ${esc(G.bookmark.book)}, §${esc(G.bookmark.para)}</button>`)}
+  <div class="cols">
+    <section class="card dark" id="stamina">
+      <h2 class="h2">Stamina</h2>
+      <div class="g2">
+        <div class="stack" style="gap:2px"><span class="small muted">Current</span><span class="huge" style="color:${low ? '#F2A493' : 'inherit'}">${c.stam}</span></div>
+        <div class="stack" style="gap:2px"><span class="small muted">Maximum (unwounded)</span>
+          <span class="row"><button class="btn sq" data-act="max" data-d="-1" aria-label="Lower maximum Stamina" style="min-height:36px;width:36px">−</button><span class="big" style="min-width:36px;text-align:center">${c.max}</span><button class="btn sq" data-act="max" data-d="1" aria-label="Raise maximum Stamina" style="min-height:36px;width:36px">+</button></span></div>
+      </div>
+      <div class="bar${low ? ' low' : ''}"><i style="width:${sp}%"></i></div>
+      ${c.stam > 0 && low ? '<div class="s15" style="color:#F2A493">Low Stamina – at 0 you are killed.</div>' : ''}
+      <div class="g3">
+        <button class="btn" data-act="stam" data-d="-1" aria-label="Lose 1 Stamina" style="min-height:48px;font-size:18px">−1</button>
+        <button class="btn" data-act="stam" data-d="1" aria-label="Gain 1 Stamina" style="min-height:48px;font-size:18px">+1</button>
+        <button class="btn gold" data-act="stam-full" style="min-height:48px">Rest</button>
+      </div>
+      ${UI.rankDlg ? `
+      <div class="stack" style="background:var(--leather3);border-radius:12px;padding:12px;gap:10px">
+        <div>Advance to <b>Rank ${c.rank + 1}</b></div>
+        <div class="small muted">Enter the Stamina gain the book gives you, or roll 1d6. It is added to current and maximum Stamina. Defence updates automatically.</div>
+        <div class="row wrapr">
+          <label class="row s15 muted" for="rank-gain">Stamina gain</label>
+          <input id="rank-gain" class="field num" inputmode="numeric" data-bind="UI.rankGain" data-live value="${esc(UI.rankGain)}">
+          <button class="btn" data-act="rank-roll">Roll 1d6</button>
+        </div>
+        <div class="g2"><button class="btn" data-act="rank-close">Cancel</button><button class="btn gold" data-act="rank-confirm">Confirm</button></div>
+      </div>` : `<button class="btn dashed" data-act="rank-open">Advance to Rank ${c.rank + 1}…</button>`}
+    </section>
+
+    <section class="card" id="defence">
+      <div class="g2">
+        <div class="tile"><span class="k">RANK</span><span class="big">${c.rank}</span></div>
+        <div class="tile dark"><span class="k">DEFENCE</span><span class="big">${defence()}</span></div>
+      </div>
+      <div class="s15 muted">Combat ${effC} + Rank ${c.rank} + ${arm.b ? esc(arm.src) + ' ' + arm.b : 'no armour 0'}${adj} = ${defence()}</div>
+      <div class="row between"><span class="s15 muted">Manual adjustment</span>
+        <span class="row"><button class="btn sq" data-act="adj" data-d="-1" aria-label="Lower Defence adjustment">−</button><span style="min-width:32px;text-align:center">${c.defAdj > 0 ? '+' + c.defAdj : c.defAdj}</span><button class="btn sq" data-act="adj" data-d="1" aria-label="Raise Defence adjustment">+</button></span></div>
+      <div class="stack sep">
+        <div class="row between base"><h2 class="h2">Shards</h2><span class="big">${c.money}</span></div>
+        <div class="g4">
+          <button class="btn" data-act="money" data-d="-10">−10</button><button class="btn" data-act="money" data-d="-1">−1</button>
+          <button class="btn" data-act="money" data-d="1">+1</button><button class="btn" data-act="money" data-d="10">+10</button>
+        </div>
+        <div class="row">
+          <label class="sr" for="money-amt">Amount</label>
+          <input id="money-amt" class="field grow" inputmode="numeric" placeholder="Amount…" data-bind="UI.money" value="${esc(UI.money)}">
+          <button class="btn danger" data-act="money-spend">Spend</button>
+          <button class="btn ink" data-act="money-gain">Gain</button>
+        </div>
+      </div>
+      <div class="stack sep">
+        <label class="lbl" for="c-name">Name<input id="c-name" class="field" data-bind="G.char.name" value="${esc(c.name)}"></label>
+        <div class="g2">
+          <div class="lbl">Profession<span class="field" style="display:flex;align-items:center;background:var(--card2);border-color:var(--line2)">${esc(c.prof)}</span></div>
+          <label class="lbl" for="c-god">God<input id="c-god" class="field" placeholder="None" data-bind="G.char.god" value="${esc(c.god)}"></label>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="abilities">
+      <div><h2 class="h2">Abilities</h2><div class="s15 muted">Score = base + best item bonus. Range 1–12.</div></div>
+      <div class="abgrid">
+        ${AB.map((a) => {
+          const base = c.base[a], bb = best(a);
+          return `<div class="ab">
+            <div class="row between base"><span class="small" style="font-family:var(--display);font-size:11px;letter-spacing:.1em;color:var(--muted)">${a.toUpperCase()}</span><span class="v">${eff(a)}</span></div>
+            <span class="d">${bb.b ? `${base} + ${bb.b} ${esc(bb.src)}` : 'base ' + base}</span>
+            <div class="row" style="gap:4px">
+              <button class="btn sq" data-act="ab" data-ab="${a}" data-d="-1" aria-label="Lower ${a}" ${base <= 1 ? 'disabled' : ''}>−</button>
+              <button class="btn ink grow" data-act="ab-roll" data-ab="${a}" aria-label="Roll ${a} check" style="padding:0 6px">${IC.die} Roll</button>
+              <button class="btn sq" data-act="ab" data-ab="${a}" data-d="1" aria-label="Raise ${a}" ${base >= 12 ? 'disabled' : ''}>+</button>
+            </div></div>`;
+        }).join('')}
+      </div>
+    </section>
+
+    <section class="card" id="possessions">
+      <div class="row between base"><h2 class="h2">Possessions</h2><span class="s15" style="color:${c.items.length >= 12 ? 'var(--red)' : 'var(--muted)'}">${c.items.length} / 12</span></div>
+      <div>
+        ${c.items.map((it) => `<div class="list-row">
+          <span class="grow row wrapr" style="gap:4px 8px"><span>${esc(it.name)}</span>${it.type && it.bonus ? `<span class="bonus${counted[it.type] === it.id ? '' : ' off'}">${esc(it.type)} +${it.bonus}${counted[it.type] === it.id ? '' : ' · not counted'}</span>` : ''}</span>
+          <button class="x" data-act="item-remove" data-id="${it.id}" aria-label="Remove ${esc(it.name)}">${IC.x}</button></div>`).join('') || '<div class="muted">Nothing carried.</div>'}
+      </div>
+      <div class="small muted">Faded bonuses don’t count – only the best item per ability or armour applies.</div>
+      <div class="stack" style="padding:10px;border:1px dashed #C9B488;border-radius:12px">
+        <label class="sr" for="item-name">New item</label>
+        <input id="item-name" class="field" placeholder="Add an item…" data-bind="UI.item.name" value="${esc(UI.item.name)}" data-enter="item-add">
+        <div class="row">
+          <label class="sr" for="item-type">Bonus type</label>
+          <select id="item-type" class="field grow" data-bind="UI.item.type">
+            <option value="">No bonus</option>
+            ${['Defence'].concat(AB).map((t) => `<option value="${t}" ${UI.item.type === t ? 'selected' : ''}>${t === 'Defence' ? 'Defence (armour)' : t}</option>`).join('')}
+          </select>
+          <label class="row s15 muted" for="item-bonus" style="gap:4px">+</label>
+          <input id="item-bonus" class="field num" style="width:52px" inputmode="numeric" data-bind="UI.item.bonus" value="${esc(UI.item.bonus)}">
+          <button class="btn primary" data-act="item-add">Add</button>
+        </div>
+        ${c.items.length >= 12 ? '<div class="small" style="color:var(--red)">You can carry 12 possessions. Drop something first.</div>' : ''}
+      </div>
+    </section>
+
+    <section class="card" id="honours">
+      <div class="stack">
+        <h2 class="h2">Blessings</h2>
+        <div class="small muted">One of each type. Tap “Use” when the book lets you spend it.</div>
+        <div class="row wrapr" style="gap:6px">
+          ${BLESS.map((b) => c.blessings[b]
+            ? `<span class="chip" style="background:var(--red);color:var(--on-red);padding:2px 2px 2px 12px">${b}<button class="btn" data-act="bless-use" data-b="${b}" style="min-height:36px;border-radius:999px;background:var(--red-d);border-color:var(--red-d);color:var(--on-red);font-size:14px;padding:0 10px">Use</button></span>`
+            : `<button class="btn pill ghost" data-act="bless-add" data-b="${b}" style="border-style:dashed;min-height:40px;font-size:15px;color:var(--muted)">+ ${b}</button>`).join('')}
+        </div>
+      </div>
+      <div class="stack">
+        <h2 class="h2">Titles &amp; honours</h2>
+        <div class="row wrapr">${c.titles.map((t, i) => `<span class="chip">${esc(t)}<button class="x" data-act="title-remove" data-i="${i}" aria-label="Remove ${esc(t)}">${IC.x}</button></span>`).join('') || '<span class="muted">None yet.</span>'}</div>
+        <div class="row"><label class="sr" for="title-new">New title</label><input id="title-new" class="field grow" placeholder="Add a title…" data-bind="UI.title" value="${esc(UI.title)}" data-enter="title-add"><button class="btn ink" data-act="title-add">Add</button></div>
+      </div>
+      <div class="stack">
+        <h2 class="h2">Resurrection</h2>
+        <label class="sr" for="res-text">Resurrection arrangement</label>
+        <input id="res-text" class="field" placeholder="No resurrection arranged" data-bind="G.char.resText" value="${esc(c.resText)}">
+        <div class="row">
+          <label class="row s15 muted" for="res-book">Book</label><input id="res-book" class="field num" style="width:52px" inputmode="numeric" data-bind="G.char.resBook" value="${esc(c.resBook)}">
+          <label class="row s15 muted" for="res-para">§</label><input id="res-para" class="field num" style="width:76px" inputmode="numeric" data-bind="G.char.resPara" value="${esc(c.resPara)}">
+        </div>
+      </div>
+    </section>
+  </div>`;
+}
+
+function scrQuests() {
+  const list = G.quests.filter((q) => UI.questFilter === 'all' || (UI.questFilter === 'open' ? !q.done : q.done));
+  const open = G.quests.filter((q) => !q.done).length;
+  const f = (k, l) => `<button data-act="quest-filter" data-f="${k}" aria-pressed="${pressed(UI.questFilter === k)}">${l}</button>`;
+  return `
+  ${header('Adventurer', 'Quests', `${open} open · ${G.quests.length - open} done`)}
+  <div class="row wrapr" style="margin-bottom:14px"><div class="seg" role="group" aria-label="Filter quests">${f('open', 'Open')}${f('done', 'Done')}${f('all', 'All')}</div></div>
+  <div class="cards">
+    <section class="card" id="quest-new">
+      <h2 class="h2">New quest</h2>
+      <label class="lbl" for="qn-what">What<input id="qn-what" class="field" placeholder="The task…" data-bind="UI.quest.what" value="${esc(UI.quest.what)}"></label>
+      <div class="g2">
+        <label class="lbl" for="qn-from">From<input id="qn-from" class="field" placeholder="Who asked…" data-bind="UI.quest.from" value="${esc(UI.quest.from)}"></label>
+        <label class="lbl" for="qn-where">Where<input id="qn-where" class="field" placeholder="Where to go…" data-bind="UI.quest.where" value="${esc(UI.quest.where)}"></label>
+      </div>
+      <label class="lbl" for="qn-for">Reward<input id="qn-for" class="field" placeholder="What you get…" data-bind="UI.quest.for" value="${esc(UI.quest.for)}" data-enter="quest-add"></label>
+      <button class="btn primary" data-act="quest-add">Add quest</button>
+    </section>
+    ${list.map((q) => {
+      const i = G.quests.indexOf(q);
+      return `<section class="card quest${q.done ? ' done' : ''}">
+        <div class="row between"><span class="pill-tag">${q.done ? 'Done' : 'Open'}</span><button class="x" data-act="quest-remove" data-id="${q.id}" aria-label="Delete quest">${IC.trash}</button></div>
+        <label class="lbl" for="q-${q.id}-what">What<input id="q-${q.id}-what" class="field qtitle" data-bind="G.quests.${i}.what" value="${esc(q.what)}"></label>
+        <div class="g2">
+          <label class="lbl" for="q-${q.id}-from">From<input id="q-${q.id}-from" class="field" data-bind="G.quests.${i}.from" value="${esc(q.from)}"></label>
+          <label class="lbl" for="q-${q.id}-where">Where<input id="q-${q.id}-where" class="field" data-bind="G.quests.${i}.where" value="${esc(q.where)}"></label>
+        </div>
+        <label class="lbl" for="q-${q.id}-for">Reward<input id="q-${q.id}-for" class="field" data-bind="G.quests.${i}.for" value="${esc(q.for)}"></label>
+        <button class="btn ${q.done ? '' : 'ink'}" data-act="quest-done" data-id="${q.id}">${q.done ? 'Reopen quest' : IC.check + ' Mark as done'}</button>
+      </section>`;
+    }).join('')}
+  </div>
+  ${list.length ? '' : `<p class="muted">${UI.questFilter === 'done' ? 'No finished quests yet.' : 'No open quests. Add one when the book gives you a task.'}</p>`}`;
+}
+
+function scrShips() {
+  return `
+  ${header('Adventurer', 'Ships', `${G.ships.length} ${G.ships.length === 1 ? 'ship' : 'ships'} · cargo capacity is counted in Cargo Units`, `<button class="btn primary" data-act="ship-add">+ Add ship</button>`)}
+  <div class="cards">
+    ${G.ships.map((s, i) => `<section class="card" id="ship-${s.id}">
+      <div class="row between"><h2 class="h2">Ship ${i + 1}</h2><button class="x" data-act="ship-remove" data-id="${s.id}" aria-label="Remove ship">${IC.trash}</button></div>
+      <div class="g2">
+        <label class="lbl" for="s-${s.id}-name">Name<input id="s-${s.id}-name" class="field" data-bind="G.ships.${i}.name" value="${esc(s.name)}"></label>
+        <label class="lbl" for="s-${s.id}-type">Type<input id="s-${s.id}-type" class="field" placeholder="Barque, galleon…" data-bind="G.ships.${i}.type" value="${esc(s.type)}"></label>
+        <label class="lbl" for="s-${s.id}-crew">Crew quality<select id="s-${s.id}-crew" class="field" data-bind="G.ships.${i}.crew">${CREW.map((c) => `<option ${s.crew === c ? 'selected' : ''}>${c}</option>`).join('')}</select></label>
+        <label class="lbl" for="s-${s.id}-cap">Capacity<input id="s-${s.id}-cap" class="field" inputmode="numeric" data-bind="G.ships.${i}.cap" value="${esc(s.cap)}"></label>
+      </div>
+      <label class="lbl" for="s-${s.id}-cargo">Cargo<input id="s-${s.id}-cargo" class="field" placeholder="What’s in the hold…" data-bind="G.ships.${i}.cargo" value="${esc(s.cargo)}"></label>
+      <label class="lbl" for="s-${s.id}-dock">Docked at<input id="s-${s.id}-dock" class="field" placeholder="Port…" data-bind="G.ships.${i}.dock" value="${esc(s.dock)}"></label>
+      <label class="lbl" for="s-${s.id}-notes">Notes<textarea id="s-${s.id}-notes" class="field" style="min-height:80px" data-bind="G.ships.${i}.notes">${esc(s.notes)}</textarea></label>
+    </section>`).join('')}
+  </div>
+  ${G.ships.length ? '' : '<p class="muted">You don’t own a ship yet. Add one when you buy or win a vessel.</p>'}`;
+}
+
+function cwGroups() {
+  const q = UI.q.trim().toLowerCase();
+  const groups = {};
+  CW.forEach((w) => {
+    const on = !!G.codewords[w];
+    if (q && w.toLowerCase().indexOf(q) === -1) return;
+    if (UI.onlyMarked && !on) return;
+    (groups[w[0]] = groups[w[0]] || []).push({ w, on });
+  });
+  return groups;
+}
+function scrCodewords() {
+  const groups = cwGroups();
+  const keys = Object.keys(groups).sort();
+  return `
+  ${header('Acid – Gush', 'Codewords', '', `<div class="sub"><b style="color:var(--red);font-family:var(--display);font-size:22px">${markedCount()}</b> of ${CW.length} marked</div>`)}
+  <div class="sticky"><label class="search" for="cw-q">${IC.search}<span class="sr">Search codewords</span><input id="cw-q" type="search" placeholder="Find a codeword…" data-bind="UI.q" data-live value="${esc(UI.q)}" autocomplete="off"></label></div>
+  <div class="stack" style="gap:20px;padding-top:8px">
+    ${keys.length ? '' : `<p class="muted" style="text-align:center;padding:32px 8px;font-style:italic">${UI.onlyMarked && !UI.q ? 'No codewords marked yet.' : `No codeword matches “${esc(UI.q)}”.`}</p>`}
+    ${keys.map((k) => {
+      const n = groups[k].filter((x) => x.on).length;
+      return `<section class="stack" id="cw-${k}">
+        <div class="letter"><h2>${k}</h2><span class="small muted">${groups[k].length} words${n ? ' · ' + n + ' marked' : ''}</span></div>
+        <div class="cw-grid">${groups[k].map((x) => `<button class="cw" data-act="cw" data-w="${x.w}" aria-pressed="${pressed(x.on)}">${x.on ? IC.check : ''}${x.w}</button>`).join('')}</div>
+      </section>`;
+    }).join('')}
+  </div>`;
+}
+
+function scrBook() {
+  const n = UI.book, B = BOOKS[n], t = G.ticks[n] || {}, st = bookStats(n);
+  const f = (k, l) => `<button data-act="para-filter" data-f="${k}" aria-pressed="${pressed(UI.paraFilter === k)}">${l}</button>`;
+  const paras = B.paras.map((p) => {
+    const m = B.multi[p] || 1, c = Math.min(m, t[p] || 0), full = c >= m;
+    if (UI.paraFilter === 'open' && full) return '';
+    if (UI.paraFilter === 'done' && c === 0) return '';
+    const note = cleanNote(B.notes[p]);
+    let pips = '';
+    if (m > 1) { pips = '<span class="pips">'; for (let i = 0; i < m; i++) pips += `<i class="${i < c ? 'on' : ''}"></i>`; pips += '</span>'; }
+    return `<button class="para${full ? ' full' : c ? ' part' : ''}" data-act="para" data-p="${p}" aria-label="§${p}${m > 1 ? `, ${c} of ${m} ticked` : full ? ', visited' : ', not visited'}">
+      <span class="n">§${p}${full ? IC.check : ''}</span>${pips}${note ? `<span class="note">${esc(note)}</span>` : ''}</button>`;
+  }).join('');
+  return `
+  <div class="bookbar" role="group" aria-label="Choose book">${[1, 2, 3, 4, 5, 6, 7].map((b) => `<button data-act="book" data-book="${b}" aria-pressed="${pressed(String(b) === String(n))}">${b} · ${BOOK_TITLES[b]}</button>`).join('')}</div>
+  <header class="head" id="top">
+    <div style="flex:1 1 320px" class="stack">
+      <div><div class="eyebrow">Book ${n}</div><h1 class="title">${BOOK_TITLES[n]}</h1></div>
+      <div class="row wrapr" style="max-width:720px;gap:4px 12px"><div class="bar" style="flex:1 1 200px"><i style="width:${Math.round(100 * st.done / st.boxes)}%"></i></div><span class="s15 muted">${st.done} of ${st.boxes} boxes ticked</span></div>
     </div>
-    <div style="margin-top:0.5rem;"><div style="font-family:var(--title-font);font-size:0.75rem;color:var(--brown);font-weight:700;margin-bottom:0.3rem;">Notes</div>
-    <textarea class="notes-area" id="${sid}_notes" placeholder="Ship notes…"></textarea></div>`;
-  document.getElementById('ships-container').appendChild(card);
-  if(data){['type','name','crew','cap','cargo','dock','notes'].forEach(f=>{const el=document.getElementById(`${sid}_${f}`);if(el&&data[f]!==undefined)el.value=data[f];});}
-  renumberShips();
+    <button class="bm-btn" data-act="bm-open" style="flex:0 1 320px">${IC.mark}<span class="grow s15" style="color:var(--tan)">Bookmark</span><span class="v">B${esc(G.bookmark.book)} · §${esc(G.bookmark.para)}</span></button>
+  </header>
+  <div class="split">
+    <section class="main" id="paragraphs">
+      <div class="row wrapr between"><div class="seg" role="group" aria-label="Filter paragraphs">${f('all', 'All')}${f('open', 'Not yet')}${f('done', 'Ticked')}</div><span class="small muted">Tap to tick. Multi-visit boxes count up.</span></div>
+      <div class="pgrid">${paras || '<p class="muted">Nothing to show for this filter.</p>'}</div>
+    </section>
+    <aside class="side">
+      <section class="card" id="places">
+        <h2 class="h2">Known places</h2>
+        <div class="small muted">Locations you keep returning to. Tap to set your bookmark.</div>
+        <div>${G.places.map((pl) => `<div class="list-row">
+          <button class="grow row between" data-act="place-go" data-id="${pl.id}" style="min-height:44px;border:0;background:transparent;padding:0;text-align:left"><span>${esc(pl.name)}</span><span class="muted">B${esc(pl.book)} · §${esc(pl.para)}</span></button>
+          <button class="x" data-act="place-remove" data-id="${pl.id}" aria-label="Remove ${esc(pl.name)}">${IC.x}</button></div>`).join('') || '<div class="muted s15">No places saved yet.</div>'}</div>
+        <div class="row">
+          <label class="sr" for="pl-name">Place name</label><input id="pl-name" class="field grow" placeholder="Place…" data-bind="UI.place.name" value="${esc(UI.place.name)}">
+          <label class="sr" for="pl-para">Paragraph</label><input id="pl-para" class="field num" placeholder="§" inputmode="numeric" data-bind="UI.place.para" value="${esc(UI.place.para)}" data-enter="place-add">
+          <button class="btn ink" data-act="place-add">Add</button>
+        </div>
+        <div class="small muted">New places are saved for Book ${n}.</div>
+      </section>
+      <label class="stack" id="notes" for="notes-${n}">
+        <span class="h2">Notes</span>
+        <textarea id="notes-${n}" class="field" style="min-height:180px" placeholder="Notes for this book…" data-bind="G.notes.${n}">${esc(G.notes[n] || '')}</textarea>
+      </label>
+    </aside>
+  </div>`;
 }
-function removeShip(sid){const el=document.getElementById(sid);if(el)el.remove();renumberShips();}
-function renumberShips(){document.querySelectorAll('#ships-container .card').forEach((c,i)=>{const t=c.querySelector('.card-title span');if(t)t.textContent='Ship #'+(i+1);});}
-function collectShips(){return Array.from(document.querySelectorAll('#ships-container .card')).map(card=>{const sid=card.id;const s={};['type','name','crew','cap','cargo','dock','notes'].forEach(f=>{const el=document.getElementById(`${sid}_${f}`);if(el)s[f]=el.value;});return s;});}
-function applyShips(ships){document.getElementById('ships-container').innerHTML='';shipCount=0;if(!ships||!ships.length){addShip();return;}ships.forEach(s=>addShip(s));}
 
-// ---- POSSESSIONS ----
-let possCount=0;
-function addPossession(val){
-  const g=document.getElementById('possess-grid');const idx=possCount++;
-  const wrap=document.createElement('div');wrap.id='posw_'+idx;wrap.style.cssText='display:flex;align-items:center;gap:0.3rem;';
-  wrap.innerHTML=`<input class="possess-input" id="pos_${idx}" placeholder="Item…" style="flex:1;" value="${(val||'').replace(/"/g,'&quot;')}"><button class="clear-btn" style="flex-shrink:0;padding:0.15rem 0.4rem;" onclick="removePossession('posw_${idx}')">✖</button>`;
-  g.appendChild(wrap);
+function scrSaves() {
+  const names = Object.keys(slots).sort((a, b) => (slots[b].savedAt || 0) - (slots[a].savedAt || 0));
+  const when = (ts) => { if (!ts) return ''; const d = new Date(ts); return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }); };
+  return `
+  ${header('Your adventures', 'Saves &amp; Backup', '')}
+  <div class="cols c3">
+    <section class="card dark" id="current">
+      <div class="row" style="gap:12px">
+        <div class="badge" style="background:var(--leather3);color:var(--gold);border-radius:50%">${IC.check}</div>
+        <div class="stack" style="gap:0"><span>${storageOk ? 'Saved automatically on this device' : 'Could not save on this device'}</span><span class="small muted">Slot: <b style="color:var(--cream)">${esc(active)}</b> · ${when(G.savedAt)}</span></div>
+      </div>
+      ${storageOk ? '' : '<div class="s15" style="color:#F2A493">Your browser blocks storage here. Export a backup file so you don’t lose progress.</div>'}
+      <div class="row"><label class="sr" for="snap-name">Name for snapshot</label><input id="snap-name" class="field grow" placeholder="Name a snapshot…" data-bind="UI.snap" value="${esc(UI.snap)}" data-enter="snap-save"><button class="btn gold" data-act="snap-save">Save copy</button></div>
+      <div class="small muted">A snapshot is a copy you can go back to, e.g. before a risky fight.</div>
+    </section>
+    <section class="card" id="slots" style="gap:0">
+      <h2 class="h2" style="margin-bottom:6px">Save slots</h2>
+      ${names.map((n) => {
+        const s = slots[n], on = n === active;
+        return `<div class="stack" style="padding:12px 0;border-top:1px solid var(--line3)">
+          <div class="row" style="gap:12px"><div class="badge${on ? ' on' : ''}">${esc(n[0] || '?')}</div>
+            <div class="grow stack" style="gap:0"><b style="font-weight:600">${esc(n)}</b><span class="small muted">${esc(s.char.prof)} · Rank ${s.char.rank} · Book ${esc(s.bookmark.book)} §${esc(s.bookmark.para)} · ${when(s.savedAt)}</span></div>
+            ${on ? '<span class="pill-tag">Playing</span>' : ''}</div>
+          ${on ? '' : `<div class="row" style="padding-left:50px"><button class="btn grow" data-act="slot-load" data-n="${esc(n)}">Load</button><button class="btn sq" data-act="slot-delete" data-n="${esc(n)}" aria-label="Delete ${esc(n)}">${IC.trash}</button></div>`}
+        </div>`;
+      }).join('')}
+    </section>
+    <section class="card" id="backup">
+      <h2 class="h2">Backup</h2>
+      <span class="muted">Browsers can clear app data. Keep a file copy in your cloud drive.</span>
+      <div class="g2"><button class="btn ink" data-act="export">Export file</button><button class="btn" data-act="import">Import file</button></div>
+      <button class="btn ghost" data-act="export-copy">Copy backup to clipboard</button>
+    </section>
+    <section class="card warn" id="new">
+      <h2 class="h2">New adventure</h2>
+      <span class="muted">Choose a name and profession; your starting sheet is filled in for you. Your current slot stays untouched.</span>
+      <button class="btn danger" data-act="go-create" style="font-weight:600">Start new character</button>
+    </section>
+  </div>`;
 }
-function removePossession(wid){const el=document.getElementById(wid);if(el)el.remove();}
-function clearPossessions(){document.querySelectorAll('#possess-grid input').forEach(el=>el.value='');}
-function collectPossessions(){return Array.from(document.querySelectorAll('#possess-grid input')).map(el=>el.value);}
-function applyPossessions(arr){document.getElementById('possess-grid').innerHTML='';possCount=0;const items=(arr&&arr.length)?arr:Array(12).fill('');items.forEach(v=>addPossession(v));}
 
-// ---- CODEWORDS ----
-function initCWGrouped(){
-  const container=document.getElementById('cw-all');const groups={};
-  ALL_CW.forEach(w=>{const l=w[0].toUpperCase();if(!groups[l])groups[l]=[];groups[l].push(w);});
-  Object.keys(groups).sort().forEach(letter=>{
-    const sec=document.createElement('div');sec.className='cw-section';
-    const hdr=document.createElement('div');hdr.className='cw-letter';hdr.textContent=letter;sec.appendChild(hdr);
-    const grid=document.createElement('div');grid.className='cw-grid';
-    groups[letter].forEach(word=>{
-      const i=CW_INDEX[word];const id='cw_'+i;
-      const div=document.createElement('div');div.className='cw-item';div.id='cwd_'+i;
-      div.innerHTML=`<input type="checkbox" class="cw-cb" id="${id}" onchange="toggleCWFlat(this,${i})"><label for="${id}">${word}</label>`;
-      grid.appendChild(div);
-    });
-    sec.appendChild(grid);container.appendChild(sec);
-  });
+function scrCreate() {
+  const w = UI.wiz;
+  const titles = { 1: 'Name your adventurer', 2: 'Choose a profession', 3: 'Ready to begin' };
+  let body = '';
+  if (w.step === 1) {
+    body = `<div class="stack narrow" style="gap:12px">
+      <label class="lbl" for="wiz-name" style="font-size:16px">Your adventurer’s name<input id="wiz-name" class="field" style="height:52px;font-size:20px" placeholder="e.g. Aldric Vane" data-bind="UI.wiz.name" value="${esc(w.name)}" data-enter="wiz-next"></label>
+      <div class="muted">You keep the same adventurer through all the books, starting as a 1st Rank wanderer in The War-Torn Kingdom.</div></div>`;
+  } else if (w.step === 2) {
+    body = `<div class="prof-grid">${Object.keys(PROFS).map((p) => {
+      const v = PROFS[p], top = Math.max.apply(null, v);
+      return `<button class="prof" data-act="wiz-prof" data-p="${p}" aria-pressed="${pressed(w.prof === p)}">
+        <span class="row between base" style="width:100%"><span style="font-family:var(--display);font-size:20px;font-weight:600">${p}</span><span class="small muted">${AB.filter((a, i) => v[i] === top).join(', ')} ${top}</span></span>
+        ${AB.map((a, i) => `<span class="pbar" style="width:100%"><span>${a}</span><span class="b"><i class="${v[i] >= 5 ? 'hi' : ''}" style="width:${Math.round(v[i] / 6 * 100)}%"></i></span><b>${v[i]}</b></span>`).join('')}
+      </button>`;
+    }).join('')}</div>`;
+  } else {
+    const v = PROFS[w.prof];
+    body = `<div class="stack narrow" style="gap:14px">
+      <label class="lbl" for="wiz-god" style="font-size:16px">God (optional)<input id="wiz-god" class="field" style="height:52px;font-size:20px" placeholder="None yet" data-bind="UI.wiz.god" value="${esc(w.god)}"></label>
+      <div class="card"><h2 class="h2">You start with</h2>
+        <div><b>${esc(w.name)}</b>, ${w.prof}, Rank 1</div>
+        <div>${AB.map((a, i) => a + ' ' + v[i]).join(' · ')}</div>
+        <div>Stamina 9 / 9 · Defence ${v[1] + 2} · 16 Shards</div>
+        <div>Sword, leather jerkin (Defence +1)</div>
+        <div class="muted">Then begin at Book 1, §1.</div></div></div>`;
+  }
+  return `
+  <header class="head stack" id="top" style="align-items:stretch">
+    <div><div class="eyebrow">New adventure · step ${w.step} of 3</div><h1 class="title">${titles[w.step]}</h1></div>
+    <div class="steps">${[1, 2, 3].map((i) => `<i class="${i <= w.step ? 'on' : ''}"></i>`).join('')}</div>
+  </header>
+  ${body}
+  ${w.err ? `<p style="color:var(--red)">${esc(w.err)}</p>` : ''}
+  <div class="row narrow" style="margin-top:18px">
+    <button class="btn" style="flex:1;min-height:48px" data-act="wiz-back">${w.step === 1 ? 'Cancel' : 'Back'}</button>
+    <button class="btn primary" style="flex:2;min-height:48px;font-weight:600" data-act="wiz-next">${w.step === 3 ? 'Begin adventure' : 'Next'}</button>
+  </div>`;
 }
-function toggleCWFlat(cb,i){const div=document.getElementById('cwd_'+i);if(cb.checked)div.classList.add('checked');else div.classList.remove('checked');}
-function clearCW(){ALL_CW.forEach((_,i)=>{const cb=document.getElementById('cw_'+i);if(cb){cb.checked=false;document.getElementById('cwd_'+i).classList.remove('checked');}});}
 
-// ---- BOOKS ----
-function initBook(bookKey,containerId){
-  const data=BOOKS[bookKey];const container=document.getElementById(containerId);
-  const card=document.createElement('div');card.className='card';
-  card.innerHTML=`<div class="card-title"><span>Paragraphs Visited</span><button class="clear-btn" onclick="clearParas('${bookKey}')">Reset All</button></div>`;
-  const grid=document.createElement('div');grid.className='para-grid';
-  data.paras.forEach(p=>{
-    const multi=data.multi&&data.multi[p]?data.multi[p]:1;
-    const note=data.notes_map&&data.notes_map[p]?data.notes_map[p]:'';
-    for(let m=0;m<multi;m++){
-      const id=`para_${bookKey}_${p}_${m}`;
-      const div=document.createElement('div');div.className='para-item';div.id='parad_'+id;
-      div.innerHTML=`<input type="checkbox" class="cw-cb" id="${id}" onchange="togglePara(this,'${id}')"><label for="${id}">${p}${multi>1?' <small>'+(m+1)+'/'+multi+'</small>':''}</label>${note&&m===0?'<span class="para-note">'+note+'</span>':''}`;
-      grid.appendChild(div);
+/* ---------- chrome ---------- */
+const JUMPS = {
+  character: [['stamina', 'Stamina'], ['defence', 'Defence & money'], ['abilities', 'Abilities'], ['possessions', 'Possessions'], ['honours', 'Blessings']],
+  book: [['paragraphs', 'Paragraphs'], ['places', 'Known places'], ['notes', 'Notes']],
+  saves: [['slots', 'Save slots'], ['backup', 'Backup'], ['new', 'New adventure']],
+  quests: [['quest-new', 'New quest']]
+};
+function menuHTML() {
+  const c = G.char, sp = c.max ? clamp(Math.round(100 * c.stam / c.max), 0, 100) : 0;
+  const s = UI.screen;
+  const cur = (k) => (s === k ? 'aria-current="page"' : '');
+  let page = '';
+  if (s === 'codewords') {
+    const keys = Object.keys(cwGroups()).sort();
+    page = `<div class="stack"><div class="nlabel">Jump to letter</div>
+      <div class="g4 letters">${keys.map((k) => `<button data-act="jump" data-id="cw-${k}">${k}</button>`).join('')}</div>
+      <button class="switch" data-act="cw-only" aria-pressed="${pressed(UI.onlyMarked)}">Marked only<span class="t"></span></button></div>`;
+  } else if (JUMPS[s]) {
+    page = `<div class="stack"><div class="nlabel">On this page</div><div class="row wrapr" style="gap:6px">${JUMPS[s].map(([id, l]) => `<button class="jump" data-act="jump" data-id="${id}">${l}</button>`).join('')}</div></div>`;
+  }
+  return `
+    <div class="stack" style="gap:6px">
+      <div style="font-family:var(--display);font-weight:700;font-size:14px;letter-spacing:.14em;color:var(--gold)">FABLED LANDS</div>
+      <div class="row"><span class="s15" style="color:var(--tan);flex:none">${esc((c.name || '').split(' ')[0] || 'You')} · Stamina</span><div class="bar grow" style="height:6px;background:#3D2C18"><i style="width:${sp}%;background:${c.stam <= 3 ? 'var(--danger)' : 'var(--gold)'}"></i></div><span class="small" style="color:#D9CBA8">${c.stam}/${c.max}</span></div>
+    </div>
+    ${page}
+    <div class="stack" style="gap:2px">
+      <div class="nlabel" style="padding-bottom:4px">Go to</div>
+      <button class="nitem" data-act="nav" data-to="character" ${cur('character')}>${IC.user}Character</button>
+      <button class="nitem" data-act="nav" data-to="quests" ${cur('quests')}>${IC.flag}Quests<span class="cnt">${G.quests.filter((q) => !q.done).length}</span></button>
+      <button class="nitem" data-act="nav" data-to="ships" ${cur('ships')}>${IC.ship}Ships<span class="cnt">${G.ships.length}</span></button>
+      <button class="nitem" data-act="nav" data-to="codewords" ${cur('codewords')}>${IC.key}Codewords<span class="cnt">${markedCount()}</span></button>
+    </div>
+    <div class="stack">
+      <div class="nlabel">Books</div>
+      <div class="g4">${[1, 2, 3, 4, 5, 6, 7].map((b) => { const st = bookStats(b); return `<button class="bookt" data-act="nav" data-to="book" data-book="${b}" aria-label="Book ${b}: ${BOOK_TITLES[b]}, ${st.done} of ${st.boxes}" ${s === 'book' && String(UI.book) === String(b) ? 'aria-current="page"' : ''}><b>${b}</b><span>${st.done}/${st.boxes}</span></button>`; }).join('')}</div>
+    </div>
+    <button class="savesbtn" data-act="nav" data-to="saves" ${cur('saves')}><span style="color:var(--gold);display:flex">${IC.box}</span><span class="stack" style="gap:0;line-height:1.15"><span>Saves &amp; Backup</span><span class="small" style="color:var(--tan2)">${storageOk ? 'Autosaved' : 'Not saved – export a backup'}</span></span></button>`;
+}
+
+function diceHTML() {
+  const tab = UI.dice || 'check';
+  const physRow = `
+    <button class="switch" data-act="phys" aria-pressed="${pressed(UI.phys)}">I roll physical dice<span class="t"></span></button>
+    ${UI.phys ? `<div class="row"><span class="s15 muted">Your dice</span>
+      <label class="sr" for="pd1">First die</label><input id="pd1" class="field num" style="width:52px;height:48px;font-size:22px" inputmode="numeric" data-bind="UI.pd1" value="${esc(UI.pd1)}">
+      <label class="sr" for="pd2">Second die</label><input id="pd2" class="field num" style="width:52px;height:48px;font-size:22px" inputmode="numeric" data-bind="UI.pd2" value="${esc(UI.pd2)}">
+      <span class="small muted">1–6 each</span></div>` : ''}
+    ${UI.diceErr ? `<div class="s15" style="color:var(--red)">${UI.diceErr}</div>` : ''}`;
+  let body = '';
+  if (tab === 'check') {
+    const v = eff(UI.checkAb), need = UI.diff - v + 1;
+    const needText = need <= 2 ? `Automatic success – any roll beats ${UI.diff}.` : need > 12 ? `Impossible – even a 12 cannot beat ${UI.diff}.` : `Need ${need}+ on 2d6 · ${pct(pAtLeast(need))} chance`;
+    const r = UI.check;
+    body = `
+      <div class="s15 muted">Roll 2d6 + ability. You succeed if the total is <b>higher</b> than the Difficulty.</div>
+      <div class="g3" style="gap:6px">${AB.map((a) => `<button class="abpick" data-act="check-ab" data-ab="${a}" aria-pressed="${pressed(UI.checkAb === a)}"><small>${a.toUpperCase()}</small><b>${eff(a)}</b></button>`).join('')}</div>
+      <div class="row between"><span>Difficulty</span><span class="row"><button class="btn sq" data-act="diff" data-d="-1" aria-label="Lower difficulty">−</button><span class="big" style="min-width:40px;text-align:center">${UI.diff}</span><button class="btn sq" data-act="diff" data-d="1" aria-label="Raise difficulty">+</button></span></div>
+      <div class="muted">${needText}</div>
+      ${physRow}
+      <button class="btn primary lg" data-act="check-roll">Roll ${UI.checkAb} check</button>
+      ${r ? `<div class="result ${r.ok ? 'ok' : 'bad'}" role="status">
+        <div class="row"><span class="die">${r.d1}</span><span class="die">${r.d2}</span><span style="margin-left:auto;font-family:var(--display);font-size:24px;font-weight:700">${r.ok ? 'Success' : 'Failure'}</span></div>
+        <div>${r.d1} + ${r.d2} + ${r.v} (${r.ab}) = ${r.total} ${r.ok ? '>' : '≤'} ${r.diff}${r.rerolled ? ' · rerolled' : ''}</div>
+        ${!r.ok && !r.rerolled && G.char.blessings[r.ab] ? `<button class="btn" data-act="check-reroll">Reroll with ${r.ab} blessing (uses it up)</button>` : ''}
+      </div>` : ''}`;
+  } else {
+    const f = UI.fight, c = G.char;
+    if (!f) {
+      const e = UI.enemy;
+      body = `
+        <div class="s15 muted">Enter the enemy as the book lists it. Each hit does as much damage as the attack total beats the other side’s Defence.</div>
+        <label class="lbl" for="en-name">Enemy<input id="en-name" class="field" placeholder="e.g. Bandit" data-bind="UI.enemy.name" value="${esc(e.name)}"></label>
+        <div class="g3">
+          <label class="lbl" for="en-combat">COMBAT<input id="en-combat" class="field" style="text-align:center;font-family:var(--display);font-size:20px" inputmode="numeric" data-bind="UI.enemy.combat" value="${esc(e.combat)}"></label>
+          <label class="lbl" for="en-def">Defence<input id="en-def" class="field" style="text-align:center;font-family:var(--display);font-size:20px" inputmode="numeric" data-bind="UI.enemy.def" value="${esc(e.def)}"></label>
+          <label class="lbl" for="en-stam">Stamina<input id="en-stam" class="field" style="text-align:center;font-family:var(--display);font-size:20px" inputmode="numeric" data-bind="UI.enemy.stam" value="${esc(e.stam)}"></label>
+        </div>
+        <div class="row between"><span>Strikes first</span><div class="seg" role="group" aria-label="Who strikes first"><button data-act="first" data-w="you" aria-pressed="${pressed(e.first === 'you')}">You</button><button data-act="first" data-w="enemy" aria-pressed="${pressed(e.first === 'enemy')}">Enemy</button></div></div>
+        <div class="s15 muted">You: COMBAT ${eff('Combat')} · Defence ${defence()} · Stamina ${c.stam}</div>
+        ${UI.fErr ? `<div class="s15" style="color:var(--red)">${UI.fErr}</div>` : ''}
+        <button class="btn primary lg" data-act="fight-start">Start fight</button>`;
+    } else {
+      const myNeed = f.def - eff('Combat') + 1, enNeed = defence() - f.combat + 1;
+      const hint = f.turn === 'you'
+        ? (myNeed <= 2 ? 'You always hit.' : myNeed > 12 ? 'You cannot hit this enemy.' : `You hit on 2d6 ≥ ${myNeed} (${pct(pAtLeast(myNeed))}).`)
+        : (enNeed <= 2 ? `${esc(f.name)} always hits.` : enNeed > 12 ? `${esc(f.name)} cannot hit you.` : `${esc(f.name)} hits on 2d6 ≥ ${enNeed} (${pct(pAtLeast(enNeed))}).`);
+      const ends = { won: ['Victory', `${esc(f.name)} is defeated. Continue as the book tells you.`, 'ok'], lost: ['You have been killed', 'Your Stamina reached 0. See the notice for your resurrection.', 'bad'], fled: ['You fled', 'The fight is over. Follow the book’s instructions for fleeing.', 'neutral'] };
+      const end = ends[f.over];
+      const sp = c.max ? clamp(Math.round(100 * c.stam / c.max), 0, 100) : 0;
+      body = `
+        <div class="row between base"><span style="font-family:var(--display);font-size:18px;font-weight:600">vs ${esc(f.name)}</span><span class="s15 muted">Round ${f.round}</span></div>
+        <div class="g2" style="gap:10px">
+          <div class="stack" style="gap:4px"><span class="small muted">You · Def ${defence()}</span><span class="big" style="font-size:22px">${c.stam} / ${c.max}</span><div class="bar"><i style="width:${sp}%;background:var(--ink)"></i></div></div>
+          <div class="stack" style="gap:4px"><span class="small muted">${esc(f.name)} · Def ${f.def}</span><span class="big" style="font-size:22px">${f.es} / ${f.emax}</span><div class="bar"><i style="width:${Math.round(100 * f.es / f.emax)}%"></i></div></div>
+        </div>
+        ${end ? `<div class="result ${end[2]}" role="status"><span style="font-family:var(--display);font-size:22px;font-weight:700">${end[0]}</span><span>${end[1]}</span><button class="btn" data-act="fight-close">Close fight</button></div>`
+          : `<div class="s15 muted">${hint}</div>
+             ${physRow}
+             <button class="btn lg ${f.turn === 'you' ? 'primary' : 'ink'}" style="min-height:56px" data-act="fight-step">${f.turn === 'you' ? 'Your attack' : esc(f.name) + ' attacks'}</button>
+             <button class="btn ghost" data-act="fight-flee">Flee (only if the book allows)</button>`}
+        <div class="stack sep" style="gap:4px"><span class="nlabel" style="color:var(--muted)">Fight log</span>
+          ${f.log.map((l) => `<div class="log ${l.who}">${esc(l.text)}</div>`).join('') || '<div class="log muted">No blows yet.</div>'}</div>`;
     }
+  }
+  return `
+    <div class="row">
+      <div class="seg grow" role="tablist" aria-label="Dice method" style="display:grid">
+        <button role="tab" data-act="dice-tab" data-t="check" aria-pressed="${pressed(tab === 'check')}" aria-selected="${pressed(tab === 'check')}">Ability check</button>
+        <button role="tab" data-act="dice-tab" data-t="fight" aria-pressed="${pressed(tab === 'fight')}" aria-selected="${pressed(tab === 'fight')}">Fight</button>
+      </div>
+      <button class="x" data-act="dice-close" aria-label="Close dice" style="color:var(--muted)">${IC.x}</button>
+    </div>
+    ${body}`;
+}
+
+function layerHTML() {
+  let h = '';
+  if (UI.bm) {
+    h += `<div id="bm-pop" role="dialog" aria-label="Bookmark">
+      <div class="row between"><span class="nlabel" style="color:var(--gold)">Where am I?</span><button class="x" data-act="bm-close" aria-label="Close bookmark" style="color:#E9DDBF">${IC.x}</button></div>
+      <div class="g7">${[1, 2, 3, 4, 5, 6, 7].map((b) => `<button data-act="bm-book" data-book="${b}" aria-label="Book ${b}" aria-pressed="${pressed(String(UI.bmBook) === String(b))}">${b}</button>`).join('')}</div>
+      <div class="row"><label class="pfield" for="bm-para"><span style="font-family:var(--display);font-size:20px;color:var(--gold)">§</span><span class="sr">Paragraph</span><input id="bm-para" inputmode="numeric" data-bind="UI.bmDraft" value="${esc(UI.bmDraft)}" data-enter="bm-set"></label><button class="btn gold" style="min-height:48px" data-act="bm-set">Set</button></div>
+      <div class="stack" style="gap:6px"><span class="nlabel">Recent</span><div class="row wrapr" style="gap:6px">${G.history.map((x) => `<button class="jump" data-act="bm-go" data-book="${esc(x.book)}" data-p="${esc(x.para)}">B${esc(x.book)} §${esc(x.para)}</button>`).join('')}</div></div>
+      ${G.places.length ? `<div class="stack" style="gap:2px"><span class="nlabel" style="padding-bottom:4px">Known places</span>${G.places.map((pl) => `<button class="nitem" style="font-size:16px" data-act="place-go" data-id="${pl.id}"><span class="grow">${esc(pl.name)}</span><span style="color:var(--tan2)">B${esc(pl.book)} §${esc(pl.para)}</span></button>`).join('')}</div>` : ''}
+    </div>`;
+  }
+  if (UI.dead) {
+    const c = G.char, hasRes = !!c.resText.trim();
+    h += `<div class="modal-wrap"><div class="modal" role="alertdialog" aria-labelledby="dead-title">
+      <div class="eyebrow" style="color:var(--red)">Stamina 0</div>
+      <h2 id="dead-title" style="margin:0;font-family:var(--display);font-size:26px;font-weight:600">You have been killed</h2>
+      ${hasRes ? `<div class="tile" style="gap:4px"><span class="small muted">Your resurrection</span><span style="font-size:18px">${esc(c.resText)}</span>${c.resPara ? `<span class="muted">Book ${esc(c.resBook || '1')}, §${esc(c.resPara)}</span>` : ''}</div>` : '<div>No resurrection is arranged. Follow what the book tells you.</div>'}
+      <div class="s15 muted">Nothing on your sheet has been reset. Adjust Stamina, money or possessions as the book instructs.</div>
+      ${hasRes && c.resPara ? `<button class="btn primary lg" data-act="dead-go">Go to resurrection · §${esc(c.resPara)}</button>` : ''}
+      <button class="btn" data-act="dead-dismiss">Dismiss</button>
+    </div></div>`;
+  }
+  if (UI.confirm) {
+    h += `<div class="toast" role="alertdialog" aria-label="Confirm"><span class="grow" style="flex:1 1 200px">${UI.confirm.text}</span><button class="btn" data-act="confirm-cancel">${UI.confirm.cancel || 'Keep'}</button><button class="btn primary" data-act="confirm-ok">${UI.confirm.ok || 'Remove'}</button></div>`;
+  } else if (UI.toast) {
+    h += `<div class="toast" role="status">${esc(UI.toast)}</div>`;
+  }
+  return h;
+}
+
+/* ---------- render ---------- */
+const SCR = { character: scrCharacter, quests: scrQuests, ships: scrShips, codewords: scrCodewords, book: scrBook, saves: scrSaves, create: scrCreate };
+function captureFocus() {
+  const a = document.activeElement;
+  if (!a || !a.id || a === document.body) return null;
+  let s = null, e = null;
+  try { s = a.selectionStart; e = a.selectionEnd; } catch (x) { /* not a text field */ }
+  return { id: a.id, s, e };
+}
+function restoreFocus(f) {
+  if (!f) return;
+  const el = document.getElementById(f.id);
+  if (!el || document.activeElement === el) return;
+  try { el.focus({ preventScroll: true }); if (f.s != null && el.setSelectionRange) el.setSelectionRange(f.s, f.e); } catch (x) { /* ignore */ }
+}
+function renderLayer() { $('#layer').innerHTML = layerHTML(); }
+function render() {
+  const f = captureFocus();
+  $('#main').innerHTML = SCR[UI.screen]();
+  const mb = $('#menu-body'), mt = mb.scrollTop;
+  mb.innerHTML = menuHTML(); mb.scrollTop = mt;
+  $('#menu').classList.toggle('open', UI.menu);
+  mb.inert = !UI.menu;
+  $('#scrim').hidden = !UI.menu;
+  const tm = $('#tab-menu');
+  tm.setAttribute('aria-expanded', pressed(UI.menu));
+  tm.setAttribute('aria-label', UI.menu ? 'Close menu' : 'Open menu');
+  $('#tab-menu-text').textContent = UI.menu ? 'CLOSE' : 'MENU';
+  const dz = $('#dice'), dt = dz.scrollTop;
+  dz.innerHTML = UI.dice ? diceHTML() : '';
+  dz.scrollTop = dt;
+  dz.classList.toggle('open', !!UI.dice);
+  dz.inert = !UI.dice;
+  $('#tab-dice').setAttribute('aria-expanded', pressed(!!UI.dice));
+  $('#tab-bm').setAttribute('aria-expanded', pressed(UI.bm));
+  $('#tab-bm').setAttribute('aria-label', `Bookmark: Book ${G.bookmark.book}, paragraph ${G.bookmark.para}`);
+  $('#tab-bm-text').textContent = '§' + G.bookmark.para;
+  renderLayer();
+  restoreFocus(f);
+}
+
+/* ---------- navigation ---------- */
+function go(screen, opts) {
+  if (SCREENS.indexOf(screen) === -1) screen = 'character';
+  UI.screen = screen; UI.menu = false; UI.bm = false;
+  if (opts && opts.book) UI.book = String(opts.book);
+  if (location.hash.slice(1) !== screen) { try { history.replaceState(null, '', '#' + screen); } catch (e) { /* sandboxed */ } }
+  render();
+  window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (SCREENS.indexOf(h) !== -1 && h !== UI.screen) go(h); });
+
+/* ---------- dice ---------- */
+function roll2() {
+  if (UI.phys) {
+    const a = int(UI.pd1), b = int(UI.pd2);
+    if (!a || !b || a < 1 || a > 6 || b < 1 || b > 6) { UI.diceErr = 'Enter two dice values from 1 to 6.'; return null; }
+    UI.diceErr = ''; UI.pd1 = ''; UI.pd2 = '';
+    return [a, b];
+  }
+  UI.diceErr = '';
+  return [d6(), d6()];
+}
+function doCheck(rerolled) {
+  const d = roll2();
+  if (!d) return;
+  const ab = UI.checkAb, v = eff(ab), total = d[0] + d[1] + v;
+  UI.check = { d1: d[0], d2: d[1], v, total, diff: UI.diff, ok: total > UI.diff, ab, rerolled: !!rerolled };
+}
+function fightStep() {
+  const f = UI.fight, d = roll2();
+  if (!d) return;
+  if (f.turn === 'you') {
+    const c = eff('Combat'), total = d[0] + d[1] + c, dmg = Math.max(0, total - f.def);
+    f.es = Math.max(0, f.es - dmg);
+    f.log.unshift({ who: 'you', text: `R${f.round} · You: ${d[0]} + ${d[1]} + ${c} = ${total} vs Def ${f.def} → ${dmg ? dmg + ' damage' : 'miss'}` });
+    if (f.es <= 0) f.over = 'won';
+  } else {
+    const def = defence(), total = d[0] + d[1] + f.combat, dmg = Math.max(0, total - def);
+    f.log.unshift({ who: 'enemy', text: `R${f.round} · ${f.name}: ${d[0]} + ${d[1]} + ${f.combat} = ${total} vs Def ${def} → ${dmg ? 'you lose ' + dmg : 'miss'}` });
+    if (setStam(G.char.stam - dmg) <= 0) f.over = 'lost';
+    save();
+  }
+  if (f.turn !== f.first) f.round += 1;
+  f.turn = f.turn === 'you' ? 'enemy' : 'you';
+}
+
+/* ---------- export / import ---------- */
+function backupJSON() { return JSON.stringify({ format: 'fabled-lands-companion', v: 1, exportedAt: new Date().toISOString(), active, slots }, null, 2); }
+function exportFile() {
+  try {
+    const blob = new Blob([backupJSON()], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const d = new Date();
+    a.href = url;
+    a.download = `fabled-lands-backup-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    toast('Backup file created. If nothing downloaded, use “Copy backup to clipboard”.');
+  } catch (e) { toast('Export failed. Use “Copy backup to clipboard” instead.'); }
+}
+function importData(text) {
+  let data;
+  try { data = JSON.parse(text); } catch (e) { toast('That file is not a valid backup.'); render(); return; }
+  if (!data || data.format !== 'fabled-lands-companion' || !data.slots) { toast('That file is not a Fabled Lands backup.'); render(); return; }
+  let n = 0;
+  Object.keys(data.slots).forEach((name) => {
+    const s = data.slots[name];
+    if (!s || !s.char) return;
+    let key = name;
+    while (slots[key]) key = key + ' (imported)';
+    slots[key] = s; n++;
   });
-  card.appendChild(grid);
-  const nc=document.createElement('div');nc.className='card';
-  nc.innerHTML=`<div class="card-title">Notes</div><textarea class="notes-area" id="notes_${bookKey}" placeholder="Free notes for this book…" style="min-height:80px;height:auto;" oninput="autoResize(this)"></textarea>`;
-  container.appendChild(card);container.appendChild(nc);
+  flush();
+  toast(n ? `Imported ${n} save${n === 1 ? '' : 's'}.` : 'No saves found in that file.');
+  render();
 }
-function togglePara(cb,id){const div=document.getElementById('parad_'+id);if(cb.checked)div.classList.add('checked');else div.classList.remove('checked');}
-function clearParas(bk){const data=BOOKS[bk];data.paras.forEach(p=>{const multi=data.multi&&data.multi[p]?data.multi[p]:1;for(let m=0;m<multi;m++){const id=`para_${bk}_${p}_${m}`;const cb=document.getElementById(id);if(cb){cb.checked=false;document.getElementById('parad_'+id).classList.remove('checked');}}});}
+$('#import-file').addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = () => importData(String(r.result));
+  r.readAsText(file);
+  e.target.value = '';
+});
 
-// ---- NAV ----
-function showPage(pid){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(pid).classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.getAttribute('onclick')===`showPage('${pid}')`));
-  window.scrollTo(0,0);
-}
+/* ---------- actions ---------- */
+function ask(text, okAct, ok) { UI.confirm = { text, act: okAct, ok }; }
+const A = {
+  'nav': (d) => go(d.to, { book: d.book }),
+  'go-create': () => { UI.wiz = { step: 1, name: '', prof: '', god: '', err: '' }; go('create'); },
+  'menu-toggle': () => { UI.menu = !UI.menu; UI.bm = false; },
+  'menu-close': () => { UI.menu = false; },
+  'jump': (d) => { UI.menu = false; render(); const el = document.getElementById(d.id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return false; },
+  'dice-toggle': () => { UI.dice = UI.dice ? null : 'check'; UI.menu = false; UI.bm = false; },
+  'dice-close': () => { UI.dice = null; },
+  'dice-tab': (d) => { UI.dice = d.t; UI.diceErr = ''; },
+  'bm-toggle': () => { UI.bm = !UI.bm; UI.menu = false; UI.bmBook = G.bookmark.book; UI.bmDraft = G.bookmark.para; },
+  'bm-open': () => { UI.bm = true; UI.bmBook = G.bookmark.book; UI.bmDraft = G.bookmark.para; },
+  'bm-close': () => { UI.bm = false; },
+  'bm-book': (d) => { UI.bmBook = d.book; },
+  'bm-set': () => { const p = int(UI.bmDraft); if (!p) { toast('Enter a paragraph number.'); return; } setBookmark(UI.bmBook, p); UI.bm = false; save(); toast(`Bookmark set to Book ${UI.bmBook}, §${p}.`); },
+  'bm-go': (d) => { setBookmark(d.book, d.p); UI.bm = false; save(); },
+  'stam': (d) => { const n = +d.d; if (n < 0) setStam(G.char.stam + n); else G.char.stam = Math.min(G.char.max, G.char.stam + n); save(); },
+  'stam-full': () => { G.char.stam = Math.max(G.char.stam, G.char.max); save(); },
+  'max': (d) => { G.char.max = Math.max(1, G.char.max + (+d.d)); if (G.char.stam > G.char.max) G.char.stam = G.char.max; save(); },
+  'rank-open': () => { UI.rankDlg = true; UI.rankGain = ''; },
+  'rank-close': () => { UI.rankDlg = false; },
+  'rank-roll': () => { UI.rankGain = String(d6()); },
+  'rank-confirm': () => { const g = Math.max(0, int(UI.rankGain) || 0); G.char.rank += 1; G.char.max += g; G.char.stam += g; UI.rankDlg = false; save(); toast(`You are now Rank ${G.char.rank}.`); },
+  'adj': (d) => { G.char.defAdj += +d.d; save(); },
+  'money': (d) => { G.char.money = Math.max(0, G.char.money + (+d.d)); save(); },
+  'money-spend': () => { const a = int(UI.money); if (!a) return; if (Math.abs(a) > G.char.money) { toast(`You only have ${G.char.money} Shards.`); return; } G.char.money -= Math.abs(a); UI.money = ''; save(); },
+  'money-gain': () => { const a = int(UI.money); if (!a) return; G.char.money += Math.abs(a); UI.money = ''; save(); },
+  'ab': (d) => { G.char.base[d.ab] = clamp(G.char.base[d.ab] + (+d.d), 1, 12); save(); },
+  'ab-roll': (d) => { UI.dice = 'check'; UI.checkAb = d.ab; UI.check = null; UI.bm = false; UI.menu = false; },
+  'item-add': () => {
+    const t = UI.item.name.trim();
+    if (!t) return;
+    if (G.char.items.length >= 12) { toast('You can carry 12 possessions.'); return; }
+    const bonus = UI.item.type ? Math.max(0, int(UI.item.bonus) || 0) : 0;
+    G.char.items.push({ id: uid(), name: t, type: bonus ? UI.item.type : '', bonus });
+    UI.item = { name: '', type: '', bonus: '1' }; save();
+  },
+  'item-remove': (d) => { G.char.items = G.char.items.filter((i) => i.id !== d.id); save(); },
+  'bless-add': (d) => { G.char.blessings[d.b] = true; save(); },
+  'bless-use': (d) => { delete G.char.blessings[d.b]; save(); toast(`${d.b} blessing used.`); },
+  'title-add': () => { const t = UI.title.trim(); if (!t) return; G.char.titles.push(t); UI.title = ''; save(); },
+  'title-remove': (d) => { G.char.titles.splice(+d.i, 1); save(); },
+  'cw': (d) => { if (G.codewords[d.w]) ask(`Lost the codeword <b>${esc(d.w)}</b>?`, { a: 'cw-remove', w: d.w }); else { G.codewords[d.w] = true; save(); } },
+  'cw-remove': (d) => { delete G.codewords[d.w]; save(); },
+  'cw-only': () => { UI.onlyMarked = !UI.onlyMarked; },
+  'book': (d) => { UI.book = String(d.book); },
+  'para': (d) => { const B = BOOKS[UI.book], m = B.multi[d.p] || 1; const t = G.ticks[UI.book] = G.ticks[UI.book] || {}; const c = t[d.p] || 0; t[d.p] = c >= m ? 0 : c + 1; if (!t[d.p]) delete t[d.p]; save(); },
+  'para-filter': (d) => { UI.paraFilter = d.f; },
+  'place-add': () => { const n = UI.place.name.trim(), p = int(UI.place.para); if (!n || !p) { toast('Enter a place name and a paragraph.'); return; } G.places.push({ id: uid(), name: n, book: String(UI.book), para: String(p) }); UI.place = { name: '', para: '' }; save(); },
+  'place-remove': (d) => { G.places = G.places.filter((p) => p.id !== d.id); save(); },
+  'place-go': (d) => { const p = G.places.find((x) => x.id === d.id); if (p) { setBookmark(p.book, p.para); UI.bm = false; save(); toast(`Bookmark set to ${p.name}, §${p.para}.`); } },
+  'quest-filter': (d) => { UI.questFilter = d.f; },
+  'quest-add': () => { const q = UI.quest; if (!q.what.trim()) { toast('Describe the quest first.'); return; } G.quests.unshift({ id: uid(), what: q.what.trim(), from: q.from.trim(), where: q.where.trim(), for: q.for.trim(), done: false }); UI.quest = { what: '', from: '', where: '', for: '' }; save(); },
+  'quest-done': (d) => { const q = G.quests.find((x) => x.id === d.id); if (q) { q.done = !q.done; save(); } },
+  'quest-remove': (d) => ask('Delete this quest?', { a: 'quest-del', id: d.id }, 'Delete'),
+  'quest-del': (d) => { G.quests = G.quests.filter((x) => x.id !== d.id); save(); },
+  'ship-add': () => { G.ships.push({ id: uid(), name: '', type: '', crew: 'Average', cap: '', cargo: '', dock: '', notes: '' }); save(); },
+  'ship-remove': (d) => ask('Remove this ship?', { a: 'ship-del', id: d.id }),
+  'ship-del': (d) => { G.ships = G.ships.filter((x) => x.id !== d.id); save(); },
+  'snap-save': () => {
+    let n = UI.snap.trim() || `${G.char.name} – Book ${G.bookmark.book} §${G.bookmark.para}`;
+    while (slots[n]) n += ' (2)';
+    slots[n] = JSON.parse(JSON.stringify(G)); slots[n].savedAt = Date.now();
+    UI.snap = ''; flush(); toast(`Saved a copy as “${n}”.`);
+  },
+  'slot-load': (d) => { if (!slots[d.n]) return; flush(); active = d.n; G = slots[active]; UI.book = G.bookmark.book; UI.fight = null; UI.check = null; flush(); toast(`Loaded “${d.n}”.`); go('character'); return false; },
+  'slot-delete': (d) => ask(`Delete the save <b>${esc(d.n)}</b> for good?`, { a: 'slot-del', n: d.n }, 'Delete'),
+  'slot-del': (d) => { if (d.n === active) return; delete slots[d.n]; flush(); },
+  'export': () => exportFile(),
+  'export-copy': () => {
+    const txt = backupJSON();
+    try { navigator.clipboard.writeText(txt).then(() => { toast('Backup copied. Paste it into a note or file to keep it.'); }, () => { toast('Copying is blocked here. Use “Export file”.'); }); } catch (e) { toast('Copying is blocked here. Use “Export file”.'); }
+  },
+  'import': () => { $('#import-file').click(); return false; },
+  'confirm-cancel': () => { UI.confirm = null; },
+  'confirm-ok': () => { const c = UI.confirm; UI.confirm = null; if (c && A[c.act.a]) A[c.act.a](c.act); },
+  'wiz-prof': (d) => { UI.wiz.prof = d.p; UI.wiz.err = ''; },
+  'wiz-back': () => { if (UI.wiz.step === 1) { go('saves'); return false; } UI.wiz.step -= 1; UI.wiz.err = ''; },
+  'wiz-next': () => {
+    const w = UI.wiz;
+    if (w.step === 1) { if (!w.name.trim()) { w.err = 'Please enter a name.'; return; } w.step = 2; w.err = ''; return; }
+    if (w.step === 2) { if (!w.prof) { w.err = 'Please choose a profession.'; return; } w.step = 3; w.err = ''; return; }
+    const g = newGame({ name: w.name.trim(), prof: w.prof, god: w.god.trim() });
+    let key = g.char.name;
+    while (slots[key]) key += ' (2)';
+    flush();
+    slots[key] = g; active = key; G = g; UI.book = '1'; UI.fight = null; UI.check = null;
+    flush(); toast(`Welcome, ${g.char.name}. Turn to Book 1, §1.`);
+    go('character'); return false;
+  },
+  'phys': () => { UI.phys = !UI.phys; UI.diceErr = ''; },
+  'check-ab': (d) => { UI.checkAb = d.ab; UI.check = null; },
+  'diff': (d) => { UI.diff = clamp(UI.diff + (+d.d), 2, 30); UI.check = null; },
+  'check-roll': () => doCheck(false),
+  'check-reroll': () => { const ab = UI.check.ab; delete G.char.blessings[ab]; save(); doCheck(true); },
+  'first': (d) => { UI.enemy.first = d.w; },
+  'fight-start': () => {
+    const e = UI.enemy, c = int(e.combat), df = int(e.def), st = int(e.stam);
+    if (c === null || df === null || !st) { UI.fErr = 'Enter numbers for COMBAT, Defence and Stamina.'; return; }
+    UI.fErr = '';
+    UI.fight = { name: e.name.trim() || 'Enemy', combat: c, def: df, es: st, emax: st, first: e.first, turn: e.first, round: 1, over: '', log: [] };
+  },
+  'fight-step': () => fightStep(),
+  'fight-flee': () => { UI.fight.over = 'fled'; },
+  'fight-close': () => { UI.fight = null; UI.enemy = { name: '', combat: '', def: '', stam: '', first: 'you' }; },
+  'dead-go': () => { const c = G.char; setBookmark(c.resBook || '1', c.resPara); UI.dead = false; save(); go('book', { book: c.resBook || '1' }); return false; },
+  'dead-dismiss': () => { UI.dead = false; }
+};
 
-// ---- STATE ----
-function collectState(){
-  const s={};
-  ['f_name','f_prof','f_god','f_rank','f_def','ab1','ab2','ab3','ab4','ab5','ab6','stam_cur','stam_max','money'].forEach(id=>{const el=document.getElementById(id);if(el)s[id]=el.value;});
-  ['blessings','resurrection','titles'].forEach(id=>{const el=document.getElementById(id);if(el)s[id]=el.value;});
-  s.possessions=collectPossessions();s.quests=collectQuests();s.ships=collectShips();
-  ALL_CW.forEach((_,i)=>{const cb=document.getElementById('cw_'+i);if(cb)s['cw_'+i]=cb.checked;});
-  Object.keys(BOOKS).forEach(bk=>{
-    const data=BOOKS[bk];
-    data.paras.forEach(p=>{const multi=data.multi&&data.multi[p]?data.multi[p]:1;for(let m=0;m<multi;m++){const id=`para_${bk}_${p}_${m}`;const cb=document.getElementById(id);if(cb)s[id]=cb.checked;}});
-    const nt=document.getElementById('notes_'+bk);if(nt)s['notes_'+bk]=nt.value;
-  });
-  return s;
-}
-function applyState(s){
-  ['f_name','f_prof','f_god','f_rank','f_def','ab1','ab2','ab3','ab4','ab5','ab6','stam_cur','stam_max','money'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=s[id]||'';});
-  ['blessings','resurrection','titles'].forEach(id=>{const el=document.getElementById(id);if(el){el.value=s[id]||'';setTimeout(()=>autoResize(el),0);}});
-  applyPossessions(s.possessions);applyQuests(s.quests);applyShips(s.ships);
-  ALL_CW.forEach((_,i)=>{const cb=document.getElementById('cw_'+i);if(cb){cb.checked=!!s['cw_'+i];toggleCWFlat(cb,i);}});
-  Object.keys(BOOKS).forEach(bk=>{
-    const data=BOOKS[bk];
-    data.paras.forEach(p=>{const multi=data.multi&&data.multi[p]?data.multi[p]:1;for(let m=0;m<multi;m++){const id=`para_${bk}_${p}_${m}`;const cb=document.getElementById(id);if(cb){cb.checked=!!s[id];togglePara(cb,id);}}});
-    const nt=document.getElementById('notes_'+bk);if(nt){nt.value=s['notes_'+bk]||'';setTimeout(()=>autoResize(nt),0);}
-  });
-}
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]');
+  if (!el || el.disabled) return;
+  const fn = A[el.dataset.act];
+  if (!fn) return;
+  e.preventDefault();
+  if (fn(el.dataset) !== false) render();
+});
 
-// ---- SAVE / LOAD (localStorage) ----
-function getSaves(){try{return JSON.parse(localStorage.getItem('fl_saves')||'{}');}catch(e){return{};}}
-function setSaves(obj){try{localStorage.setItem('fl_saves',JSON.stringify(obj));}catch(e){showMsg('Storage full! Use Export to back up.',false);}}
-function refreshSelect(){const sel=document.getElementById('saveselect');const saves=getSaves();sel.innerHTML='<option value="">– Load –</option>';Object.keys(saves).sort().forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=k;sel.appendChild(o);});}
-function showMsg(msg,ok=true){const el=document.getElementById('savemsg');el.textContent=msg;el.style.color=ok?'#8aba8a':'#e07070';setTimeout(()=>el.textContent='',3500);}
-function saveState(){const name=document.getElementById('saveName').value.trim();if(!name){showMsg('Enter a save name!',false);return;}const saves=getSaves();saves[name]=collectState();setSaves(saves);refreshSelect();showMsg('✔ Saved as "'+name+'"');}
-function loadState(){const name=document.getElementById('saveselect').value;if(!name){showMsg('Select a save!',false);return;}const saves=getSaves();if(!saves[name]){showMsg('Not found!',false);return;}applyState(saves[name]);document.getElementById('saveName').value=name;showMsg('✔ Loaded "'+name+'"');}
-function deleteState(){const name=document.getElementById('saveselect').value;if(!name){showMsg('Select a save!',false);return;}const saves=getSaves();delete saves[name];setSaves(saves);refreshSelect();showMsg('Deleted "'+name+'"');}
-function resetAll(){applyState({});document.querySelectorAll('.field-input,.possess-input,.notes-area').forEach(el=>el.value='');clearCW();Object.keys(BOOKS).forEach(bk=>clearParas(bk));showMsg('All fields reset');}
-
-// ---- EXPORT / IMPORT ----
-function exportSaves(){
-  const saves=getSaves();
-  if(!Object.keys(saves).length){showMsg('No saves to export!',false);return;}
-  const json=JSON.stringify(saves,null,2);
-  const blob=new Blob([json],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  const d=new Date();
-  a.download=`fabled-lands-saves-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showMsg('✔ Saves exported!');
+/* ---------- binding ---------- */
+function setPath(path, value) {
+  const parts = path.split('.');
+  let obj = parts.shift() === 'G' ? G : UI;
+  while (parts.length > 1) { const k = parts.shift(); if (obj[k] == null) obj[k] = {}; obj = obj[k]; }
+  obj[parts[0]] = value;
+  return path[0] === 'G';
 }
-function showImport(){document.getElementById('import-overlay').classList.add('show');document.getElementById('import-textarea').value='';}
-function hideImport(){document.getElementById('import-overlay').classList.remove('show');}
-function doImport(){
-  try{
-    const raw=document.getElementById('import-textarea').value.trim();
-    const data=JSON.parse(raw);
-    const saves=getSaves();
-    Object.assign(saves,data);
-    setSaves(saves);refreshSelect();hideImport();
-    showMsg('✔ Import successful! '+Object.keys(data).length+' save(s) imported.');
-  }catch(e){showMsg('Invalid JSON – check the file!',false);}
-}
+document.addEventListener('input', (e) => {
+  const el = e.target;
+  if (!el.dataset || !el.dataset.bind) return;
+  if (setPath(el.dataset.bind, el.value)) save();
+  if ('live' in el.dataset) render();
+});
+document.addEventListener('change', (e) => {
+  const el = e.target;
+  if (!el.dataset || !el.dataset.bind) return;
+  if (setPath(el.dataset.bind, el.value)) save();
+  if (el.tagName === 'SELECT' || el.dataset.bind.indexOf('G.char.') === 0 || el.dataset.bind.indexOf('G.quests') === 0) render();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target.dataset && e.target.dataset.enter) {
+    const el = e.target;
+    if (el.dataset.bind) setPath(el.dataset.bind, el.value);
+    e.preventDefault();
+    if (A[el.dataset.enter](el.dataset) !== false) render();
+  } else if (e.key === 'Escape') {
+    if (UI.confirm) UI.confirm = null; else if (UI.bm) UI.bm = false; else if (UI.menu) UI.menu = false; else if (UI.dice) UI.dice = null; else return;
+    render();
+  }
+});
 
-// ---- INIT ----
-addQuest();addShip();applyPossessions([]);
-initCWGrouped();
-['book1','book2','book3','book4','book5','book6','book7a','book7b'].forEach(bk=>initBook(bk,bk));
-refreshSelect();
+/* ---------- start ---------- */
+const h0 = location.hash.slice(1);
+UI.screen = SCREENS.indexOf(h0) !== -1 && h0 !== 'create' ? h0 : 'character';
+render();
+flush();
+
+if ('serviceWorker' in navigator && /^https:$/.test(location.protocol) && !/claude/.test(location.hostname)) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+})();
+
 </script>
 </body>
 </html>
