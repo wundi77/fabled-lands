@@ -1,26 +1,28 @@
-# Fabled Lands – Interaktiver Charakterbogen
+# Fabled Lands – Companion App
 
-Eine offline-fähige PWA als digitaler Charakterbogen für die **Fabled Lands** Gamebook-Serie (Dave Morris & Jamie Thomson).
+Offline-fähige PWA als digitaler Begleiter für die **Fabled Lands** Gamebook-Serie (Dave Morris & Jamie Thomson): Abenteuerbogen, Codewörter, Paragraphen-Tracker und Würfel.
 
 **Live:** https://wundi77.github.io/fabled-lands/
 
 ## Features
-- Charakterblatt mit 6 Fähigkeiten, Stamina, Possessions
-- Quest-Tracker, Schiffsmanifest
-- 239 Codewörter mit Checkbox-Tracking
-- Paragraphen-Tracker für Bücher 1–7 mit Originalnotizen
-- Mehrere Spielstände via localStorage, JSON-Export/Import
-- Vollständig offline (kein CDN, kein Framework)
-- Installierbar als PWA (iOS/Android)
+- Charakterbogen mit Stamina, Defence, 6 Fähigkeiten, Besitztümern, Segen, Titeln und Wiederbelebung
+- Quest-Tracker und Schiffsverwaltung
+- 239 Codewörter mit Suche und Filter
+- Paragraphen-Tracker für Bücher 1–7 mit Lesezeichen, Verlauf, Orten und Notizen
+- Würfel-Dialog: Fähigkeitsprobe mit Wahrscheinlichkeit und Kampf-Simulator (auch mit echten Würfeln)
+- Mehrere Spielstände und Snapshots, Backup als Datei oder Zwischenablage
+- Charakter-Assistent mit Beispiel-Charakter beim ersten Start
+- Installierbar als App (iOS/Android), funktioniert offline
 
-## Dateistruktur
+## Dateien
 ```
-index.html    – gesamte App (HTML + CSS + JS)
-manifest.json – PWA-Manifest
-sw.js         – Service Worker (Offline-Cache)
-NOTIZ.md      – detaillierte Projektnotizen
-CLAUDE.md     – Anweisungen für Claude Code
+index.html     – gesamte App (HTML + CSS + JS)
+manifest.json  – PWA-Manifest
+sw.js          – Service Worker (Offline-Cache)
+icon*.png/svg  – App-Icons
+NOTIZ.md       – detaillierte Projektnotizen
+CLAUDE.md      – Arbeitsanweisungen für Claude
 ```
 
 ## Entwicklung
-Nach Änderungen an `index.html` einfach committen und pushen – GitHub Pages deployed automatisch.
+Kein Build nötig. Nach Änderungen committen und auf `main` pushen, GitHub Pages deployed automatisch.

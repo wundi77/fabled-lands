@@ -1,7 +1,7 @@
-# Fabled Lands – Interaktiver Charakterbogen
+# Fabled Lands – Companion App
 ## Projektstand & Entwicklungsnotizen
 
-**Letzter Stand:** 02.07.2026 – CLAUDE.md erweitert (Session-Start-Überblick, Kontext-Komprimierung ab 40%, direktes Arbeiten auf main statt Feature-Branches, Skill-Check)  
+**Letzter Stand:** 22.10.2026 – Komplette Überarbeitung der Oberfläche (aus einem anderen Chat) ist auf `main`; Doku auf neuen Stand gebracht  
 **Live-URL:** https://wundi77.github.io/fabled-lands/  
 **Repository:** https://github.com/wundi77/fabled-lands  
 
@@ -9,7 +9,7 @@
 
 ## Was ist das?
 
-Eine offline-fähige PWA (Progressive Web App) als interaktiver digitaler Charakterbogen für die **Fabled Lands** Gamebook-Serie von Dave Morris & Jamie Thomson. Entwickelt als einzelne HTML-Datei, gehostet auf GitHub Pages, installierbar auf dem iPad als Home-Screen-App.
+Eine offline-fähige PWA als digitaler Begleiter für die **Fabled Lands** Gamebook-Serie von Dave Morris & Jamie Thomson: Abenteuerbogen, Codewörter, Paragraphen-Tracker und Würfel. Eine einzelne HTML-Datei, gehostet auf GitHub Pages, installierbar auf dem iPad/iPhone als Home-Screen-App.
 
 ---
 
@@ -17,115 +17,105 @@ Eine offline-fähige PWA (Progressive Web App) als interaktiver digitaler Charak
 
 ```
 fabled-lands/
-├── index.html      ← Gesamte App (HTML + CSS + JS in einer Datei)
-├── manifest.json   ← PWA-Manifest für Home-Screen-Installation
-├── sw.js           ← Service Worker für Offline-Fähigkeit
-├── icon.png        ← App-Icon (optional, noch nicht vorhanden)
-└── NOTIZ.md        ← Diese Datei
+├── index.html              ← Gesamte App (HTML + CSS + JS, ~1275 Zeilen)
+├── manifest.json           ← PWA-Manifest (start_url ./, Icons any + maskable)
+├── sw.js                   ← Service Worker (Cache fabled-lands-v2 + Font-Cache)
+├── icon.svg                ← Favicon
+├── icon-192.png            ← PWA-Icon
+├── icon-512.png            ← PWA-Icon
+├── icon-maskable-512.png   ← PWA-Icon (maskable)
+├── apple-touch-icon.png    ← iOS-Home-Screen-Icon
+├── CLAUDE.md               ← Arbeitsanweisungen für Claude
+├── NOTIZ.md                ← Diese Datei
+└── README.md               ← Kurzbeschreibung
 ```
 
 ---
 
 ## Implementierte Features
 
-### Seiten / Navigation
-- **Character** – Hauptcharakterbogen (Startseite)
-- **Quests** – Questtracker mit 4 Spalten (What / From / Where / For)
-- **Ship's Manifest** – Schiffsverwaltung
-- **Codewords** – Alle Codewörter alphabetisch gruppiert
-- **Book 1–7** – Paragraphen-Tracker + Notizen je Buch (Book 7 in einer Seite)
+### Navigation
+- Menü am rechten Rand (feste Tabs) mit Stamina-Anzeige, Seitenmarken „On this page" und Direktsprung zu Books 1–7 (mit Fortschritt je Buch)
+- Eigene Tab-Schaltflächen für Lesezeichen (§) und Würfel
+- Seiten: Character, Quests, Ships, Codewords, Book 1–7, Saves & Backup, New adventure (Assistent)
 
-### Character-Seite
-- Name, Profession, God, Rank, Defence
-- 6 Fähigkeiten mit nummerierten Medaillons (Charisma, Combat, Magic, Sanctity, Scouting, Thievery)
-- Current / Maximum Stamina
-- Possessions: dynamisch erweiterbar (+ Add Item / ✖ löschen)
-- Money, Blessings, Resurrection Arrangements, Titles & Honours
-- Alle Textfelder wachsen automatisch mit dem Inhalt
+### Character
+- Name, Beruf, Gott, Rang
+- Stamina (aktuell/max) mit Leiste, Defence mit Anpassung, Geld
+- 6 Fähigkeiten (Charisma, Combat, Magic, Sanctity, Scouting, Thievery) mit Berufs-Startwerten
+- Besitztümer mit Typ und Bonus (fließen in Fähigkeiten/Defence ein)
+- Segen (6 Fähigkeiten, Immunity to Disease, Safety from Storms), Titel & Ehren, Wiederbelebung (Text + Buch/Paragraph)
 
-### Quests-Seite
-- Zeilen mit 4 Feldern: What / From / Where / For
-- Dynamisch erweiterbar (+ Add Quest)
-- Einzelne Zeilen löschbar (✖)
-- Alle Felder auto-resize
-
-### Ship's Manifest
-- Mehrere Schiffe möglich (+ Add Ship / ✖ Remove)
-- Je Schiff: Type, Name, Crew Quality, Cargo Capacity, Current Cargo, Where Docked, Notes
-- Automatische Nummerierung
+### Quests / Ships
+- Quests mit What / From / Where / For, abhakbar (erledigt), Zähler im Menü
+- Mehrere Schiffe: Type, Name, Crew (Poor/Average/Good/Excellent), Kapazität, Ladung, Liegeplatz, Notizen
 
 ### Codewords
-- Alle ~239 Codewörter aus Fabled Lands (Acid – Gush)
-- Alphabetisch nach Buchstaben gruppiert mit rotem Trenner
-- Abgehakte Wörter: fett + rot (kein Durchstreichen)
-- „Uncheck All"-Button
+- 239 Codewörter (Acid – Gush), nach Buchstaben gruppiert
+- Suchfeld, Filter „Marked only", Sprungmarken pro Buchstabe, Zähler „x of 239 marked"
 
-### Buch-Seiten (Book 1–7)
-- Alle Paragraphen aus dem Original-PDF als Checkboxen
-- Notizen aus dem PDF als kleine Hinweistexte (z.B. „Town House", „Money Invested")
-- Mehrfach-Checkboxen wo im Original mehrere Haken vorgesehen (z.B. 4×, 3×)
-- Abgehakte Paragraphen durchgestrichen
-- Freies Notizfeld je Buch (auto-resize)
+### Books 1–7
+- Paragraphen-Tracker aus dem Original-Abenteuerbogen mit Notizen (z. B. „Town House", „Money Invested")
+- Mehrfach-Kästchen (z. B. 4×, 3×) als Zähler mit Punkten
+- Filter: All / Not yet / Ticked, Fortschrittsbalken je Buch
+- Lesezeichen (Buch + §) mit Verlauf, „Known places" (Orte merken, antippen setzt Lesezeichen)
+- Freies Notizfeld je Buch
 
-### Speichern / Laden
-- Mehrere benannte Spielstände via **localStorage**
-- **⬆ Export** – alle Spielstände als `.json`-Datei herunterladen
-- **⬇ Import** – JSON einfügen um Spielstände wiederherzustellen
-- „Reset All" setzt aktuelle Felder zurück (Spielstände bleiben erhalten)
+### Würfel-Dialog
+- **Ability check:** 2d6 + Fähigkeit gegen Schwierigkeit, zeigt nötigen Wurf und Erfolgswahrscheinlichkeit, Neuwurf mit passendem Segen (verbraucht ihn)
+- **Fight:** Kampf-Simulator (Gegner mit Combat/Defence/Stamina, wer zuerst schlägt, Runden, Kampflog, Flucht, Sieg/Niederlage)
+- Option „I roll physical dice": echte Würfel eingeben statt App-Wurf
+
+### Speichern / Backup
+- Mehrere Spielstände (Slots) in **localStorage**, Autosave nach 250 ms
+- Snapshots („Save copy") zum Zurückgehen, z. B. vor riskantem Kampf
+- Export als Datei, Import aus Datei, Backup in die Zwischenablage kopieren
+- Backup-Format: `{ format: 'fabled-lands-companion', v: 1, exportedAt, active, slots }`
+- Beim ersten Start wird der Beispiel-Charakter „Aldric Vane" angelegt
+- Hinweis in der App, falls der Browser Speicherung blockiert
+- Charakter-Assistent (3 Schritte): Name, Beruf, Gott; Start mit 9 Stamina, 16 Shards, Sword, Leather jerkin
 
 ### Design
-- Holztisch-Hintergrund mit CSS-Maserungslinien
-- Pergament-Karten (parchment gradient)
-- Goldene Akzentfarben, rote Überschriften
-- Schriften: Palatino (systemseitig, keine externe Abhängigkeit)
-- Vollständig offline-fähig (keine CDN-Abhängigkeiten)
+- Pergament-Seiten, Lederrahmen, Siegelrot als Akzent, Gold für Hervorhebungen
+- Schriften: Cinzel (Überschriften), EB Garamond (Text) über Google Fonts
+- Ein festes helles Design (kein Dark Mode), `prefers-reduced-motion` wird beachtet
+- Safe-Area-Insets für iPhone/iPad, responsives Spaltenlayout bis 1920 px
 
 ### PWA
-- `manifest.json` mit korrekten Pfaden für `/fabled-lands/`
-- Service Worker (`sw.js`) cached alle Dateien beim ersten Laden
-- `apple-mobile-web-app-capable` Meta-Tags für iOS
-- Installierbar über Safari → Teilen → Zum Home-Bildschirm
+- Service Worker: App-Dateien im Cache `fabled-lands-v2`, Google-Fonts in eigenem Cache, Navigation „network first" mit Offline-Fallback auf `index.html`
+- `apple-mobile-web-app-*` Meta-Tags, Installation über Safari → Teilen → Zum Home-Bildschirm
 
 ---
 
 ## Offene Punkte / Mögliche Erweiterungen
 
-- [ ] App-Icon (`icon.png`) erstellen und hochladen
-- [ ] Spielstand-Export direkt als benannte Datei (z.B. `held-name.json`)
-- [ ] Farbmarkierungen für Paragraphen (z.B. grün = erledigt, gelb = offen)
-- [ ] Suchfunktion für Codewörter
+- [ ] Alte Spielstände (`fl_saves` der Vorversion) werden **bewusst nicht übernommen** (nicht mehr benötigt)
+- [ ] Fonts sind nur nach dem ersten Online-Laden offline verfügbar (Fallback: Palatino/Georgia)
+- [ ] Dark/Light-Mode-Toggle
 - [ ] Druckansicht / PDF-Export des Charakterbogens
-- [ ] Dark/Light Mode Toggle
 - [ ] Mehrsprachigkeit (aktuell: Englisch)
+- [ ] Alter Branch `claude/awesome-allen-uet0qq` auf GitHub manuell löschen (Löschen per Tool/Push wurde mit 403 abgelehnt)
 
 ---
 
 ## Technische Details
 
-- **Keine externen Abhängigkeiten** – alles inline in `index.html`
-- **Keine Frameworks** – reines HTML/CSS/JavaScript
-- **localStorage** für Spielstände (bleibt beim App-Update erhalten solange Origin gleich bleibt)
-- Alle dynamischen Elemente (Schiffe, Quests, Possessions) werden über JS-Counter (`shipCount`, `questCount`, `possCount`) verwaltet
-- Codewörter werden beim Init aus zwei Arrays zusammengeführt und alphabetisch gruppiert
-- Buchparagraphen werden aus einem `BOOKS`-Objekt dynamisch gerendert
+- **Keine Frameworks, kein Build** – reines HTML/CSS/JavaScript, nur Google Fonts extern
+- Zustand in einem Objekt `G` (aktueller Spielstand) und `slots` (alle Stände); Oberfläche wird per Template-Strings neu gerendert (`render()`, `renderLayer()`)
+- Eingaben über `data-bind` (Pfad in `G`/`UI`), Aktionen über `data-act`
+- localStorage-Schlüssel: `flc_slots`, `flc_active`
+- Regeldaten im Code: `AB` (Fähigkeiten), `PROFS` (Berufe), `BLESS`, `BOOKS` (Paragraphen, Notizen, Mehrfach-Kästchen), `CW` (Codewörter), `BOOK_TITLES`
+- Wahrscheinlichkeit einer 2d6-Probe: `pAtLeast(n)` mit Tabelle `WAYS`
 
 ---
 
-## Weiterentwicklung mit Claude Code
+## Weiterentwicklung mit Claude
 
-Das Projekt kann direkt mit Claude Code weiterbearbeitet werden:
+Arbeitsregeln stehen in `CLAUDE.md` (Repo-Überblick zu Sitzungsbeginn, Doku vor jedem Push aktualisieren, direkt auf `main` arbeiten, Skills prüfen).
 
 ```bash
 git clone https://github.com/wundi77/fabled-lands.git
 cd fabled-lands
 ```
 
-Dann Claude Code starten und auf den Ordner verweisen. Nach Änderungen:
-
-```bash
-git add .
-git commit -m "Beschreibung der Änderung"
-git push
-```
-
-GitHub Pages deployed automatisch nach jedem Push (ca. 1–2 Minuten).
+GitHub Pages deployed automatisch nach jedem Push auf `main` (ca. 1–2 Minuten).
