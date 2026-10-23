@@ -6,11 +6,11 @@ Offline-fähige PWA als digitaler Begleiter für die **Fabled Lands** Gamebook-S
 
 ## Features
 - Charakterbogen mit Stamina, Defence, 6 Fähigkeiten, Besitztümern, Segen, Titeln und Wiederbelebung
-- Quest-Tracker und Schiffsverwaltung
+- Quest-Tracker (What / From / Where) und Schiffsverwaltung
 - 239 Codewörter mit Suche und Filter
-- Paragraphen-Tracker für Bücher 1–7 mit Lesezeichen, Verlauf, Orten und Notizen
+- Paragraphen-Tracker für Bücher 1–7 mit Lesezeichen, Verlauf der letzten 12 Orte, Orten und Notizen sowie Häusern (eingelagerte Gegenstände) und Banken (investiertes Geld) je Buch
 - Würfel-Dialog: Fähigkeitsprobe mit Wahrscheinlichkeit und Kampf-Simulator (auch mit echten Würfeln)
-- Mehrere Spielstände und Snapshots, Backup als Datei oder Zwischenablage
+- Mehrere Spielstände, nur manuelles Speichern („Save“ / „Save as“), Export als Backup-Datei (JSON) oder PDF-Übersicht, Backup auch über die Zwischenablage
 - Charakter-Assistent mit Beispiel-Charakter beim ersten Start
 - Installierbar als App (iOS/Android), funktioniert offline
 

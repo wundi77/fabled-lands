@@ -1,7 +1,7 @@
 # Fabled Lands – Companion App
 ## Projektstand & Entwicklungsnotizen
 
-**Letzter Stand:** 22.10.2026 – Komplette Überarbeitung der Oberfläche (aus einem anderen Chat) ist auf `main`; Doku auf neuen Stand gebracht  
+**Letzter Stand:** 23.10.2026 – Nur noch manuelles Speichern, Quests/Book-Seiten vereinfacht, Houses & Banks je Buch, Export als JSON oder PDF  
 **Live-URL:** https://wundi77.github.io/fabled-lands/  
 **Repository:** https://github.com/wundi77/fabled-lands  
 
@@ -40,14 +40,14 @@ fabled-lands/
 - Seiten: Character, Quests, Ships, Codewords, Book 1–7, Saves & Backup, New adventure (Assistent)
 
 ### Character
-- Name, Beruf, Gott, Rang
+- Name und Beruf werden beim Anlegen gewählt und stehen im Kopf; im Bogen ist nur noch **God** änderbar (volle Breite), Rang per Aktion „Rank advance“
 - Stamina (aktuell/max) mit Leiste, Defence mit Anpassung, Geld
 - 6 Fähigkeiten (Charisma, Combat, Magic, Sanctity, Scouting, Thievery) mit Berufs-Startwerten
 - Besitztümer mit Typ und Bonus (fließen in Fähigkeiten/Defence ein)
 - Segen (6 Fähigkeiten, Immunity to Disease, Safety from Storms), Titel & Ehren, Wiederbelebung (Text + Buch/Paragraph)
 
 ### Quests / Ships
-- Quests mit What / From / Where / For, abhakbar (erledigt), Zähler im Menü
+- Quests mit What / From / Where (je volle Breite, kein Reward-Feld); kleiner Link „Mark as done“ / „Reopen quest“ neben dem Status; kleiner Button „Add quest“ neben dem Filter (Open/Done/All) legt eine leere Quest am Ende an; Zähler im Menü
 - Mehrere Schiffe: Type, Name, Crew (Poor/Average/Good/Excellent), Kapazität, Ladung, Liegeplatz, Notizen
 
 ### Codewords
@@ -55,10 +55,12 @@ fabled-lands/
 - Suchfeld, Filter „Marked only", Sprungmarken pro Buchstabe, Zähler „x of 239 marked"
 
 ### Books 1–7
-- Paragraphen-Tracker aus dem Original-Abenteuerbogen mit Notizen (z. B. „Town House", „Money Invested")
+- Paragraphen-Tracker aus dem Original-Abenteuerbogen: Kästchen zeigen nur die §-Nummer (bei Mehrfach-Kästchen zusätzlich Punkte), keine Beschreibungen
+- **Houses:** je Buch beliebig viele Häuser mit „Where · Book“, „Paragraph §“ und einer Liste abgelegter Gegenstände
+- **Banks:** je Buch beliebig viele Einträge mit „Where · Book“, „Paragraph §“ und investiertem Geld
 - Mehrfach-Kästchen (z. B. 4×, 3×) als Zähler mit Punkten
 - Filter: All / Not yet / Ticked, Fortschrittsbalken je Buch
-- Lesezeichen (Buch + §) mit Verlauf, „Known places" (Orte merken, antippen setzt Lesezeichen)
+- Lesezeichen „Where am I?“ (Buch + §) mit Verlauf der letzten 12 Orte (4 × 3), „Known places" (Orte merken, antippen setzt Lesezeichen)
 - Freies Notizfeld je Buch
 
 ### Würfel-Dialog
@@ -67,9 +69,10 @@ fabled-lands/
 - Option „I roll physical dice": echte Würfel eingeben statt App-Wurf
 
 ### Speichern / Backup
-- Mehrere Spielstände (Slots) in **localStorage**, Autosave nach 250 ms
-- Snapshots („Save copy") zum Zurückgehen, z. B. vor riskantem Kampf
-- Export als Datei, Import aus Datei, Backup in die Zwischenablage kopieren
+- Mehrere Spielstände (Slots) in **localStorage**; **nur manuelles Speichern** (kein Autosave): „Save“ schreibt in den aktiven Slot, „Save as“ legt eine benannte Kopie an
+- Ungespeicherte Änderungen: goldener Punkt am MENU-Reiter, Hinweis im Menü und auf der Saves-Seite, Rückfrage vor „Load“ und „Start new character“
+- **Export** fragt zuerst nach dem Format: Backup-Datei (JSON, alle Slots) oder Overview (PDF, alle Werte des aktiven Slots zum letzten Speicherzeitpunkt, ohne Bibliothek erzeugt); danach wählt das Gerät den Speicherort (Speichern-Dialog in Chrome/Edge, „In Dateien sichern“ auf iOS, sonst Download)
+- Import aus Datei, Backup in die Zwischenablage kopieren
 - Backup-Format: `{ format: 'fabled-lands-companion', v: 1, exportedAt, active, slots }`
 - Beim ersten Start wird der Beispiel-Charakter „Aldric Vane" angelegt
 - Hinweis in der App, falls der Browser Speicherung blockiert
@@ -82,7 +85,7 @@ fabled-lands/
 - Safe-Area-Insets für iPhone/iPad, responsives Spaltenlayout bis 1920 px
 
 ### PWA
-- Service Worker: App-Dateien im Cache `fabled-lands-v2`, Google-Fonts in eigenem Cache, Navigation „network first" mit Offline-Fallback auf `index.html`
+- Service Worker: App-Dateien im Cache `fabled-lands-v3`, Google-Fonts in eigenem Cache, Navigation „network first" mit Offline-Fallback auf `index.html`
 - `apple-mobile-web-app-*` Meta-Tags, Installation über Safari → Teilen → Zum Home-Bildschirm
 
 ---
@@ -92,7 +95,8 @@ fabled-lands/
 - [ ] Alte Spielstände (`fl_saves` der Vorversion) werden **bewusst nicht übernommen** (nicht mehr benötigt)
 - [ ] Fonts sind nur nach dem ersten Online-Laden offline verfügbar (Fallback: Palatino/Georgia)
 - [ ] Dark/Light-Mode-Toggle
-- [ ] Druckansicht / PDF-Export des Charakterbogens
+- [x] PDF-Export des Charakterbogens (Overview) umgesetzt
+- [ ] PDF-Layout bei Bedarf noch verfeinern (aktuell reine Textübersicht)
 - [ ] Mehrsprachigkeit (aktuell: Englisch)
 - [ ] Alter Branch `claude/awesome-allen-uet0qq` auf GitHub manuell löschen (Löschen per Tool/Push wurde mit 403 abgelehnt)
 
@@ -101,7 +105,7 @@ fabled-lands/
 ## Technische Details
 
 - **Keine Frameworks, kein Build** – reines HTML/CSS/JavaScript, nur Google Fonts extern
-- Zustand in einem Objekt `G` (aktueller Spielstand) und `slots` (alle Stände); Oberfläche wird per Template-Strings neu gerendert (`render()`, `renderLayer()`)
+- Zustand: `G` ist die Arbeitskopie des aktiven Spielstands, `slots` enthält die bewusst gespeicherten Stände (`commitSave()` kopiert `G` nach `slots`); Oberfläche wird per Template-Strings neu gerendert (`render()`, `renderLayer()`)
 - Eingaben über `data-bind` (Pfad in `G`/`UI`), Aktionen über `data-act`
 - localStorage-Schlüssel: `flc_slots`, `flc_active`
 - Regeldaten im Code: `AB` (Fähigkeiten), `PROFS` (Berufe), `BLESS`, `BOOKS` (Paragraphen, Notizen, Mehrfach-Kästchen), `CW` (Codewörter), `BOOK_TITLES`

@@ -1,5 +1,5 @@
 // Fabled Lands – offline cache
-const CACHE = 'fabled-lands-v2';
+const CACHE = 'fabled-lands-v3';
 const FONT_CACHE = 'fabled-lands-fonts';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 

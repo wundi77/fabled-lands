@@ -277,6 +277,26 @@ select.field { padding: 0 8px; font-size: 16px; }
   #menu, #dice, #dice.open { transition: none; }
 }
 
+/* unsaved-changes dot on the menu tab */
+#tab-menu::after { content: ''; position: absolute; left: 6px; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 2px var(--red); opacity: 0; transition: opacity .15s; }
+body.dirty #tab-menu::after { opacity: 1; }
+
+/* quests, houses, banks, export (design round 2) */
+.linkbtn { height: 44px; padding: 0 12px; border: 0; background: transparent; color: var(--red); font-size: 15px; text-decoration: underline; text-underline-offset: 3px; }
+.btn.addbtn { background: transparent; border-color: var(--red); color: var(--red); padding: 0 16px; }
+.cards.narrow { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.sect { margin-top: 10px; padding-top: 16px; border-top: 1px solid var(--line); gap: 10px; }
+.card .row > .x { margin-right: -10px; }
+#bm-pop .recent { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+#bm-pop .recent .jump { height: 40px; min-height: 40px; padding: 0 4px; justify-content: center; font-size: 14px; white-space: nowrap; }
+#bm-pop .pfield { min-width: 0; box-sizing: border-box; }
+#bm-pop .pfield input { width: 0; }
+#bm-pop .row > .btn { flex: none; }
+.para { min-height: 64px; gap: 6px; }
+.modal .opt { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 68px; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--fieldline); background: var(--field); color: var(--ink); text-align: left; }
+.modal .opt b { font-size: 18px; font-weight: 600; }
+.modal .opt span { font-size: 15px; color: var(--muted); }
+
 </style>
 </head>
 <body>
@@ -349,6 +369,7 @@ function cleanNote(raw) {
 /* ---------- icons ---------- */
 const svg = (d, w) => `<svg width="${w || 20}" height="${w || 20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const IC = {
+  plus: svg('<path d="M12 5v14M5 12h14"></path>'),
   user: svg('<circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path>'),
   flag: svg('<path d="M5 21V4"></path><path d="M5 4h12l-2.5 4L17 12H5"></path>'),
   ship: svg('<circle cx="12" cy="5" r="2"></circle><path d="M12 7v14"></path><path d="M5 13H3a9 8 0 0 0 18 0h-2"></path><path d="M8 11h8"></path>'),
@@ -375,7 +396,7 @@ function newGame(o) {
     },
     codewords: {}, ticks: {}, notes: {},
     bookmark: { book: '1', para: '1' }, history: [{ book: '1', para: '1' }], places: [],
-    quests: [], ships: []
+    quests: [], ships: [], houses: {}, banks: {}
   };
 }
 function exampleGame() {
@@ -396,7 +417,9 @@ function exampleGame() {
   g.ticks = { 1: { '10': 2, '19': 1, '100': 1, '175': 1, '232': 1, '305': 1, '542': 1, '610': 1 } };
   g.notes = { 1: 'Example notes: blessing bought in Marlock. Ask about the ring in Yellowport.' };
   g.bookmark = { book: '1', para: '175' };
-  g.history = [{ book: '1', para: '175' }, { book: '1', para: '169' }, { book: '1', para: '160' }, { book: '1', para: '10' }, { book: '1', para: '100' }];
+  g.history = [['1', '175'], ['1', '169'], ['1', '160'], ['1', '10'], ['1', '100'], ['1', '75'], ['1', '48'], ['1', '302'], ['1', '23'], ['1', '412'], ['1', '8'], ['1', '339']].map(([book, para]) => ({ book, para }));
+  g.houses = { 1: [{ id: uid(), book: '1', para: '100', items: [{ id: uid(), text: 'Spare sword' }, { id: uid(), text: 'Rope' }, { id: uid(), text: 'Healing potion' }] }] };
+  g.banks = { 1: [{ id: uid(), book: '1', para: '104', amount: '120' }] };
   g.places = [{ id: uid(), name: 'Yellowport', book: '1', para: '10' }, { id: uid(), name: 'Marlock City', book: '1', para: '100' }];
   g.quests = [
     { id: uid(), what: 'Deliver the sealed letter', from: 'Guard captain, Marlock City', where: 'Yellowport', for: '50 Shards', done: false },
@@ -419,17 +442,21 @@ if (!active || !slots[active]) {
   if (names.length) active = names[0];
   else { active = 'Example – Aldric Vane'; slots[active] = exampleGame(); }
 }
-let G = slots[active];
-let saveTimer = null;
+const clone = (o) => JSON.parse(JSON.stringify(o));
+/* Manual saving only: G is the working copy, slots[] hold what was saved on purpose. */
+let G = clone(slots[active]);
+let dirty = false;
 let storageOk = true;
 function flush() { storageOk = lsSet(LS_SLOTS, slots) && lsSet(LS_ACTIVE, active); }
-function save() {
+function markDirty() { dirty = true; document.body.classList.add('dirty'); }
+function save() { markDirty(); }
+function commitSave() {
   G.savedAt = Date.now();
-  slots[active] = G;
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(flush, 250);
+  slots[active] = clone(G);
+  dirty = false; document.body.classList.remove('dirty');
+  flush();
 }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { clearTimeout(saveTimer); flush(); } });
+window.addEventListener('beforeunload', (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 
 /* ---------- UI state ---------- */
 const SCREENS = ['character', 'quests', 'ships', 'codewords', 'book', 'saves', 'create'];
@@ -471,7 +498,7 @@ function setStam(v) {
 function setBookmark(b, p) {
   b = String(b); p = String(p);
   G.bookmark = { book: b, para: p };
-  G.history = [{ book: b, para: p }].concat(G.history.filter((h) => !(h.book === b && h.para === p))).slice(0, 10);
+  G.history = [{ book: b, para: p }].concat(G.history.filter((h) => !(h.book === b && h.para === p))).slice(0, 12);
 }
 const markedCount = () => Object.keys(G.codewords).length;
 
@@ -543,11 +570,7 @@ function scrCharacter() {
         </div>
       </div>
       <div class="stack sep">
-        <label class="lbl" for="c-name">Name<input id="c-name" class="field" data-bind="G.char.name" value="${esc(c.name)}"></label>
-        <div class="g2">
-          <div class="lbl">Profession<span class="field" style="display:flex;align-items:center;background:var(--card2);border-color:var(--line2)">${esc(c.prof)}</span></div>
-          <label class="lbl" for="c-god">God<input id="c-god" class="field" placeholder="None" data-bind="G.char.god" value="${esc(c.god)}"></label>
-        </div>
+        <label class="lbl" for="c-god">God<input id="c-god" class="field" placeholder="None" data-bind="G.char.god" value="${esc(c.god)}"></label>
       </div>
     </section>
 
@@ -627,33 +650,20 @@ function scrQuests() {
   const f = (k, l) => `<button data-act="quest-filter" data-f="${k}" aria-pressed="${pressed(UI.questFilter === k)}">${l}</button>`;
   return `
   ${header('Adventurer', 'Quests', `${open} open · ${G.quests.length - open} done`)}
-  <div class="row wrapr" style="margin-bottom:14px"><div class="seg" role="group" aria-label="Filter quests">${f('open', 'Open')}${f('done', 'Done')}${f('all', 'All')}</div></div>
+  <div class="row wrapr" style="margin-bottom:16px;gap:10px 14px"><div class="seg" role="group" aria-label="Filter quests">${f('open', 'Open')}${f('done', 'Done')}${f('all', 'All')}</div>
+    <button class="btn addbtn" data-act="quest-add">${IC.plus}Add quest</button></div>
   <div class="cards">
-    <section class="card" id="quest-new">
-      <h2 class="h2">New quest</h2>
-      <label class="lbl" for="qn-what">What<input id="qn-what" class="field" placeholder="The task…" data-bind="UI.quest.what" value="${esc(UI.quest.what)}"></label>
-      <div class="g2">
-        <label class="lbl" for="qn-from">From<input id="qn-from" class="field" placeholder="Who asked…" data-bind="UI.quest.from" value="${esc(UI.quest.from)}"></label>
-        <label class="lbl" for="qn-where">Where<input id="qn-where" class="field" placeholder="Where to go…" data-bind="UI.quest.where" value="${esc(UI.quest.where)}"></label>
-      </div>
-      <label class="lbl" for="qn-for">Reward<input id="qn-for" class="field" placeholder="What you get…" data-bind="UI.quest.for" value="${esc(UI.quest.for)}" data-enter="quest-add"></label>
-      <button class="btn primary" data-act="quest-add">Add quest</button>
-    </section>
     ${list.map((q) => {
       const i = G.quests.indexOf(q);
       return `<section class="card quest${q.done ? ' done' : ''}">
-        <div class="row between"><span class="pill-tag">${q.done ? 'Done' : 'Open'}</span><button class="x" data-act="quest-remove" data-id="${q.id}" aria-label="Delete quest">${IC.trash}</button></div>
-        <label class="lbl" for="q-${q.id}-what">What<input id="q-${q.id}-what" class="field qtitle" data-bind="G.quests.${i}.what" value="${esc(q.what)}"></label>
-        <div class="g2">
-          <label class="lbl" for="q-${q.id}-from">From<input id="q-${q.id}-from" class="field" data-bind="G.quests.${i}.from" value="${esc(q.from)}"></label>
-          <label class="lbl" for="q-${q.id}-where">Where<input id="q-${q.id}-where" class="field" data-bind="G.quests.${i}.where" value="${esc(q.where)}"></label>
-        </div>
-        <label class="lbl" for="q-${q.id}-for">Reward<input id="q-${q.id}-for" class="field" data-bind="G.quests.${i}.for" value="${esc(q.for)}"></label>
-        <button class="btn ${q.done ? '' : 'ink'}" data-act="quest-done" data-id="${q.id}">${q.done ? 'Reopen quest' : IC.check + ' Mark as done'}</button>
+        <div class="row between"><span class="row" style="gap:10px"><span class="pill-tag">${q.done ? 'Done' : 'Open'}</span><button class="linkbtn" data-act="quest-done" data-id="${q.id}">${q.done ? 'Reopen quest' : 'Mark as done'}</button></span><button class="x" data-act="quest-remove" data-id="${q.id}" aria-label="Delete quest">${IC.trash}</button></div>
+        <label class="lbl" for="q-${q.id}-what">What<input id="q-${q.id}-what" class="field qtitle" placeholder="The task…" data-bind="G.quests.${i}.what" value="${esc(q.what)}"></label>
+        <label class="lbl" for="q-${q.id}-from">From<input id="q-${q.id}-from" class="field" placeholder="Who asked…" data-bind="G.quests.${i}.from" value="${esc(q.from)}"></label>
+        <label class="lbl" for="q-${q.id}-where">Where<input id="q-${q.id}-where" class="field" placeholder="Where to go…" data-bind="G.quests.${i}.where" value="${esc(q.where)}"></label>
       </section>`;
     }).join('')}
   </div>
-  ${list.length ? '' : `<p class="muted">${UI.questFilter === 'done' ? 'No finished quests yet.' : 'No open quests. Add one when the book gives you a task.'}</p>`}`;
+  ${list.length ? '' : `<p class="muted">${UI.questFilter === 'done' ? 'No finished quests yet.' : 'No open quests. Tap “Add quest” when the book gives you a task.'}</p>`}`;
 }
 
 function scrShips() {
@@ -705,6 +715,35 @@ function scrCodewords() {
   </div>`;
 }
 
+function houseBankHTML(n) {
+  G.houses = G.houses || {}; G.banks = G.banks || {};
+  const HS = G.houses[n] || [], BS = G.banks[n] || [];
+  const where = (path, o) => `<div class="row" style="align-items:flex-end;gap:8px">
+      <label class="lbl" style="width:96px;flex:none">Where · Book<input class="field" inputmode="numeric" placeholder="1" data-bind="${path}.book" value="${esc(o.book)}"></label>
+      <label class="lbl grow">Paragraph §<input class="field" inputmode="numeric" placeholder="§" data-bind="${path}.para" value="${esc(o.para)}"></label>`;
+  return `
+  <section class="stack sect" id="houses">
+    <div class="row wrapr between" style="gap:8px"><div class="stack" style="gap:2px"><h2 class="h2">Houses</h2><span class="s15 muted">Items stored in your houses. Note where to turn to get them back.</span></div>
+      <button class="btn addbtn" data-act="house-add">${IC.plus}Add house</button></div>
+    <div class="cards narrow">${HS.map((h, i) => `<div class="card">
+      ${where(`G.houses.${n}.${i}`, h)}<button class="x" data-act="house-remove" data-i="${i}" aria-label="Remove house">${IC.x}</button></div>
+      <div class="stack" style="gap:6px"><span class="small muted">Stored items</span>
+        ${h.items.map((it, j) => `<div class="row" style="gap:4px"><label class="sr" for="hi-${n}-${i}-${j}">Stored item</label><input id="hi-${n}-${i}-${j}" class="field grow" placeholder="Item…" data-bind="G.houses.${n}.${i}.items.${j}.text" value="${esc(it.text)}"><button class="x" data-act="house-item-remove" data-i="${i}" data-j="${j}" aria-label="Remove item">${IC.x}</button></div>`).join('')}
+        <div><button class="linkbtn" data-act="house-item-add" data-i="${i}">+ Add item</button></div></div>
+    </div>`).join('')}</div>
+    ${HS.length ? '' : '<p class="muted">No houses yet.</p>'}
+  </section>
+  <section class="stack sect" id="banks">
+    <div class="row wrapr between" style="gap:8px"><div class="stack" style="gap:2px"><h2 class="h2">Banks</h2><span class="s15 muted">Money invested. Note where to turn to collect it.</span></div>
+      <button class="btn addbtn" data-act="bank-add">${IC.plus}Add bank</button></div>
+    <div class="cards narrow">${BS.map((b, i) => `<div class="card">
+      ${where(`G.banks.${n}.${i}`, b)}<button class="x" data-act="bank-remove" data-i="${i}" aria-label="Remove bank">${IC.x}</button></div>
+      <label class="lbl">Money invested<input class="field" inputmode="numeric" placeholder="Amount in Shards" data-bind="G.banks.${n}.${i}.amount" value="${esc(b.amount)}"></label>
+    </div>`).join('')}</div>
+    ${BS.length ? '' : '<p class="muted">No banks yet.</p>'}
+  </section>`;
+}
+
 function scrBook() {
   const n = UI.book, B = BOOKS[n], t = G.ticks[n] || {}, st = bookStats(n);
   const f = (k, l) => `<button data-act="para-filter" data-f="${k}" aria-pressed="${pressed(UI.paraFilter === k)}">${l}</button>`;
@@ -712,11 +751,10 @@ function scrBook() {
     const m = B.multi[p] || 1, c = Math.min(m, t[p] || 0), full = c >= m;
     if (UI.paraFilter === 'open' && full) return '';
     if (UI.paraFilter === 'done' && c === 0) return '';
-    const note = cleanNote(B.notes[p]);
     let pips = '';
     if (m > 1) { pips = '<span class="pips">'; for (let i = 0; i < m; i++) pips += `<i class="${i < c ? 'on' : ''}"></i>`; pips += '</span>'; }
     return `<button class="para${full ? ' full' : c ? ' part' : ''}" data-act="para" data-p="${p}" aria-label="§${p}${m > 1 ? `, ${c} of ${m} ticked` : full ? ', visited' : ', not visited'}">
-      <span class="n">§${p}${full ? IC.check : ''}</span>${pips}${note ? `<span class="note">${esc(note)}</span>` : ''}</button>`;
+      <span class="n">§${p}${full ? IC.check : ''}</span>${pips}</button>`;
   }).join('');
   return `
   <div class="bookbar" role="group" aria-label="Choose book">${[1, 2, 3, 4, 5, 6, 7].map((b) => `<button data-act="book" data-book="${b}" aria-pressed="${pressed(String(b) === String(n))}">${b} · ${BOOK_TITLES[b]}</button>`).join('')}</div>
@@ -731,6 +769,7 @@ function scrBook() {
     <section class="main" id="paragraphs">
       <div class="row wrapr between"><div class="seg" role="group" aria-label="Filter paragraphs">${f('all', 'All')}${f('open', 'Not yet')}${f('done', 'Ticked')}</div><span class="small muted">Tap to tick. Multi-visit boxes count up.</span></div>
       <div class="pgrid">${paras || '<p class="muted">Nothing to show for this filter.</p>'}</div>
+      ${houseBankHTML(n)}
     </section>
     <aside class="side">
       <section class="card" id="places">
@@ -763,11 +802,12 @@ function scrSaves() {
     <section class="card dark" id="current">
       <div class="row" style="gap:12px">
         <div class="badge" style="background:var(--leather3);color:var(--gold);border-radius:50%">${IC.check}</div>
-        <div class="stack" style="gap:0"><span>${storageOk ? 'Saved automatically on this device' : 'Could not save on this device'}</span><span class="small muted">Slot: <b style="color:var(--cream)">${esc(active)}</b> · ${when(G.savedAt)}</span></div>
+        <div class="stack" style="gap:0"><span>${dirty ? 'Unsaved changes' : 'All changes saved'}</span><span class="small muted">Slot: <b style="color:var(--cream)">${esc(active)}</b> · last saved ${when((slots[active] || {}).savedAt)}</span></div>
       </div>
       ${storageOk ? '' : '<div class="s15" style="color:#F2A493">Your browser blocks storage here. Export a backup file so you don’t lose progress.</div>'}
-      <div class="row"><label class="sr" for="snap-name">Name for snapshot</label><input id="snap-name" class="field grow" placeholder="Name a snapshot…" data-bind="UI.snap" value="${esc(UI.snap)}" data-enter="snap-save"><button class="btn gold" data-act="snap-save">Save copy</button></div>
-      <div class="small muted">A snapshot is a copy you can go back to, e.g. before a risky fight.</div>
+      <button class="btn gold" data-act="save-now" style="font-weight:600">Save</button>
+      <div class="row"><label class="sr" for="snap-name">Name for a new slot</label><input id="snap-name" class="field grow" placeholder="Save as new slot…" data-bind="UI.snap" value="${esc(UI.snap)}" data-enter="snap-save"><button class="btn" data-act="snap-save">Save as</button></div>
+      <div class="small muted">Nothing is saved automatically. Tap Save to keep your progress. “Save as” keeps a separate copy you can go back to, e.g. before a risky fight.</div>
     </section>
     <section class="card" id="slots" style="gap:0">
       <h2 class="h2" style="margin-bottom:6px">Save slots</h2>
@@ -838,9 +878,8 @@ function scrCreate() {
 /* ---------- chrome ---------- */
 const JUMPS = {
   character: [['stamina', 'Stamina'], ['defence', 'Defence & money'], ['abilities', 'Abilities'], ['possessions', 'Possessions'], ['honours', 'Blessings']],
-  book: [['paragraphs', 'Paragraphs'], ['places', 'Known places'], ['notes', 'Notes']],
-  saves: [['slots', 'Save slots'], ['backup', 'Backup'], ['new', 'New adventure']],
-  quests: [['quest-new', 'New quest']]
+  book: [['paragraphs', 'Paragraphs'], ['houses', 'Houses'], ['banks', 'Banks'], ['places', 'Known places'], ['notes', 'Notes']],
+  saves: [['slots', 'Save slots'], ['backup', 'Backup'], ['new', 'New adventure']]
 };
 function menuHTML() {
   const c = G.char, sp = c.max ? clamp(Math.round(100 * c.stam / c.max), 0, 100) : 0;
@@ -872,7 +911,7 @@ function menuHTML() {
       <div class="nlabel">Books</div>
       <div class="g4">${[1, 2, 3, 4, 5, 6, 7].map((b) => { const st = bookStats(b); return `<button class="bookt" data-act="nav" data-to="book" data-book="${b}" aria-label="Book ${b}: ${BOOK_TITLES[b]}, ${st.done} of ${st.boxes}" ${s === 'book' && String(UI.book) === String(b) ? 'aria-current="page"' : ''}><b>${b}</b><span>${st.done}/${st.boxes}</span></button>`; }).join('')}</div>
     </div>
-    <button class="savesbtn" data-act="nav" data-to="saves" ${cur('saves')}><span style="color:var(--gold);display:flex">${IC.box}</span><span class="stack" style="gap:0;line-height:1.15"><span>Saves &amp; Backup</span><span class="small" style="color:var(--tan2)">${storageOk ? 'Autosaved' : 'Not saved – export a backup'}</span></span></button>`;
+    <button class="savesbtn" data-act="nav" data-to="saves" ${cur('saves')}><span style="color:var(--gold);display:flex">${IC.box}</span><span class="stack" style="gap:0;line-height:1.15"><span>Saves &amp; Backup</span><span class="small" style="color:var(--tan2)">${!storageOk ? 'Cannot save here – export a backup' : (dirty ? 'Unsaved changes' : 'All saved')}</span></span></button>`;
 }
 
 function diceHTML() {
@@ -958,7 +997,7 @@ function layerHTML() {
       <div class="row between"><span class="nlabel" style="color:var(--gold)">Where am I?</span><button class="x" data-act="bm-close" aria-label="Close bookmark" style="color:#E9DDBF">${IC.x}</button></div>
       <div class="g7">${[1, 2, 3, 4, 5, 6, 7].map((b) => `<button data-act="bm-book" data-book="${b}" aria-label="Book ${b}" aria-pressed="${pressed(String(UI.bmBook) === String(b))}">${b}</button>`).join('')}</div>
       <div class="row"><label class="pfield" for="bm-para"><span style="font-family:var(--display);font-size:20px;color:var(--gold)">§</span><span class="sr">Paragraph</span><input id="bm-para" inputmode="numeric" data-bind="UI.bmDraft" value="${esc(UI.bmDraft)}" data-enter="bm-set"></label><button class="btn gold" style="min-height:48px" data-act="bm-set">Set</button></div>
-      <div class="stack" style="gap:6px"><span class="nlabel">Recent</span><div class="row wrapr" style="gap:6px">${G.history.map((x) => `<button class="jump" data-act="bm-go" data-book="${esc(x.book)}" data-p="${esc(x.para)}">B${esc(x.book)} §${esc(x.para)}</button>`).join('')}</div></div>
+      <div class="stack" style="gap:6px"><span class="nlabel">Recent</span><div class="recent">${G.history.map((x) => `<button class="jump" data-act="bm-go" data-book="${esc(x.book)}" data-p="${esc(x.para)}">B${esc(x.book)} §${esc(x.para)}</button>`).join('')}</div></div>
       ${G.places.length ? `<div class="stack" style="gap:2px"><span class="nlabel" style="padding-bottom:4px">Known places</span>${G.places.map((pl) => `<button class="nitem" style="font-size:16px" data-act="place-go" data-id="${pl.id}"><span class="grow">${esc(pl.name)}</span><span style="color:var(--tan2)">B${esc(pl.book)} §${esc(pl.para)}</span></button>`).join('')}</div>` : ''}
     </div>`;
   }
@@ -971,6 +1010,15 @@ function layerHTML() {
       <div class="s15 muted">Nothing on your sheet has been reset. Adjust Stamina, money or possessions as the book instructs.</div>
       ${hasRes && c.resPara ? `<button class="btn primary lg" data-act="dead-go">Go to resurrection · §${esc(c.resPara)}</button>` : ''}
       <button class="btn" data-act="dead-dismiss">Dismiss</button>
+    </div></div>`;
+  }
+  if (UI.exportDlg) {
+    h += `<div class="modal-wrap"><div class="modal" role="dialog" aria-labelledby="exp-title">
+      <div class="row between"><span id="exp-title" class="nlabel" style="color:var(--red)">Export as</span><button class="x" data-act="export-close" aria-label="Close" style="margin:-8px -8px -8px 0">${IC.x}</button></div>
+      ${dirty ? '<div class="s15" style="color:var(--red)">You have unsaved changes. Both exports use your last saved state. Save first to include them.</div>' : ''}
+      <button class="opt" data-act="export-json"><b>Backup file (JSON)</b><span>All save slots. Use it to restore or to move to another device.</span></button>
+      <button class="opt" data-act="export-pdf"><b>Overview (PDF)</b><span>A printable sheet with all values of “${esc(active)}” as of your last save.</span></button>
+      <div class="small muted">Next, your device asks where to save the file.</div>
     </div></div>`;
   }
   if (UI.confirm) {
@@ -1070,18 +1118,140 @@ function fightStep() {
 
 /* ---------- export / import ---------- */
 function backupJSON() { return JSON.stringify({ format: 'fabled-lands-companion', v: 1, exportedAt: new Date().toISOString(), active, slots }, null, 2); }
-function exportFile() {
+/* Hand the file to the device: save dialog (desktop Chrome/Edge), share sheet "Save to Files" (iOS), or a plain download. */
+async function deliverFile(blob, name, mime, ext, label) {
+  if (window.showSaveFilePicker) {
+    try {
+      const h = await window.showSaveFilePicker({ suggestedName: name, types: [{ description: label, accept: { [mime]: ['.' + ext] } }] });
+      const w = await h.createWritable(); await w.write(blob); await w.close();
+      return 'saved';
+    } catch (e) { if (e && e.name === 'AbortError') return 'cancel'; }
+  }
   try {
-    const blob = new Blob([backupJSON()], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const d = new Date();
-    a.href = url;
-    a.download = `fabled-lands-backup-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}.json`;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
-    toast('Backup file created. If nothing downloaded, use “Copy backup to clipboard”.');
+    const f = new File([blob], name, { type: mime });
+    if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: name }); return 'shared'; }
+  } catch (e) { if (e && e.name === 'AbortError') return 'cancel'; }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  return 'download';
+}
+const stamp = () => { const d = new Date(); return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`; };
+async function exportFile() {
+  try {
+    const r = await deliverFile(new Blob([backupJSON()], { type: 'application/json' }), `fabled-lands-backup-${stamp()}.json`, 'application/json', 'json', 'Fabled Lands backup');
+    if (r !== 'cancel') toast(r === 'download' ? 'Backup file created. If nothing downloaded, use “Copy backup to clipboard”.' : 'Backup file saved.');
   } catch (e) { toast('Export failed. Use “Copy backup to clipboard” instead.'); }
+  render();
+}
+
+/* ---------- PDF overview (no library, works offline) ---------- */
+function pdfBytes(lines) {
+  const W = 595, H = 842, M = 48, LH = 1.3;
+  const narrow = 'iIjl.,;:\'!|ft()[]/ '.split(''), wide = 'mwMW'.split('');
+  const tw = (t, sz, bold) => { let w = 0; for (const ch of t) w += narrow.indexOf(ch) >= 0 ? 0.28 : wide.indexOf(ch) >= 0 ? 0.83 : /[A-Z0-9]/.test(ch) ? 0.64 : 0.54; return w * sz * (bold ? 1.06 : 1); };
+  const wrap = (t, sz, bold, maxW) => {
+    const out = []; let cur = '';
+    String(t).split(/\s+/).forEach((word) => {
+      const cand = cur ? cur + ' ' + word : word;
+      if (cur && tw(cand, sz, bold) > maxW) { out.push(cur); cur = word; } else cur = cand;
+    });
+    if (cur) out.push(cur);
+    return out.length ? out : [''];
+  };
+  const map = { '–': 150, '—': 151, '‘': 145, '’': 146, '“': 147, '”': 148, '•': 149, '…': 133, '·': 183, '§': 167, '×': 215 };
+  const enc = (t) => { let o = ''; for (const ch of t) { const c = ch.charCodeAt(0); const m = map[ch] || (c < 256 ? c : 63); const x = String.fromCharCode(m); o += (x === '(' || x === ')' || x === '\\') ? '\\' + x : x; } return o; };
+  const pages = []; let cur = [], y = H - M;
+  const newPage = () => { pages.push(cur); cur = []; y = H - M; };
+  lines.forEach((l) => {
+    const sz = l.size || 11, bold = !!l.bold, indent = l.indent || 0;
+    y -= (l.gap || 0);
+    wrap(l.text, sz, bold, W - 2 * M - indent).forEach((ln) => {
+      if (y - sz * LH < M) newPage();
+      y -= sz * LH;
+      cur.push(`BT /${bold ? 'F2' : 'F1'} ${sz} Tf ${M + indent} ${y.toFixed(1)} Td (${enc(ln)}) Tj ET`);
+    });
+    if (l.rule) { y -= 4; cur.push(`0.7 w ${M} ${y.toFixed(1)} m ${W - M} ${y.toFixed(1)} l S`); y -= 4; }
+  });
+  pages.push(cur);
+  const objs = [];
+  const add = (str) => { objs.push(str); return objs.length; };
+  add('<< /Type /Catalog /Pages 2 0 R >>');
+  add('PAGES');
+  add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+  add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+  const kids = [];
+  pages.forEach((cmds, i) => {
+    const content = cmds.join('\n') + `\nBT /F1 9 Tf ${W / 2 - 10} 24 Td (${i + 1} / ${pages.length}) Tj ET`;
+    const cid = add(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+    kids.push(add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${cid} 0 R >>`));
+  });
+  objs[1] = `<< /Type /Pages /Count ${kids.length} /Kids [${kids.map((k) => k + ' 0 R').join(' ')}] >>`;
+  let out = '%PDF-1.4\n'; const offs = [];
+  objs.forEach((o, i) => { offs.push(out.length); out += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+  const xref = out.length;
+  out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n` + offs.map((o) => String(o).padStart(10, '0') + ' 00000 n \n').join('');
+  out += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+  const u = new Uint8Array(out.length); for (let i = 0; i < out.length; i++) u[i] = out.charCodeAt(i) & 255;
+  return u;
+}
+function overviewLines(g, slotName) {
+  const c = g.char, L = [];
+  const bestOf = (t) => c.items.reduce((m, i) => (i.type === t && i.bonus > m ? i.bonus : m), 0);
+  const effOf = (a) => clamp(c.base[a] + bestOf(a), 1, 12);
+  const def = effOf('Combat') + c.rank + bestOf('Defence') + (c.defAdj || 0);
+  const H = (t) => L.push({ text: t.toUpperCase(), size: 12, bold: true, gap: 12, rule: true });
+  const T = (t, o) => L.push(Object.assign({ text: t, size: 11 }, o || {}));
+  const d = new Date(g.savedAt || Date.now());
+  L.push({ text: 'Fabled Lands – Adventure Sheet', size: 20, bold: true });
+  T(`${c.name} · ${c.prof} · Rank ${c.rank}${c.god ? ' · ' + c.god : ''}`, { size: 13, gap: 4 });
+  T(`Save slot “${slotName}” · saved ${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`, { size: 9, gap: 2 });
+  H('Status');
+  T(`Stamina ${c.stam} / ${c.max}   ·   Defence ${def}   ·   Money ${c.money} Shards`);
+  T(`Bookmark: Book ${g.bookmark.book}, §${g.bookmark.para}`);
+  H('Abilities');
+  AB.forEach((a) => { const b = bestOf(a); T(`${a}: ${effOf(a)}${b ? `   (base ${c.base[a]}, +${b} item)` : ''}`); });
+  H('Possessions');
+  if (c.items.length) c.items.forEach((i) => T(`• ${i.name}${i.type && i.bonus ? `   (${i.type} +${i.bonus})` : ''}`)); else T('None.');
+  H('Blessings, titles and resurrection');
+  const bl = Object.keys(c.blessings || {}); T(`Blessings: ${bl.length ? bl.join(', ') : 'none'}`);
+  T(`Titles and honours: ${(c.titles || []).length ? c.titles.join(', ') : 'none'}`);
+  T(`Resurrection: ${c.resText ? c.resText + (c.resPara ? ` (Book ${c.resBook || '1'}, §${c.resPara})` : '') : 'not set'}`);
+  const cws = Object.keys(g.codewords || {}).sort();
+  H(`Codewords (${cws.length})`); T(cws.length ? cws.join(', ') : 'None.');
+  H('Quests');
+  if ((g.quests || []).length) g.quests.forEach((q) => { T(`${q.done ? '[done]' : '[open]'} ${q.what || '(untitled)'}`, { bold: !q.done }); if (q.from || q.where) T(`From: ${q.from || '–'}   ·   Where: ${q.where || '–'}`, { indent: 14, size: 10 }); }); else T('None.');
+  H('Ships');
+  if ((g.ships || []).length) g.ships.forEach((s) => T(`${s.name || '(unnamed)'}${s.type ? ' · ' + s.type : ''} · crew ${s.crew}${s.cap ? ' · capacity ' + s.cap : ''}${s.cargo ? ' · cargo ' + s.cargo : ''}${s.dock ? ' · at ' + s.dock : ''}`)); else T('None.');
+  H('Places');
+  if ((g.places || []).length) g.places.forEach((pl) => T(`${pl.name}: Book ${pl.book}, §${pl.para}`)); else T('None.');
+  H('Houses and banks');
+  let any = false;
+  [1, 2, 3, 4, 5, 6, 7].forEach((n) => {
+    ((g.houses || {})[n] || []).forEach((h) => { any = true; T(`House – Book ${h.book || '?'}, §${h.para || '?'}`, { bold: true, gap: 3 }); (h.items || []).filter((x) => x.text.trim()).forEach((x) => T(`• ${x.text}`, { indent: 14 })); });
+    ((g.banks || {})[n] || []).forEach((b) => { any = true; T(`Bank – Book ${b.book || '?'}, §${b.para || '?'}: ${b.amount || '0'} Shards invested`, { gap: 3 }); });
+  });
+  if (!any) T('None.');
+  H('Books');
+  [1, 2, 3, 4, 5, 6, 7].forEach((n) => {
+    const B = BOOKS[n], t = (g.ticks || {})[n] || {};
+    let done = 0, boxes = 0; B.paras.forEach((q) => { const m = B.multi[q] || 1; boxes += m; done += Math.min(m, t[q] || 0); });
+    T(`Book ${n} · ${BOOK_TITLES[n]}: ${done} of ${boxes} boxes ticked`);
+    const ticked = B.paras.filter((q) => (t[q] || 0) > 0).map((q) => '§' + q + ((B.multi[q] || 1) > 1 ? ` (${Math.min(B.multi[q], t[q])}×)` : ''));
+    if (ticked.length) T(ticked.join(', '), { indent: 14, size: 9 });
+    const note = ((g.notes || {})[n] || '').trim(); if (note) T('Notes: ' + note, { indent: 14, size: 9 });
+  });
+  return L;
+}
+async function exportPdf() {
+  const g = slots[active];
+  try {
+    const r = await deliverFile(new Blob([pdfBytes(overviewLines(g, active))], { type: 'application/pdf' }), `fabled-lands-${(g.char.name || 'sheet').replace(/[^\w-]+/g, '-')}-${stamp()}.pdf`, 'application/pdf', 'pdf', 'PDF overview');
+    if (r !== 'cancel') toast(r === 'download' ? 'PDF created. Check your downloads.' : 'PDF saved.');
+  } catch (e) { toast('Could not create the PDF.'); }
+  render();
 }
 function importData(text) {
   let data;
@@ -1112,7 +1282,7 @@ $('#import-file').addEventListener('change', (e) => {
 function ask(text, okAct, ok) { UI.confirm = { text, act: okAct, ok }; }
 const A = {
   'nav': (d) => go(d.to, { book: d.book }),
-  'go-create': () => { UI.wiz = { step: 1, name: '', prof: '', god: '', err: '' }; go('create'); },
+  'go-create': (d) => { if (dirty && !d.force) { ask('You have unsaved changes. Start a new character and discard them?', { a: 'go-create', force: true }, 'Discard and continue'); return; } UI.wiz = { step: 1, name: '', prof: '', god: '', err: '' }; go('create'); },
   'menu-toggle': () => { UI.menu = !UI.menu; UI.bm = false; },
   'menu-close': () => { UI.menu = false; },
   'jump': (d) => { UI.menu = false; render(); const el = document.getElementById(d.id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return false; },
@@ -1161,23 +1331,35 @@ const A = {
   'place-remove': (d) => { G.places = G.places.filter((p) => p.id !== d.id); save(); },
   'place-go': (d) => { const p = G.places.find((x) => x.id === d.id); if (p) { setBookmark(p.book, p.para); UI.bm = false; save(); toast(`Bookmark set to ${p.name}, §${p.para}.`); } },
   'quest-filter': (d) => { UI.questFilter = d.f; },
-  'quest-add': () => { const q = UI.quest; if (!q.what.trim()) { toast('Describe the quest first.'); return; } G.quests.unshift({ id: uid(), what: q.what.trim(), from: q.from.trim(), where: q.where.trim(), for: q.for.trim(), done: false }); UI.quest = { what: '', from: '', where: '', for: '' }; save(); },
+  'quest-add': () => { const q = { id: uid(), what: '', from: '', where: '', done: false }; G.quests.push(q); if (UI.questFilter === 'done') UI.questFilter = 'open'; save(); setTimeout(() => { const el = document.getElementById('q-' + q.id + '-what'); if (el) el.focus(); }, 0); },
   'quest-done': (d) => { const q = G.quests.find((x) => x.id === d.id); if (q) { q.done = !q.done; save(); } },
   'quest-remove': (d) => ask('Delete this quest?', { a: 'quest-del', id: d.id }, 'Delete'),
   'quest-del': (d) => { G.quests = G.quests.filter((x) => x.id !== d.id); save(); },
   'ship-add': () => { G.ships.push({ id: uid(), name: '', type: '', crew: 'Average', cap: '', cargo: '', dock: '', notes: '' }); save(); },
   'ship-remove': (d) => ask('Remove this ship?', { a: 'ship-del', id: d.id }),
+  'house-add': () => { G.houses = G.houses || {}; (G.houses[UI.book] = G.houses[UI.book] || []).push({ id: uid(), book: String(UI.book), para: '', items: [{ id: uid(), text: '' }] }); save(); },
+  'house-remove': (d) => { const l = G.houses[UI.book], h = l[+d.i]; if (h && (h.para || h.items.some((x) => x.text.trim()))) ask('Remove this house and its list?', { a: 'house-del', i: d.i }, 'Remove'); else { l.splice(+d.i, 1); save(); } },
+  'house-del': (d) => { G.houses[UI.book].splice(+d.i, 1); save(); },
+  'house-item-add': (d) => { G.houses[UI.book][+d.i].items.push({ id: uid(), text: '' }); save(); },
+  'house-item-remove': (d) => { G.houses[UI.book][+d.i].items.splice(+d.j, 1); save(); },
+  'bank-add': () => { G.banks = G.banks || {}; (G.banks[UI.book] = G.banks[UI.book] || []).push({ id: uid(), book: String(UI.book), para: '', amount: '' }); save(); },
+  'bank-remove': (d) => { const l = G.banks[UI.book], b = l[+d.i]; if (b && (b.para || b.amount)) ask('Remove this bank entry?', { a: 'bank-del', i: d.i }, 'Remove'); else { l.splice(+d.i, 1); save(); } },
+  'bank-del': (d) => { G.banks[UI.book].splice(+d.i, 1); save(); },
   'ship-del': (d) => { G.ships = G.ships.filter((x) => x.id !== d.id); save(); },
   'snap-save': () => {
     let n = UI.snap.trim() || `${G.char.name} – Book ${G.bookmark.book} §${G.bookmark.para}`;
     while (slots[n]) n += ' (2)';
-    slots[n] = JSON.parse(JSON.stringify(G)); slots[n].savedAt = Date.now();
+    slots[n] = clone(G); slots[n].savedAt = Date.now();
     UI.snap = ''; flush(); toast(`Saved a copy as “${n}”.`);
   },
-  'slot-load': (d) => { if (!slots[d.n]) return; flush(); active = d.n; G = slots[active]; UI.book = G.bookmark.book; UI.fight = null; UI.check = null; flush(); toast(`Loaded “${d.n}”.`); go('character'); return false; },
+  'save-now': () => { commitSave(); toast(storageOk ? `Saved “${active}”.` : 'Could not save on this device. Export a backup.'); },
+  'slot-load': (d) => { if (!slots[d.n]) return; if (dirty && !d.force) { ask('You have unsaved changes. Load another save and discard them?', { a: 'slot-load', n: d.n, force: true }, 'Discard and load'); return; } active = d.n; G = clone(slots[active]); dirty = false; document.body.classList.remove('dirty'); UI.book = G.bookmark.book; UI.fight = null; UI.check = null; flush(); toast(`Loaded “${d.n}”.`); go('character'); return false; },
   'slot-delete': (d) => ask(`Delete the save <b>${esc(d.n)}</b> for good?`, { a: 'slot-del', n: d.n }, 'Delete'),
   'slot-del': (d) => { if (d.n === active) return; delete slots[d.n]; flush(); },
-  'export': () => exportFile(),
+  'export': () => { UI.exportDlg = true; },
+  'export-close': () => { UI.exportDlg = false; },
+  'export-json': () => { UI.exportDlg = false; exportFile(); return false; },
+  'export-pdf': () => { UI.exportDlg = false; exportPdf(); return false; },
   'export-copy': () => {
     const txt = backupJSON();
     try { navigator.clipboard.writeText(txt).then(() => { toast('Backup copied. Paste it into a note or file to keep it.'); }, () => { toast('Copying is blocked here. Use “Export file”.'); }); } catch (e) { toast('Copying is blocked here. Use “Export file”.'); }
@@ -1194,8 +1376,8 @@ const A = {
     const g = newGame({ name: w.name.trim(), prof: w.prof, god: w.god.trim() });
     let key = g.char.name;
     while (slots[key]) key += ' (2)';
-    flush();
-    slots[key] = g; active = key; G = g; UI.book = '1'; UI.fight = null; UI.check = null;
+    g.savedAt = Date.now();
+    slots[key] = g; active = key; G = clone(g); dirty = false; document.body.classList.remove('dirty'); UI.book = '1'; UI.fight = null; UI.check = null;
     flush(); toast(`Welcome, ${g.char.name}. Turn to Book 1, §1.`);
     go('character'); return false;
   },
@@ -1245,7 +1427,7 @@ document.addEventListener('change', (e) => {
   const el = e.target;
   if (!el.dataset || !el.dataset.bind) return;
   if (setPath(el.dataset.bind, el.value)) save();
-  if (el.tagName === 'SELECT' || el.dataset.bind.indexOf('G.char.') === 0 || el.dataset.bind.indexOf('G.quests') === 0) render();
+  if (el.tagName === 'SELECT' || el.dataset.bind.indexOf('G.char.') === 0) render();
 });
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && e.target.dataset && e.target.dataset.enter) {
