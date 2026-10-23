@@ -1,7 +1,7 @@
 # Fabled Lands – Companion App
 ## Projektstand & Entwicklungsnotizen
 
-**Letzter Stand:** 23.10.2026 – Nur noch manuelles Speichern, Quests/Book-Seiten vereinfacht, Houses & Banks je Buch, Export als JSON oder PDF  
+**Letzter Stand:** 23.10.2026 – Nur noch manuelles Speichern, Quests/Book-Seiten vereinfacht, Houses & Banks je Buch, Export als JSON oder PDF, Spare dice  
 **Live-URL:** https://wundi77.github.io/fabled-lands/  
 **Repository:** https://github.com/wundi77/fabled-lands  
 
@@ -66,7 +66,8 @@ fabled-lands/
 ### Würfel-Dialog
 - **Ability check:** 2d6 + Fähigkeit gegen Schwierigkeit, zeigt nötigen Wurf und Erfolgswahrscheinlichkeit, Neuwurf mit passendem Segen (verbraucht ihn)
 - **Fight:** Kampf-Simulator (Gegner mit Combat/Defence/Stamina, wer zuerst schlägt, Runden, Kampflog, Flucht, Sieg/Niederlage)
-- Option „I roll physical dice": echte Würfel eingeben statt App-Wurf
+- **Spare dice:** freie W6-Würfe für unerwartete Würfe (1–6 Würfel wählbar, Anzeige der Einzelwürfe und der Summe)
+- Option „I roll physical dice": echte Würfel eingeben statt App-Wurf (bei Spare dice ein Feld je gewähltem Würfel)
 
 ### Speichern / Backup
 - Mehrere Spielstände (Slots) in **localStorage**; **nur manuelles Speichern** (kein Autosave): „Save“ schreibt in den aktiven Slot, „Save as“ legt eine benannte Kopie an

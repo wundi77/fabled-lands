@@ -297,6 +297,12 @@ body.dirty #tab-menu::after { opacity: 1; }
 .modal .opt b { font-size: 18px; font-weight: 600; }
 .modal .opt span { font-size: 15px; color: var(--muted); }
 
+/* spare dice */
+#dice .seg button { padding: 0 4px; font-size: 15px; }
+.g6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.abpick.cnt6 { height: 48px; }
+.abpick.cnt6 b { font-size: 20px; }
+
 </style>
 </head>
 <body>
@@ -468,7 +474,7 @@ const UI = {
   item: { name: '', type: '', bonus: '1' }, title: '', money: '', place: { name: '', para: '' },
   quest: { what: '', from: '', where: '', for: '' }, snap: '',
   wiz: { step: 1, name: '', prof: '', god: '', err: '' },
-  phys: false, pd1: '', pd2: '', diceErr: '',
+  phys: false, pd1: '', pd2: '', diceErr: '', spareN: 2, spareRes: null, spareVals: ['', '', '', '', '', ''],
   checkAb: 'Combat', diff: 9, check: null,
   enemy: { name: '', combat: '', def: '', stam: '', first: 'you' }, fErr: '', fight: null
 };
@@ -940,6 +946,19 @@ function diceHTML() {
         <div>${r.d1} + ${r.d2} + ${r.v} (${r.ab}) = ${r.total} ${r.ok ? '>' : '≤'} ${r.diff}${r.rerolled ? ' · rerolled' : ''}</div>
         ${!r.ok && !r.rerolled && G.char.blessings[r.ab] ? `<button class="btn" data-act="check-reroll">Reroll with ${r.ab} blessing (uses it up)</button>` : ''}
       </div>` : ''}`;
+  } else if (tab === 'spare') {
+    const n = UI.spareN;
+    let shown = null;
+    if (UI.phys) { const v = UI.spareVals.slice(0, n).map(int); if (v.every((x) => x && x >= 1 && x <= 6)) shown = v; }
+    else if (UI.spareRes && UI.spareRes.length === n) shown = UI.spareRes;
+    body = `
+      <div class="s15 muted">Free D6 rolls for unexpected rolls the book does not tell you where to make. Choose how many dice.</div>
+      <div class="g6" role="group" aria-label="Number of dice">${[1, 2, 3, 4, 5, 6].map((k) => `<button class="abpick cnt6" data-act="spare-n" data-n="${k}" aria-label="${k} ${k === 1 ? 'die' : 'dice'}" aria-pressed="${pressed(n === k)}"><b>${k}</b></button>`).join('')}</div>
+      <button class="switch" data-act="phys" aria-pressed="${pressed(UI.phys)}">I roll physical dice<span class="t"></span></button>
+      ${UI.phys ? `<div class="stack" style="gap:6px"><span class="s15 muted">Your dice (1–6 each)</span><div class="row wrapr" style="gap:6px">${Array.from({ length: n }, (_, i) => `<label class="sr" for="sd${i}">Die ${i + 1}</label><input id="sd${i}" class="field num" style="width:52px;height:48px;font-size:22px" inputmode="numeric" data-live data-bind="UI.spareVals.${i}" value="${esc(UI.spareVals[i])}">`).join('')}</div></div>`
+        : `<button class="btn primary lg" data-act="spare-roll">Roll ${n} ${n === 1 ? 'die' : 'dice'}</button>`}
+      ${shown ? `<div class="result" role="status"><div class="row wrapr" style="gap:8px">${shown.map((v) => `<span class="die" style="width:52px;height:52px;font-size:26px">${v}</span>`).join('')}</div>
+        <div class="row" style="align-items:baseline;gap:8px"><span class="s15 muted">Total</span><b style="font-family:var(--display);font-size:30px;color:var(--red)">${shown.reduce((a, b) => a + b, 0)}</b><span class="small muted">${shown.length} ${shown.length === 1 ? 'die' : 'dice'}</span></div></div>` : ''}`;
   } else {
     const f = UI.fight, c = G.char;
     if (!f) {
@@ -984,6 +1003,7 @@ function diceHTML() {
       <div class="seg grow" role="tablist" aria-label="Dice method" style="display:grid">
         <button role="tab" data-act="dice-tab" data-t="check" aria-pressed="${pressed(tab === 'check')}" aria-selected="${pressed(tab === 'check')}">Ability check</button>
         <button role="tab" data-act="dice-tab" data-t="fight" aria-pressed="${pressed(tab === 'fight')}" aria-selected="${pressed(tab === 'fight')}">Fight</button>
+        <button role="tab" data-act="dice-tab" data-t="spare" aria-pressed="${pressed(tab === 'spare')}" aria-selected="${pressed(tab === 'spare')}">Spare dice</button>
       </div>
       <button class="x" data-act="dice-close" aria-label="Close dice" style="color:var(--muted)">${IC.x}</button>
     </div>
@@ -1381,6 +1401,8 @@ const A = {
     flush(); toast(`Welcome, ${g.char.name}. Turn to Book 1, §1.`);
     go('character'); return false;
   },
+  'spare-n': (d) => { UI.spareN = +d.n; UI.spareRes = null; },
+  'spare-roll': () => { UI.spareRes = Array.from({ length: UI.spareN }, () => 1 + Math.floor(Math.random() * 6)); },
   'phys': () => { UI.phys = !UI.phys; UI.diceErr = ''; },
   'check-ab': (d) => { UI.checkAb = d.ab; UI.check = null; },
   'diff': (d) => { UI.diff = clamp(UI.diff + (+d.d), 2, 30); UI.check = null; },
