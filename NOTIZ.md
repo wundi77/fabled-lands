@@ -1,7 +1,7 @@
 # Fabled Lands – Companion App
 ## Projektstand & Entwicklungsnotizen
 
-**Letzter Stand:** 02.11.2026 – Design-Canvas als Basis für Optik-Anpassungen dokumentiert (Code-Stand: Commit vom 23.10.)  
+**Letzter Stand:** 02.11.2026 – Design-Canvas an den Code-Stand angeglichen (Code unverändert seit 23.10.)  
 **Live-URL:** https://wundi77.github.io/fabled-lands/  
 **Repository:** https://github.com/wundi77/fabled-lands  
 
@@ -116,7 +116,7 @@ fabled-lands/
 
 ## Design-Canvas
 
-Die Layout-Entwürfe liegen als Canvas auf claude.ai: „Fabled Lands – iPad Redesign“ (https://claude.ai/artifact/DkwfobReC7WsjYv2KPt1Qv). Er enthält Artboards für Web, Desktop (Book, Bookmark, Check, Codewords, Quests, Saves), Tablet und Phone (Bookmark, Create, Death, Fight, Quests, Saves, Spare dice). Optik-Änderungen werden zuerst dort vorgenommen und danach in `index.html` übertragen. Der Canvas zeigt das Layout vor der Umsetzung und kann vom aktuellen Code abweichen.
+Die Layout-Entwürfe liegen als Canvas auf claude.ai: „Fabled Lands – iPad Redesign“ (https://claude.ai/artifact/DkwfobReC7WsjYv2KPt1Qv). Er enthält Artboards für Web, Desktop (Book, Bookmark, Check, Codewords, Quests, Saves), Tablet und Phone (Bookmark, Create, Death, Fight, Quests, Saves, Spare dice). Optik-Änderungen werden zuerst dort vorgenommen und danach in `index.html` übertragen. Stand 02.11.2026: Der Canvas wurde an den Code (Commit a58125d) angeglichen und enthält zusätzlich die Artboards Ships (Desktop/Phone), Export-Dialog und „Unsaved changes“-Rückfrage (Phone). Bewusst nicht übernommen: Fehlermeldungen und Datei-Aktionen (Export/Import/Zwischenablage), die im Canvas nichts speichern können; der Würfel-Schalter „I roll physical dice“ liegt im Canvas gemeinsam über den Tabs, im Code je Tab. Nur im Canvas vorhanden: zwei Platzhalter-Slots und ein loser deutscher Hinweistext am Ende von `Web.dc.html` (sichtbar auf jedem Artboard).
 
 ---
 
