@@ -1,7 +1,7 @@
 # Fabled Lands – Companion App
 ## Projektstand & Entwicklungsnotizen
 
-**Letzter Stand:** 23.10.2026 – Nur noch manuelles Speichern, Quests/Book-Seiten vereinfacht, Houses & Banks je Buch, Export als JSON oder PDF, Spare dice  
+**Letzter Stand:** 02.11.2026 – Design-Canvas als Basis für Optik-Anpassungen dokumentiert (Code-Stand: Commit vom 23.10.)  
 **Live-URL:** https://wundi77.github.io/fabled-lands/  
 **Repository:** https://github.com/wundi77/fabled-lands  
 
@@ -111,6 +111,12 @@ fabled-lands/
 - localStorage-Schlüssel: `flc_slots`, `flc_active`
 - Regeldaten im Code: `AB` (Fähigkeiten), `PROFS` (Berufe), `BLESS`, `BOOKS` (Paragraphen, Notizen, Mehrfach-Kästchen), `CW` (Codewörter), `BOOK_TITLES`
 - Wahrscheinlichkeit einer 2d6-Probe: `pAtLeast(n)` mit Tabelle `WAYS`
+
+---
+
+## Design-Canvas
+
+Die Layout-Entwürfe liegen als Canvas auf claude.ai: „Fabled Lands – iPad Redesign“ (https://claude.ai/artifact/DkwfobReC7WsjYv2KPt1Qv). Er enthält Artboards für Web, Desktop (Book, Bookmark, Check, Codewords, Quests, Saves), Tablet und Phone (Bookmark, Create, Death, Fight, Quests, Saves, Spare dice). Optik-Änderungen werden zuerst dort vorgenommen und danach in `index.html` übertragen. Der Canvas zeigt das Layout vor der Umsetzung und kann vom aktuellen Code abweichen.
 
 ---
 
