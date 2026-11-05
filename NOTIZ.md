@@ -1,7 +1,7 @@
 # Fabled Lands – Companion App
 ## Projektstand & Entwicklungsnotizen
 
-**Letzter Stand:** 05.11.2026 – Design-Canvas als Kopie im Repo (`design/`), Arbeitsweise auf „lokal bearbeiten, Push nur auf Anweisung“ umgestellt (Code unverändert seit 23.10.)  
+**Letzter Stand:** 05.11.2026 – Design-Canvas als Kopie im Repo (`design/`), Arbeitsweise auf „lokal bearbeiten, Push nur auf Anweisung“ umgestellt, erledigten Punkt „alten Branch löschen“ entfernt (auf GitHub gibt es nur noch `main`; Code unverändert seit 23.10.)  
 **Live-URL:** https://wundi77.github.io/fabled-lands/  
 **Repository:** https://github.com/wundi77/fabled-lands  
 
