@@ -23,14 +23,14 @@ Nicht enthalten, weil nicht Teil des Projekts: `support.js`, Editor und Runtime.
 | | |
 |---|---|
 | Letzter Abgleich | 05.11.2026 |
-| Artifact-Version | `1793646911-1d78` (Version 54) |
+| Artifact-Version | `1793646911-1d78` |
 | Code-Stand | `index.html` aus Commit `a58125d` |
 
 Hat sich der Canvas auf claude.ai nach diesem Datum geändert (z. B. per Hand), ist diese Kopie veraltet. Vor jeder Design-Arbeit deshalb zuerst neu herunterladen.
 
 ## Arbeitsablauf
 
-1. **Vor der Arbeit:** alle Dateien aus dem Artifact neu laden (Artifact-Tool `read` mit `paths` für `project/canvas.json` und alle `project/*.dc.html`) und nach `design/canvas/project/` kopieren, falls sie sich unterscheiden.
+1. **Vor der Arbeit:** Dateiliste mit dem Artifact-Tool `list` (`scope: "files"`) holen und alle `project/`-Pfade daraus mit `read` und `paths` laden (so werden auch neue Artboards gefunden). Nach `design/canvas/project/` kopieren, was sich unterscheidet. Lokale Dateien, die im Listing fehlen, wurden auf claude.ai entfernt und werden auch hier gelöscht, sonst bringt eine Wiederherstellung sie zurück. Ist die Asset-Liste (`scope: "assets"`) nicht mehr leer, Assets ebenfalls sichern.
 2. **Ändern:** entweder direkt in den Dateien hier oder im Canvas auf claude.ai.
 3. **Veröffentlichen/ansehen:** Artifact-Tool `publish` mit `url` = Canvas-URL, `root` = `design/canvas`, `file_path` = eine geänderte Datei, weitere geänderte Dateien in `files` (`"project/Name.dc.html": "project/Name.dc.html"`). `canvas.json` nur mitschicken, wenn Artboards hinzukommen, wegfallen oder verschoben werden.
 4. **Nach jeder Canvas-Änderung:** geänderte Dateien zurück nach `design/` kopieren, Sync-Stand oben anpassen, committen.

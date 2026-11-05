@@ -4,7 +4,7 @@
 
 Zu Beginn jeder (neuen oder fortgesetzten) Sitzung zuerst den Stand ermitteln, bevor mit der eigentlichen Aufgabe begonnen wird:
 
-1. `git fetch origin` und lokalen Stand mit `origin/main` vergleichen (Branches, letzte Commits). Liegt GitHub vorn (z. B. Uploads über den Browser), vor dem Arbeiten `git pull` ausführen.
+1. `git fetch origin` und lokalen Stand mit `origin/main` vergleichen (Branches, letzte Commits). Liegt GitHub vorn (z. B. Uploads über den Browser), `git pull --ff-only` ausführen. Lehnt Git das ab, weil lokale und GitHub-Commits auseinanderlaufen, beide Seiten dem Nutzer zeigen und vor Merge oder Rebase nachfragen, nie stillschweigend mergen.
 2. `NOTIZ.md`, `README.md` und `design/README.md` lesen.
 3. Weicht der lokale Stand von GitHub ab (lokale Commits, die noch nicht gepusht sind), dem Nutzer kurz sagen, was lokal noch aussteht.
 
@@ -27,7 +27,7 @@ Basis für Optik-Anpassungen ist der Design-Canvas „Fabled Lands – iPad Rede
 
 Ablauf bei Layout-Wünschen:
 
-1. Canvas neu laden (Artifact-Tool `read` mit `paths` für `project/canvas.json` und alle `project/*.dc.html`), da der Nutzer ihn von Hand geändert haben kann, und mit `design/` abgleichen. Abweichungen zuerst nach `design/` übernehmen.
+1. Canvas neu laden, da der Nutzer ihn von Hand geändert haben kann: erst Artifact-Tool `list` mit `scope: "files"`, dann alle `project/`-Pfade aus dem Ergebnis mit `read` und `paths` holen (so werden auch neue Artboards gefunden). Lokale Dateien in `design/canvas/project/`, die im Listing fehlen, wurden auf claude.ai entfernt und werden auch lokal gelöscht (sonst bringt eine Wiederherstellung sie zurück). Ist `list` mit `scope: "assets"` nicht mehr leer, die Assets ebenfalls sichern. Abweichungen zuerst nach `design/` übernehmen.
 2. Änderung am Canvas vornehmen: Dateien in `design/canvas/project/` bearbeiten und mit `root` = `design/canvas` auf die Canvas-URL veröffentlichen (bei neuen oder verschobenen Artboards auch `canvas.json`).
 3. Nach jeder Canvas-Änderung: Stand in `design/README.md` (Datum, Artifact-Version) aktualisieren und committen.
 4. Gefällt der Entwurf, ihn in `index.html` übertragen, Doku aktualisieren und committen. Gepusht wird nur auf Anweisung.

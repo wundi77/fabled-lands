@@ -137,7 +137,7 @@ Arbeitsregeln stehen in `CLAUDE.md`. Kurzfassung: lokal arbeiten und committen, 
 ```bash
 git clone https://github.com/wundi77/fabled-lands.git   # einmalig
 cd fabled-lands
-git pull                                                # Stand von GitHub holen
+git pull --ff-only                                      # Stand von GitHub holen (bei Abweichung nicht mergen, erst klären)
 # ... lokal mit Claude Code arbeiten, committen ...
 git push origin main                                    # nur auf Anweisung
 ```
