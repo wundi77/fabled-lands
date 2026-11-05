@@ -1,0 +1,1608 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fabled Lands – Web</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&amp;family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #EFE5CC; font-family: 'EB Garamond', Georgia, serif; color: #2B1D10">
+  <div style="max-width: 1920px; margin: 0 auto; padding: 22px clamp(16px, 3vw, 48px) 120px; box-sizing: border-box">
+
+    <sc-if value="{{isChar}}" hint-placeholder-val="{{ true }}">
+      <sc-if value="{{isExample}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 12px 56px 12px 16px; margin-bottom: 16px; border-radius: 14px; background: #EFE1BC">
+          <span>This is an example adventurer to look around. Your own progress starts with a new character.</span>
+          <button onClick="{{goCreate}}" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #8E2A1E; background: #8E2A1E; color: #FBF1DC; font: inherit; font-size: 16px; cursor: pointer">Start your own</button>
+        </div>
+      </sc-if>
+      <header id="top" style="padding-right: 56px; margin-bottom: 18px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px">
+        <div>
+          <div style="font-family: Cinzel, serif; font-size: 12px; letter-spacing: 0.16em; color: #7A5A1E">ADVENTURE SHEET</div>
+          <h1 style="margin: 2px 0 0; font-family: Cinzel, serif; font-weight: 600; font-size: clamp(26px, 2.4vw, 36px); line-height: 1.15">{{name}}</h1>
+          <div style="font-size: 17px; color: #6B5537">{{prof}} · Rank {{rank}} · {{godLine}}</div>
+        </div>
+        <button onClick="{{goBook}}" style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: #2B1D10; color: #F3E8CC; font: inherit; font-size: 16px; cursor: pointer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"></path></svg>
+          Continue · Book {{bmBook}}, §{{bmPara}}</button>
+      </header>
+
+      <div style="columns: 340px 4; column-gap: 16px">
+
+        <section id="stamina" style="break-inside: avoid; margin: 0 0 16px; background: #2B1D10; color: #F3E8CC; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 8px 22px -14px rgba(43,29,16,0.6)">
+          <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #D4AF5A">STAMINA</h2>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 14px; color: #BFAE8C">Current</span>
+              <span style="font-family: Cinzel, serif; font-size: 42px; font-weight: 600; line-height: 1; color: {{stamNumColor}}">{{stam}}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 14px; color: #BFAE8C">Maximum (unwounded)</span>
+              <span style="display: flex; align-items: center; gap: 6px">
+                <button onClick="{{maxDown}}" aria-label="Lower maximum Stamina" style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #5A4326; background: #3A2814; color: #F3E8CC; font: inherit; cursor: pointer; padding: 0">−</button>
+                <span style="font-family: Cinzel, serif; font-size: 28px; font-weight: 600; min-width: 36px; text-align: center">{{max}}</span>
+                <button onClick="{{maxUp}}" aria-label="Raise maximum Stamina" style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #5A4326; background: #3A2814; color: #F3E8CC; font: inherit; cursor: pointer; padding: 0">+</button>
+              </span>
+            </div>
+          </div>
+          <div style="height: 8px; background: #46331C; border-radius: 4px; overflow: hidden"><div style="height: 8px; width: {{stamPct}}; background: {{stamColor}}; border-radius: 4px"></div></div>
+          <sc-if value="{{stamLow}}" hint-placeholder-val="{{ false }}">
+            <div style="font-size: 15px; color: #F2A493">Low Stamina – at 0 you are killed.</div>
+          </sc-if>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+            <button onClick="{{stamDown}}" aria-label="Lose 1 Stamina" style="height: 48px; border-radius: 12px; border: 1px solid #5A4326; background: #3A2814; color: #F3E8CC; font: inherit; font-size: 18px; cursor: pointer">−1</button>
+            <button onClick="{{stamUp}}" aria-label="Gain 1 Stamina" style="height: 48px; border-radius: 12px; border: 1px solid #5A4326; background: #3A2814; color: #F3E8CC; font: inherit; font-size: 18px; cursor: pointer">+1</button>
+            <button onClick="{{stamFull}}" style="height: 48px; border-radius: 12px; border: 0; background: #D4AF5A; color: #2B1D10; font: inherit; font-size: 17px; font-weight: 600; cursor: pointer">Rest</button>
+          </div>
+          <sc-if value="{{rankDlgClosed}}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{openRank}}" style="height: 44px; border-radius: 12px; border: 1px dashed #8C6F3E; background: transparent; color: #E9DDBF; font: inherit; font-size: 16px; cursor: pointer">Advance to Rank {{nextRank}}…</button>
+          </sc-if>
+          <sc-if value="{{rankDlg}}" hint-placeholder-val="{{ false }}">
+            <div style="background: #3A2814; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px">
+              <div style="font-size: 17px">Advance to <b>Rank {{nextRank}}</b></div>
+              <div style="font-size: 14px; color: #BFAE8C">Enter the Stamina gain the book tells you, or roll 1d6. It is added to current and maximum Stamina. Defence updates automatically.</div>
+              <div style="display: flex; gap: 8px; align-items: center">
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 15px; color: #BFAE8C">Stamina gain<input value="{{rankGain}}" onChange="{{onRankGain}}" inputmode="numeric" style="width: 64px; height: 44px; border: 1px solid #5A4326; border-radius: 10px; background: #2B1D10; color: #F3E8CC; font: inherit; font-size: 18px; text-align: center"></label>
+                <button onClick="{{rollRankGain}}" style="height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid #5A4326; background: transparent; color: #F3E8CC; font: inherit; font-size: 15px; cursor: pointer">Roll 1d6</button>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                <button onClick="{{closeRank}}" style="height: 44px; border-radius: 10px; border: 1px solid #5A4326; background: transparent; color: #F3E8CC; font: inherit; font-size: 16px; cursor: pointer">Cancel</button>
+                <button onClick="{{confirmRank}}" style="height: 44px; border-radius: 10px; border: 0; background: #D4AF5A; color: #2B1D10; font: inherit; font-size: 16px; font-weight: 600; cursor: pointer">Confirm</button>
+              </div>
+            </div>
+          </sc-if>
+        </section>
+
+        <section id="defence" style="break-inside: avoid; margin: 0 0 16px; background: #FBF6E8; border: 1px solid #DCCBA4; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+            <div style="display: flex; flex-direction: column; padding: 10px 12px; border-radius: 12px; background: #F6EED9; border: 1px solid #E4D6B6">
+              <span style="font-family: Cinzel, serif; font-size: 11px; letter-spacing: 0.12em; color: #6B5537">RANK</span>
+              <span style="font-family: Cinzel, serif; font-size: 30px; font-weight: 600; line-height: 1.1">{{rank}}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; padding: 10px 12px; border-radius: 12px; background: #2B1D10; color: #F3E8CC">
+              <span style="font-family: Cinzel, serif; font-size: 11px; letter-spacing: 0.12em; color: #D4AF5A">DEFENCE</span>
+              <span style="font-family: Cinzel, serif; font-size: 30px; font-weight: 600; line-height: 1.1">{{defence}}</span>
+            </div>
+          </div>
+          <div style="font-size: 15px; color: #6B5537; line-height: 1.35">{{defBreakdown}}</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+            <span style="font-size: 15px; color: #6B5537">Manual adjustment</span>
+            <span style="display: flex; align-items: center; gap: 6px">
+              <button onClick="{{adjDown}}" aria-label="Lower Defence adjustment" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; color: #2B1D10; cursor: pointer; padding: 0">−</button>
+              <span style="min-width: 32px; text-align: center; font-size: 17px">{{defAdjText}}</span>
+              <button onClick="{{adjUp}}" aria-label="Raise Defence adjustment" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; color: #2B1D10; cursor: pointer; padding: 0">+</button>
+            </span>
+          </div>
+          <div style="border-top: 1px solid #EADDC0; padding-top: 12px; display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; align-items: baseline; justify-content: space-between">
+              <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">SHARDS</h2>
+              <span style="font-family: Cinzel, serif; font-size: 28px; font-weight: 600">{{money}}</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+              <button onClick="{{moneyM10}}" style="height: 44px; border-radius: 10px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; font-size: 16px; color: #2B1D10; cursor: pointer">−10</button>
+              <button onClick="{{moneyM1}}" style="height: 44px; border-radius: 10px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; font-size: 16px; color: #2B1D10; cursor: pointer">−1</button>
+              <button onClick="{{moneyP1}}" style="height: 44px; border-radius: 10px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; font-size: 16px; color: #2B1D10; cursor: pointer">+1</button>
+              <button onClick="{{moneyP10}}" style="height: 44px; border-radius: 10px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; font-size: 16px; color: #2B1D10; cursor: pointer">+10</button>
+            </div>
+            <div style="display: flex; gap: 6px">
+              <label style="flex: 1; display: flex; min-width: 0"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Amount</span><input value="{{moneyAmt}}" onChange="{{onMoneyAmt}}" inputmode="numeric" placeholder="Amount…" style="flex: 1; min-width: 0; height: 44px; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10"></label>
+              <button onClick="{{moneySpend}}" style="height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid #8E2A1E; background: transparent; color: #8E2A1E; font: inherit; font-size: 16px; cursor: pointer">Spend</button>
+              <button onClick="{{moneyGain}}" style="height: 44px; padding: 0 12px; border-radius: 10px; border: 0; background: #2B1D10; color: #F3E8CC; font: inherit; font-size: 16px; cursor: pointer">Gain</button>
+            </div>
+          </div>
+          <div style="border-top: 1px solid #EADDC0; padding-top: 12px; display: flex; flex-direction: column; gap: 8px">
+              <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537">God<input value="{{god}}" onChange="{{onGod}}" placeholder="None" style="height: 44px; min-width: 0; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10"></label>
+          </div>
+        </section>
+
+        <section id="abilities" style="break-inside: avoid; margin: 0 0 16px; background: #FBF6E8; border: 1px solid #DCCBA4; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+          <div>
+            <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">ABILITIES</h2>
+            <div style="font-size: 15px; color: #6B5537">Score = base + best item bonus. Range 1–12.</div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(146px, 1fr)); gap: 8px">
+            <sc-for list="{{abilities}}" as="ab" hint-placeholder-count="6">
+              <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px solid #E4D6B6; border-radius: 12px; background: #F6EED9">
+                <div style="display: flex; align-items: baseline; justify-content: space-between">
+                  <span style="font-family: Cinzel, serif; font-size: 11px; letter-spacing: 0.1em; color: #6B5537">{{ab.upper}}</span>
+                  <span style="font-family: Cinzel, serif; font-size: 28px; font-weight: 600; line-height: 1">{{ab.eff}}</span>
+                </div>
+                <span style="font-size: 13px; line-height: 1.2; color: #6B5537; min-height: 16px">{{ab.detail}}</span>
+                <div style="display: flex; gap: 4px">
+                  <button onClick="{{ab.down}}" aria-label="Lower {{ab.label}}" disabled="{{ab.atMin}}" style="width: 38px; height: 40px; border-radius: 10px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; font-size: 18px; color: #2B1D10; cursor: pointer; padding: 0; opacity: {{ab.downOp}}">−</button>
+                  <button onClick="{{ab.roll}}" aria-label="Roll {{ab.label}} check" style="flex: 1; height: 40px; border-radius: 10px; border: 0; background: #2B1D10; color: #F3E8CC; font: inherit; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"></rect><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor"></circle><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor"></circle></svg>Roll</button>
+                  <button onClick="{{ab.up}}" aria-label="Raise {{ab.label}}" disabled="{{ab.atMax}}" style="width: 38px; height: 40px; border-radius: 10px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; font-size: 18px; color: #2B1D10; cursor: pointer; padding: 0; opacity: {{ab.upOp}}">+</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section id="possessions" style="break-inside: avoid; margin: 0 0 16px; background: #FBF6E8; border: 1px solid #DCCBA4; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: baseline; justify-content: space-between">
+            <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">POSSESSIONS</h2>
+            <span style="font-size: 15px; color: {{itemCountColor}}">{{itemCount}} / 12</span>
+          </div>
+          <div style="display: flex; flex-direction: column">
+            <sc-for list="{{items}}" as="it" hint-placeholder-count="6">
+              <div style="display: flex; align-items: center; gap: 8px; min-height: 46px; border-bottom: 1px solid #EADDC0">
+                <span style="flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px">
+                  <span style="font-size: 17px">{{it.name}}</span>
+                  <sc-if value="{{it.hasBonus}}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size: 13px; padding: 2px 8px; border-radius: 999px; background: {{it.chipBg}}; color: {{it.chipFg}}">{{it.bonusText}}</span>
+                  </sc-if>
+                </span>
+                <button onClick="{{it.remove}}" aria-label="Remove {{it.name}}" style="width: 44px; height: 44px; flex: none; border: 0; background: transparent; color: #8A7250; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{noItems}}" hint-placeholder-val="{{ false }}"><div style="font-size: 17px; color: #6B5537; padding: 4px 0">Nothing carried.</div></sc-if>
+          <div style="font-size: 14px; color: #6B5537">Faded bonuses don’t count – only the best item per ability or armour applies.</div>
+          <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px dashed #C9B488; border-radius: 12px">
+            <label style="display: flex; min-width: 0"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">New item</span><input value="{{itemDraft}}" onChange="{{onItemDraft}}" placeholder="Add an item…" style="flex: 1; min-width: 0; height: 44px; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10"></label>
+            <div style="display: flex; gap: 6px">
+              <label style="flex: 1; display: flex; min-width: 0"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Bonus type</span>
+                <select value="{{itemType}}" onChange="{{onItemType}}" style="flex: 1; min-width: 0; height: 44px; padding: 0 8px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 16px; color: #2B1D10">
+                  <option value="">No bonus</option>
+                  <option value="Defence">Defence (armour)</option>
+                  <option value="Charisma">Charisma</option>
+                  <option value="Combat">Combat</option>
+                  <option value="Magic">Magic</option>
+                  <option value="Sanctity">Sanctity</option>
+                  <option value="Scouting">Scouting</option>
+                  <option value="Thievery">Thievery</option>
+                </select>
+              </label>
+              <label style="display: flex; align-items: center; gap: 4px; font-size: 15px; color: #6B5537">+<input value="{{itemBonus}}" onChange="{{onItemBonus}}" inputmode="numeric" aria-label="Bonus value" style="width: 48px; height: 44px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; text-align: center; color: #2B1D10"></label>
+              <button onClick="{{addItem}}" style="height: 44px; padding: 0 16px; border-radius: 10px; border: 0; background: #8E2A1E; color: #FBF1DC; font: inherit; font-size: 16px; cursor: pointer">Add</button>
+            </div>
+            <sc-if value="{{itemsFull}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; color: #8E2A1E">You can carry 12 possessions. Drop something first.</div></sc-if>
+          </div>
+        </section>
+
+        <section id="honours" style="break-inside: avoid; margin: 0 0 16px; background: #FBF6E8; border: 1px solid #DCCBA4; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">BLESSINGS</h2>
+            <div style="font-size: 14px; color: #6B5537">One of each type. Tap “Use” when the book lets you spend it.</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px">
+              <sc-for list="{{blessings}}" as="bl" hint-placeholder-count="8">
+                <sc-if value="{{bl.on}}" hint-placeholder-val="{{ false }}">
+                  <span style="display: flex; align-items: center; gap: 4px; padding: 2px 2px 2px 12px; border-radius: 999px; background: #8E2A1E; color: #FBF1DC; font-size: 15px">{{bl.label}}<button onClick="{{bl.use}}" style="height: 36px; padding: 0 10px; border: 0; border-radius: 999px; background: #6E1F15; color: #FBF1DC; font: inherit; font-size: 14px; cursor: pointer">Use</button></span>
+                </sc-if>
+                <sc-if value="{{bl.off}}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{bl.add}}" style="height: 40px; padding: 0 12px; border-radius: 999px; border: 1px dashed #C9B488; background: transparent; font: inherit; font-size: 15px; color: #6B5537; cursor: pointer">+ {{bl.label}}</button>
+                </sc-if>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">TITLES &amp; HONOURS</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <sc-for list="{{titles}}" as="tt" hint-placeholder-count="1">
+                <span style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 999px; background: #EFE1BC; font-size: 16px">{{tt.text}}<button onClick="{{tt.remove}}" aria-label="Remove {{tt.text}}" style="width: 32px; height: 32px; margin: -6px -8px -6px 0; border: 0; background: transparent; color: #8A7250; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></span>
+              </sc-for>
+              <sc-if value="{{noTitles}}" hint-placeholder-val="{{ false }}"><span style="color: #6B5537; font-size: 17px">None yet.</span></sc-if>
+            </div>
+            <div style="display: flex; gap: 8px">
+              <label style="flex: 1; display: flex; min-width: 0"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">New title</span><input value="{{titleDraft}}" onChange="{{onTitleDraft}}" placeholder="Add a title…" style="flex: 1; min-width: 0; height: 44px; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10"></label>
+              <button onClick="{{addTitle}}" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #2B1D10; background: #2B1D10; color: #F3E8CC; font: inherit; font-size: 16px; cursor: pointer">Add</button>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">RESURRECTION</h2>
+            <label style="display: flex; min-width: 0"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Resurrection arrangement</span><input value="{{resText}}" onChange="{{onResText}}" placeholder="No resurrection arranged" style="flex: 1; min-width: 0; height: 44px; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 16px; color: #2B1D10"></label>
+            <div style="display: flex; gap: 8px">
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 15px; color: #6B5537">Book<input value="{{resBook}}" onChange="{{onResBook}}" inputmode="numeric" style="width: 48px; height: 44px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; text-align: center; color: #2B1D10"></label>
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 15px; color: #6B5537">§<input value="{{resPara}}" onChange="{{onResPara}}" inputmode="numeric" style="width: 72px; height: 44px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; text-align: center; color: #2B1D10"></label>
+            </div>
+          </div>
+        </section>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isCreate}}" hint-placeholder-val="{{ false }}">
+      <header id="top" style="padding-right: 56px; margin-bottom: 18px; display: flex; flex-direction: column; gap: 10px">
+        <div>
+          <div style="font-family: Cinzel, serif; font-size: 12px; letter-spacing: 0.16em; color: #7A5A1E">NEW ADVENTURE · STEP {{wStep}} OF 3</div>
+          <h1 style="margin: 2px 0 0; font-family: Cinzel, serif; font-weight: 600; font-size: clamp(26px, 2.4vw, 36px)">{{wTitle}}</h1>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; max-width: 420px">
+          <sc-for list="{{wDots}}" as="d" hint-placeholder-count="3"><span style="height: 6px; border-radius: 3px; background: {{d.bg}}"></span></sc-for>
+        </div>
+      </header>
+      <sc-if value="{{wIs1}}" hint-placeholder-val="{{ true }}">
+        <div style="max-width: 560px; display: flex; flex-direction: column; gap: 12px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 16px; color: #6B5537">Your adventurer’s name<input value="{{wName}}" onChange="{{onWName}}" placeholder="e.g. Aldric Vane" style="height: 52px; padding: 0 14px; border: 1px solid #D3C097; border-radius: 12px; background: #FFFDF6; font: inherit; font-size: 20px; color: #2B1D10"></label>
+          <div style="font-size: 16px; color: #6B5537">You keep the same adventurer through all the books, starting as a 1st Rank wanderer in The War-Torn Kingdom.</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{wIs2}}" hint-placeholder-val="{{ false }}">
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px">
+          <sc-for list="{{profCards}}" as="pc" hint-placeholder-count="6">
+            <button onClick="{{pc.pick}}" aria-pressed="{{pc.pressed}}" style="display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 16px; border: 2px solid {{pc.border}}; background: {{pc.bg}}; font: inherit; color: #2B1D10; text-align: left; cursor: pointer">
+              <span style="display: flex; align-items: baseline; justify-content: space-between; width: 100%">
+                <span style="font-family: Cinzel, serif; font-size: 20px; font-weight: 600">{{pc.name}}</span>
+                <span style="font-size: 14px; color: #6B5537">{{pc.best}}</span>
+              </span>
+              <sc-for list="{{pc.bars}}" as="b" hint-placeholder-count="6">
+                <span style="display: grid; grid-template-columns: 82px minmax(0, 1fr) 16px; align-items: center; gap: 8px; width: 100%">
+                  <span style="font-size: 14px; color: #6B5537">{{b.label}}</span>
+                  <span style="height: 8px; border-radius: 4px; background: #E4D6B6; overflow: hidden"><span style="display: block; height: 8px; width: {{b.w}}; background: {{b.color}}; border-radius: 4px"></span></span>
+                  <span style="font-family: Cinzel, serif; font-size: 14px; font-weight: 600; text-align: right">{{b.v}}</span>
+                </span>
+              </sc-for>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{wIs3}}" hint-placeholder-val="{{ false }}">
+        <div style="max-width: 560px; display: flex; flex-direction: column; gap: 14px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 16px; color: #6B5537">God (optional)<input value="{{wGod}}" onChange="{{onWGod}}" placeholder="None yet" style="height: 52px; padding: 0 14px; border: 1px solid #D3C097; border-radius: 12px; background: #FFFDF6; font: inherit; font-size: 20px; color: #2B1D10"></label>
+          <div style="background: #FBF6E8; border: 1px solid #DCCBA4; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 6px; font-size: 17px">
+            <div style="font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">YOU START WITH</div>
+            <div><b>{{wName}}</b>, {{wProf}}, Rank 1</div>
+            <div>{{wStats}}</div>
+            <div>Stamina 9 / 9 · Defence {{wDef}} · 16 Shards</div>
+            <div>Sword, leather jerkin (Defence +1)</div>
+            <div style="color: #6B5537">Then begin at Book 1, §1.</div>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{wError}}" hint-placeholder-val="{{ false }}"><div style="margin-top: 10px; font-size: 16px; color: #8E2A1E">{{wErrorText}}</div></sc-if>
+      <div style="display: flex; gap: 8px; margin-top: 18px; max-width: 560px">
+        <button onClick="{{wBack}}" style="flex: 1; height: 48px; border-radius: 12px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10; cursor: pointer">{{wBackLabel}}</button>
+        <button onClick="{{wNext}}" style="flex: 2; height: 48px; border-radius: 12px; border: 0; background: #8E2A1E; color: #FBF1DC; font: inherit; font-size: 17px; font-weight: 600; cursor: pointer">{{wNextLabel}}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isQuests}}" hint-placeholder-val="{{ false }}">
+      <header id="top" style="padding-right: 56px; margin-bottom: 12px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 16px">
+        <div>
+          <div style="font-family: Cinzel, serif; font-size: 12px; letter-spacing: 0.16em; color: #7A5A1E">ADVENTURER</div>
+          <h1 style="margin: 2px 0 0; font-family: Cinzel, serif; font-weight: 600; font-size: clamp(26px, 2.4vw, 36px)">Quests</h1>
+        </div>
+        <div style="font-size: 17px; color: #6B5537"><b style="color: #8E2A1E; font-family: Cinzel, serif; font-size: 22px">{{questOpen}}</b> open · {{questDone}} done</div>
+      </header>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 16px">
+        <div role="group" aria-label="Filter quests" style="display: inline-flex; padding: 3px; gap: 3px; border: 1px solid #D3C097; border-radius: 12px; background: #F6EED9; ">
+          <sc-for list="{{qFilters}}" as="f" hint-placeholder-count="3">
+            <button onClick="{{f.pick}}" aria-pressed="{{f.on}}" style="height: 40px; min-width: 84px; padding: 0 16px; border: 0; border-radius: 9px; font: inherit; font-size: 16px; cursor: pointer; background: {{f.bg}}; color: {{f.fg}}">{{f.label}}</button>
+          </sc-for>
+        </div>
+        <button onClick="{{addQuest}}" style="display: flex; align-items: center; gap: 6px; height: 44px; padding: 0 16px; border: 1px solid #8E2A1E; border-radius: 12px; background: transparent; color: #8E2A1E; font: inherit; font-size: 16px; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add quest</button>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 16px; align-items: start">
+        <sc-for list="{{quests}}" as="qu" hint-placeholder-count="2">
+          <section style="background: {{qu.bg}}; border: 1px solid #DCCBA4; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; opacity: {{qu.op}}">
+            <div style="display: flex; align-items: center; justify-content: space-between">
+              <span style="display: flex; align-items: center; gap: 10px">
+                <span style="font-family: Cinzel, serif; font-size: 11px; letter-spacing: 0.16em; padding: 3px 10px; border-radius: 999px; background: {{qu.tagBg}}; color: {{qu.tagFg}}">{{qu.tag}}</span>
+                <button onClick="{{qu.toggle}}" style="height: 44px; padding: 0 12px; border: 0; background: transparent; color: #8E2A1E; font: inherit; font-size: 15px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer">{{qu.btnText}}</button>
+              </span>
+              <button onClick="{{qu.remove}}" aria-label="Delete quest" style="width: 44px; height: 44px; margin: -8px -10px -8px 0; border: 0; background: transparent; color: #8E2A1E; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13h10l1-13"></path></svg></button>
+            </div>
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537">What<input value="{{qu.what}}" onChange="{{qu.onWhat}}" placeholder="The task…" style="height: 44px; min-width: 0; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10; font-weight: 600"></label>
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537">From<input value="{{qu.from}}" onChange="{{qu.onFrom}}" placeholder="Who asked…" style="height: 44px; min-width: 0; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10"></label>
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537">Where<input value="{{qu.where}}" onChange="{{qu.onWhere}}" placeholder="Where to go…" style="height: 44px; min-width: 0; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10"></label>
+          </section>
+        </sc-for>
+      </div>
+      <sc-if value="{{questsEmpty}}" hint-placeholder-val="{{ false }}">
+        <p style="margin: 16px 0 0; color: #6B5537; font-size: 17px; font-style: italic">{{questsEmptyText}}</p>
+      </sc-if>
+    </sc-if>
+
+    <sc-if value="{{isShips}}" hint-placeholder-val="{{ false }}">
+      <header id="top" style="padding-right: 56px; margin-bottom: 18px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px">
+        <div>
+          <div style="font-family: Cinzel, serif; font-size: 12px; letter-spacing: 0.16em; color: #7A5A1E">ADVENTURER</div>
+          <h1 style="margin: 2px 0 0; font-family: Cinzel, serif; font-weight: 600; font-size: clamp(26px, 2.4vw, 36px); line-height: 1.15">Ships</h1>
+          <div style="font-size: 17px; color: #6B5537">{{shipSub}}</div>
+        </div>
+        <button onClick="{{addShip}}" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #8E2A1E; background: #8E2A1E; color: #FBF1DC; font: inherit; font-size: 16px; cursor: pointer">+ Add ship</button>
+      </header>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 16px; align-items: start">
+        <sc-for list="{{ships}}" as="sh" hint-placeholder-count="1">
+          <section style="background: #FBF6E8; border: 1px solid #DCCBA4; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+              <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">SHIP {{sh.n}}</h2>
+              <button onClick="{{sh.remove}}" aria-label="Remove ship" style="width: 44px; height: 44px; margin: -8px -10px -8px 0; border: 0; background: transparent; color: #8A7250; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+              <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537; min-width: 0">Name<input value="{{sh.name}}" onChange="{{sh.onName}}" style="height: 44px; min-width: 0; width: 100%; box-sizing: border-box; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10"></label>
+              <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537; min-width: 0">Type<input value="{{sh.type}}" onChange="{{sh.onType}}" placeholder="Barque, galleon…" style="height: 44px; min-width: 0; width: 100%; box-sizing: border-box; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10"></label>
+              <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537; min-width: 0">Crew quality
+                <select value="{{sh.crew}}" onChange="{{sh.onCrew}}" style="height: 44px; min-width: 0; width: 100%; box-sizing: border-box; padding: 0 8px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 16px; color: #2B1D10">
+                  <option value="Poor">Poor</option>
+                  <option value="Average">Average</option>
+                  <option value="Good">Good</option>
+                  <option value="Excellent">Excellent</option>
+                </select>
+              </label>
+              <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537; min-width: 0">Capacity<input value="{{sh.cap}}" onChange="{{sh.onCap}}" inputmode="numeric" style="height: 44px; min-width: 0; width: 100%; box-sizing: border-box; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10"></label>
+            </div>
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537; min-width: 0">Cargo<input value="{{sh.cargo}}" onChange="{{sh.onCargo}}" placeholder="What’s in the hold…" style="height: 44px; min-width: 0; width: 100%; box-sizing: border-box; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10"></label>
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537; min-width: 0">Docked at<input value="{{sh.dock}}" onChange="{{sh.onDock}}" placeholder="Port…" style="height: 44px; min-width: 0; width: 100%; box-sizing: border-box; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10"></label>
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537; min-width: 0">Notes<textarea value="{{sh.notes}}" onChange="{{sh.onNotes}}" style="min-height: 80px; width: 100%; box-sizing: border-box; resize: vertical; padding: 10px 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; line-height: 1.4; color: #2B1D10"></textarea></label>
+          </section>
+        </sc-for>
+      </div>
+      <sc-if value="{{noShips}}" hint-placeholder-val="{{ false }}"><p style="margin: 16px 0 0; color: #6B5537; font-size: 17px">You don’t own a ship yet. Add one when you buy or win a vessel.</p></sc-if>
+    </sc-if>
+
+    <sc-if value="{{isCw}}" hint-placeholder-val="{{ false }}">
+      <header id="top" style="padding-right: 56px; margin-bottom: 12px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 16px">
+        <div>
+          <div style="font-family: Cinzel, serif; font-size: 12px; letter-spacing: 0.16em; color: #7A5A1E">ACID – GUSH</div>
+          <h1 style="margin: 2px 0 0; font-family: Cinzel, serif; font-weight: 600; font-size: clamp(26px, 2.4vw, 36px)">Codewords</h1>
+        </div>
+        <div style="font-size: 17px; color: #6B5537"><b style="color: #8E2A1E; font-family: Cinzel, serif; font-size: 22px">{{markedCount}}</b> of {{total}} marked</div>
+      </header>
+      <div style="position: sticky; top: 0; z-index: 5; background: #EFE5CC; padding: 8px 56px 12px 0; margin-bottom: 8px; border-bottom: 1px solid #DCCBA4">
+        <label style="display: flex; align-items: center; gap: 8px; height: 46px; max-width: 640px; padding: 0 12px; border: 1px solid #D3C097; border-radius: 12px; background: #FFFDF6; color: #6B5537">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Search codewords</span>
+          <input value="{{q}}" onChange="{{onSearch}}" placeholder="Find a codeword…" style="flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 17px; outline: none; color: #2B1D10">
+        </label>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 20px; padding-top: 8px">
+        <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 32px 8px; text-align: center; color: #6B5537; font-size: 17px; font-style: italic">{{emptyText}}</div>
+        </sc-if>
+        <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+          <section id="cw-{{g.k}}" style="display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; align-items: baseline; gap: 8px; border-bottom: 1px solid #DCCBA4; padding-bottom: 2px">
+              <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 22px; color: #8E2A1E">{{g.k}}</h2>
+              <span style="font-size: 14px; color: #6B5537">{{g.info}}</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 6px">
+              <sc-for list="{{g.words}}" as="w" hint-placeholder-count="9">
+                <button onClick="{{w.toggle}}" aria-pressed="{{w.onStr}}" style="display: flex; align-items: center; justify-content: center; gap: 4px; height: 44px; padding: 0 6px; border-radius: 10px; cursor: pointer; font: inherit; font-size: 16px; overflow: hidden; white-space: nowrap; border: 1px solid {{w.border}}; background: {{w.bg}}; color: {{w.fg}}; font-weight: {{w.weight}}">
+                  <sc-if value="{{w.on}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg></sc-if>
+                  {{w.word}}</button>
+              </sc-for>
+            </div>
+          </section>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isBook}}" hint-placeholder-val="{{ false }}">
+      <div role="group" aria-label="Choose book" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; padding-right: 52px; margin-bottom: 14px">
+        <sc-for list="{{bookBar}}" as="bk" hint-placeholder-count="7">
+          <button onClick="{{bk.pick}}" aria-pressed="{{bk.pressed}}" style="flex: none; min-height: 40px; padding: 0 12px; border-radius: 999px; border: 1px solid {{bk.border}}; background: {{bk.bg}}; color: {{bk.fg}}; font: inherit; font-size: 15px; white-space: nowrap; cursor: pointer">{{bk.label}}</button>
+        </sc-for>
+      </div>
+      <header id="top" style="padding-right: 56px; margin-bottom: 16px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px">
+        <div style="flex: 1 1 320px; display: flex; flex-direction: column; gap: 8px">
+          <div>
+            <div style="font-family: Cinzel, serif; font-size: 12px; letter-spacing: 0.16em; color: #7A5A1E">BOOK {{bookNum}}</div>
+            <h1 style="margin: 2px 0 0; font-family: Cinzel, serif; font-weight: 600; font-size: clamp(24px, 2.4vw, 36px); line-height: 1.2">{{bookTitle}}</h1>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; max-width: 720px">
+            <div style="flex: 1 1 200px; height: 8px; background: #DCCBA4; border-radius: 4px; overflow: hidden"><div style="height: 8px; width: {{pct}}; background: #8E2A1E; border-radius: 4px"></div></div>
+            <span style="font-size: 15px; color: #6B5537">{{done}} of {{boxes}} boxes ticked</span>
+          </div>
+        </div>
+        <button onClick="{{openBm}}" style="flex: 0 1 320px; min-height: 52px; background: #2B1D10; color: #F3E8CC; border: 0; border-radius: 16px; padding: 8px 14px; display: flex; align-items: center; gap: 12px; font: inherit; cursor: pointer; text-align: left">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D4AF5A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"></path></svg>
+          <span style="flex: 1; font-size: 16px; color: #BFAE8C">Bookmark</span>
+          <span style="font-family: Cinzel, serif; font-size: 22px; font-weight: 600">B{{bmBook}} · §{{bmPara}}</span>
+        </button>
+      </header>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+        <section id="paragraphs" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px">
+            <div role="group" aria-label="Filter paragraphs" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 420px; max-width: 100%; padding: 3px; background: #E4D6B6; border-radius: 12px">
+              <sc-for list="{{filters}}" as="f" hint-placeholder-count="3">
+                <button onClick="{{f.pick}}" aria-pressed="{{f.pressed}}" style="height: 40px; border: 0; border-radius: 9px; cursor: pointer; font: inherit; font-size: 16px; color: #2B1D10; background: {{f.bg}}">{{f.label}}</button>
+              </sc-for>
+            </div>
+            <span style="font-size: 14px; color: #6B5537">Tap to tick. Multi-visit boxes count up.</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); gap: 8px">
+            <sc-for list="{{paras}}" as="p" hint-placeholder-count="12">
+              <button onClick="{{p.tick}}" aria-label="{{p.aria}}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-height: 64px; padding: 9px 10px; border-radius: 12px; cursor: pointer; text-align: left; font: inherit; border: 1px solid {{p.border}}; background: {{p.bg}}; color: {{p.fg}}">
+                <span style="display: flex; align-items: center; justify-content: space-between; width: 100%">
+                  <span style="font-family: Cinzel, serif; font-size: 19px; font-weight: 600; line-height: 1">§{{p.n}}</span>
+                  <sc-if value="{{p.full}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg></sc-if>
+                </span>
+                <sc-if value="{{p.isMulti}}" hint-placeholder-val="{{ false }}">
+                  <span style="display: flex; gap: 4px">
+                    <sc-for list="{{p.pips}}" as="pip" hint-placeholder-count="3"><span style="width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid {{pip.ring}}; background: {{pip.fill}}"></span></sc-for>
+                  </span>
+                </sc-if>
+              </button>
+            </sc-for>
+          </div>
+          <sc-if value="{{noParas}}" hint-placeholder-val="{{ false }}"><p style="margin: 0; color: #6B5537; font-size: 17px">Nothing to show for this filter.</p></sc-if>
+          <section id="houses" style="display: flex; flex-direction: column; gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 1px solid #DCCBA4">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px">
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">HOUSES</h2>
+                <span style="font-size: 15px; color: #6B5537">Items stored in your houses. Note where to turn to get them back.</span>
+              </div>
+              <button onClick="{{addHouse}}" style="display: flex; align-items: center; gap: 6px; height: 44px; padding: 0 16px; border: 1px solid #8E2A1E; border-radius: 12px; background: transparent; color: #8E2A1E; font: inherit; font-size: 16px; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add house</button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; align-items: start">
+              <sc-for list="{{houses}}" as="h" hint-placeholder-count="2">
+                <div style="background: #FBF6E8; border: 1px solid #DCCBA4; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+                  <div style="display: flex; align-items: flex-end; gap: 8px">
+                    <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537; width: 96px; flex: none">Where · Book<input value="{{h.book}}" onChange="{{h.onBook}}" placeholder="1" inputmode="numeric" style="height: 44px; min-width: 0; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10; box-sizing: border-box; width: 100%"></label>
+                    <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537; flex: 1; min-width: 0">Paragraph §<input value="{{h.para}}" onChange="{{h.onPara}}" placeholder="§" inputmode="numeric" style="height: 44px; min-width: 0; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10; box-sizing: border-box; width: 100%"></label>
+                    <button onClick="{{h.remove}}" aria-label="Remove house" style="flex: none; width: 44px; height: 44px; border: 0; background: transparent; color: #8E2A1E; font: inherit; font-size: 22px; cursor: pointer; padding: 0">×</button>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 6px">
+                    <span style="font-size: 14px; color: #6B5537">Stored items</span>
+                    <sc-for list="{{h.items}}" as="it" hint-placeholder-count="2">
+                      <div style="display: flex; align-items: center; gap: 4px">
+                        <label style="flex: 1; display: flex; min-width: 0"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Stored item</span><input value="{{it.text}}" onChange="{{it.onText}}" placeholder="Item…" style="height: 44px; min-width: 0; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10; box-sizing: border-box; flex: 1"></label>
+                        <button onClick="{{it.remove}}" aria-label="Remove item" style="flex: none; width: 44px; height: 44px; border: 0; background: transparent; color: #8E2A1E; font: inherit; font-size: 22px; cursor: pointer; padding: 0">×</button>
+                      </div>
+                    </sc-for>
+                    <div style="display: flex"><button onClick="{{h.addItem}}" style="height: 44px; padding: 0 4px; border: 0; background: transparent; color: #8E2A1E; font: inherit; font-size: 15px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer">+ Add item</button></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{noHouses}}" hint-placeholder-val="{{ false }}"><p style="margin: 0; color: #6B5537; font-size: 16px; font-style: italic">No houses yet.</p></sc-if>
+          </section>
+
+          <section id="banks" style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px; padding-top: 16px; border-top: 1px solid #DCCBA4">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px">
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">BANKS</h2>
+                <span style="font-size: 15px; color: #6B5537">Money invested. Note where to turn to collect it.</span>
+              </div>
+              <button onClick="{{addBank}}" style="display: flex; align-items: center; gap: 6px; height: 44px; padding: 0 16px; border: 1px solid #8E2A1E; border-radius: 12px; background: transparent; color: #8E2A1E; font: inherit; font-size: 16px; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add bank</button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; align-items: start">
+              <sc-for list="{{banks}}" as="b" hint-placeholder-count="1">
+                <div style="background: #FBF6E8; border: 1px solid #DCCBA4; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+                  <div style="display: flex; align-items: flex-end; gap: 8px">
+                    <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537; width: 96px; flex: none">Where · Book<input value="{{b.book}}" onChange="{{b.onBook}}" placeholder="1" inputmode="numeric" style="height: 44px; min-width: 0; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10; box-sizing: border-box; width: 100%"></label>
+                    <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537; flex: 1; min-width: 0">Paragraph §<input value="{{b.para}}" onChange="{{b.onPara}}" placeholder="§" inputmode="numeric" style="height: 44px; min-width: 0; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10; box-sizing: border-box; width: 100%"></label>
+                    <button onClick="{{b.remove}}" aria-label="Remove bank" style="flex: none; width: 44px; height: 44px; border: 0; background: transparent; color: #8E2A1E; font: inherit; font-size: 22px; cursor: pointer; padding: 0">×</button>
+                  </div>
+                  <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537; min-width: 0">Money invested<input value="{{b.amount}}" onChange="{{b.onAmount}}" placeholder="Amount in Shards" inputmode="numeric" style="height: 44px; min-width: 0; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10; box-sizing: border-box; width: 100%"></label>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{noBanks}}" hint-placeholder-val="{{ false }}"><p style="margin: 0; color: #6B5537; font-size: 16px; font-style: italic">No banks yet.</p></sc-if>
+          </section>
+        </section>
+        <aside style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 16px">
+          <section id="places" style="background: #FBF6E8; border: 1px solid #DCCBA4; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px">
+            <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">KNOWN PLACES</h2>
+            <div style="font-size: 14px; color: #6B5537">Locations you keep returning to. Tap to set your bookmark.</div>
+            <sc-for list="{{places}}" as="pl" hint-placeholder-count="3">
+              <div style="display: flex; align-items: center; gap: 8px; min-height: 46px; border-bottom: 1px solid #EADDC0">
+                <button onClick="{{pl.go}}" style="flex: 1; min-width: 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; height: 44px; border: 0; background: transparent; font: inherit; font-size: 16px; color: #2B1D10; cursor: pointer; padding: 0; text-align: left"><span>{{pl.name}}</span><span style="color: #6B5537">B{{pl.book}} · §{{pl.para}}</span></button>
+                <button onClick="{{pl.remove}}" aria-label="Remove {{pl.name}}" style="width: 40px; height: 40px; border: 0; background: transparent; color: #8A7250; cursor: pointer; padding: 0">×</button>
+              </div>
+            </sc-for>
+            <sc-if value="{{noPlaces}}" hint-placeholder-val="{{ false }}"><div style="font-size: 15px; color: #6B5537; padding: 4px 0">No places saved yet.</div></sc-if>
+            <div style="display: flex; gap: 6px; margin-top: 4px">
+              <label style="flex: 1; display: flex; min-width: 0"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Place name</span><input value="{{plName}}" onChange="{{onPlName}}" placeholder="Place…" style="flex: 1; min-width: 0; height: 44px; padding: 0 10px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 16px; color: #2B1D10"></label>
+              <label style="display: flex"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Paragraph</span><input value="{{plPara}}" onChange="{{onPlPara}}" placeholder="§" inputmode="numeric" style="width: 64px; height: 44px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 16px; text-align: center; color: #2B1D10"></label>
+              <button onClick="{{addPlace}}" style="height: 44px; padding: 0 12px; border-radius: 10px; border: 0; background: #2B1D10; color: #F3E8CC; font: inherit; font-size: 15px; cursor: pointer">Add</button>
+            </div>
+            <div style="font-size: 14px; color: #6B5537">New places are saved for Book {{bookNum}}.</div>
+          </section>
+          <label id="notes" style="display: flex; flex-direction: column; gap: 8px">
+            <span style="font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">NOTES</span>
+            <textarea placeholder="Notes for this book…" style="min-height: 180px; resize: vertical; padding: 12px; border: 1px solid #D3C097; border-radius: 14px; background: #FFFDF6; font: inherit; font-size: 17px; line-height: 1.4; color: #2B1D10">Example notes: blessing bought in Marlock. Ask about the ring in Yellowport.</textarea>
+          </label>
+        </aside>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isSaves}}" hint-placeholder-val="{{ false }}">
+      <header id="top" style="padding-right: 56px; margin-bottom: 18px">
+        <div style="font-family: Cinzel, serif; font-size: 12px; letter-spacing: 0.16em; color: #7A5A1E">YOUR ADVENTURES</div>
+        <h1 style="margin: 2px 0 0; font-family: Cinzel, serif; font-weight: 600; font-size: clamp(26px, 2.4vw, 36px)">Saves &amp; Backup</h1>
+      </header>
+      <div style="columns: 360px 3; column-gap: 16px">
+        <section id="current" style="break-inside: avoid; margin: 0 0 16px; background: #2B1D10; color: #F3E8CC; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: #3A2814; display: flex; align-items: center; justify-content: center; color: #D4AF5A; flex: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg></div>
+            <div style="display: flex; flex-direction: column">
+              <span style="font-size: 17px">{{saveStatus}}</span>
+              <span style="font-size: 14px; color: #BFAE8C">Slot: <b style="color: #F3E8CC">{{activeName}}</b> · last saved {{savedWhen}}</span>
+            </div>
+          </div>
+          <button onClick="{{saveNow}}" style="height: 48px; border-radius: 12px; border: 0; background: #D4AF5A; color: #2B1D10; font: inherit; font-size: 17px; font-weight: 600; cursor: pointer">Save</button>
+          <div style="display: flex; gap: 8px">
+            <label style="flex: 1; display: flex; min-width: 0"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Name for a new slot</span><input value="{{snapDraft}}" onChange="{{onSnapDraft}}" placeholder="Save as new slot…" style="flex: 1; min-width: 0; height: 46px; padding: 0 12px; border: 1px solid #5A4326; border-radius: 12px; background: #3A2814; color: #F3E8CC; font: inherit; font-size: 16px"></label>
+            <button onClick="{{snapshot}}" style="height: 46px; padding: 0 14px; border-radius: 12px; border: 1px solid #5A4326; background: #3A2814; color: #F3E8CC; font: inherit; font-size: 16px; cursor: pointer">Save as</button>
+          </div>
+          <div style="font-size: 14px; color: #BFAE8C">Nothing is saved automatically. Tap Save to keep your progress. “Save as” keeps a separate copy you can go back to, e.g. before a risky fight.</div>
+        </section>
+        <section id="slots" style="break-inside: avoid; margin: 0 0 16px; background: #FBF6E8; border: 1px solid #DCCBA4; border-radius: 16px; padding: 14px 16px 4px; display: flex; flex-direction: column">
+          <h2 style="margin: 0 0 6px; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">SAVE SLOTS</h2>
+          <sc-for list="{{slots}}" as="s" hint-placeholder-count="4">
+            <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-top: 1px solid #EADDC0">
+              <div style="display: flex; align-items: center; gap: 12px">
+                <div style="width: 38px; height: 38px; flex: none; border-radius: 10px; background: {{s.badgeBg}}; color: {{s.badgeFg}}; display: flex; align-items: center; justify-content: center; font-family: Cinzel, serif; font-weight: 700">{{s.initial}}</div>
+                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+                  <span style="font-size: 17px; font-weight: 600">{{s.name}}</span>
+                  <span style="font-size: 14px; color: #6B5537">{{s.meta}}</span>
+                </div>
+                <sc-if value="{{s.active}}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size: 13px; padding: 3px 9px; border-radius: 999px; background: #EFE1BC; color: #6B4A12">Playing</span>
+                </sc-if>
+              </div>
+              <sc-if value="{{s.showActions}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; gap: 8px; padding-left: 50px">
+                  <button onClick="{{s.load}}" style="flex: 1; height: 44px; border-radius: 10px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; font-size: 15px; color: #2B1D10; cursor: pointer">Load</button>
+                  <button onClick="{{s.ask}}" aria-label="Delete {{s.name}}" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #E4D6B6; background: transparent; color: #8A7250; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </section>
+        <section id="backup" style="break-inside: avoid; margin: 0 0 16px; background: #FBF6E8; border: 1px solid #DCCBA4; border-radius: 16px; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px">
+          <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">BACKUP</h2>
+          <span style="font-size: 16px; color: #6B5537">Browsers can clear app data. Keep a file copy in your cloud drive.</span>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+            <button onClick="{{openExport}}" aria-haspopup="dialog" style="height: 46px; border-radius: 12px; border: 0; background: #2B1D10; color: #F3E8CC; font: inherit; font-size: 16px; cursor: pointer">Export file</button>
+            <button style="height: 46px; border-radius: 12px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; font-size: 16px; color: #2B1D10; cursor: pointer">Import file</button>
+          </div>
+          <button style="height: 46px; border-radius: 12px; border: 1px solid #D3C097; background: transparent; font: inherit; font-size: 16px; color: #2B1D10; cursor: pointer">Copy backup to clipboard</button>
+          <span style="font-size: 14px; color: #6B5537">{{exportNote}}</span>
+        </section>
+        <section id="new" style="break-inside: avoid; margin: 0 0 16px; background: #FBF6E8; border: 1px solid #E2C2B4; border-radius: 16px; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px">
+          <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">NEW ADVENTURE</h2>
+          <span style="font-size: 16px; color: #6B5537">Choose a name and profession; your starting sheet is filled in for you. Your current slot stays untouched.</span>
+          <button onClick="{{goCreate}}" style="height: 46px; border-radius: 12px; border: 1px solid #8E2A1E; background: transparent; color: #8E2A1E; font: inherit; font-size: 16px; font-weight: 600; cursor: pointer">Start new character</button>
+        </section>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{exportDlg}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 44; background: rgba(30,20,11,0.55)"></div>
+    <div role="dialog" aria-label="Export" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 46; width: min(92vw, 440px); box-sizing: border-box; background: #FBF6E8; border: 1px solid #C9B488; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 20px 50px -12px rgba(0,0,0,0.6)">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <span style="font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">EXPORT AS</span>
+        <button onClick="{{closeExport}}" aria-label="Close" style="width: 44px; height: 44px; margin: -8px -8px -8px 0; border: 0; background: transparent; color: #2B1D10; font: inherit; font-size: 24px; cursor: pointer; padding: 0">×</button>
+      </div>
+      <sc-if value="{{dirty}}" hint-placeholder-val="{{ false }}"><div style="font-size: 15px; color: #8E2A1E">You have unsaved changes. Both exports use your last saved state. Save first to include them.</div></sc-if>
+      <button onClick="{{exportJson}}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 68px; padding: 10px 14px; border-radius: 14px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; color: #2B1D10; text-align: left; cursor: pointer">
+        <span style="font-size: 18px; font-weight: 600">Backup file (JSON)</span>
+        <span style="font-size: 15px; color: #6B5537">All save slots. Use it to restore or to move to another device.</span>
+      </button>
+      <button onClick="{{exportPdf}}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 68px; padding: 10px 14px; border-radius: 14px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; color: #2B1D10; text-align: left; cursor: pointer">
+        <span style="font-size: 18px; font-weight: 600">Overview (PDF)</span>
+        <span style="font-size: 15px; color: #6B5537">A printable sheet with all values of “{{activeName}}” as of your last save.</span>
+      </button>
+      <span style="font-size: 14px; color: #6B5537">Next, your device asks where to save the file.</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{cfOn}}" hint-placeholder-val="{{ false }}">
+    <div role="alertdialog" aria-label="Confirm" style="position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 45; width: min(92vw, 480px); box-sizing: border-box; background: #2B1D10; color: #F3E8CC; border-radius: 16px; padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; box-shadow: 0 12px 30px -10px rgba(0,0,0,0.6)">
+      <span style="flex: 1 1 200px; font-size: 17px">{{cfPre}}<b>{{cfName}}</b>{{cfPost}}</span>
+      <button onClick="{{cfCancel}}" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #5A4326; background: transparent; color: #F3E8CC; font: inherit; font-size: 16px; cursor: pointer">Keep</button>
+      <button onClick="{{cfOk}}" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #C2412D; background: #C2412D; color: #FFF6EC; font: inherit; font-size: 16px; cursor: pointer">{{cfOkLabel}}</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{toastOn}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 45; width: min(92vw, 480px); box-sizing: border-box; background: #2B1D10; color: #F3E8CC; border-radius: 16px; padding: 14px 16px; font-size: 17px; box-shadow: 0 12px 30px -10px rgba(0,0,0,0.6)">{{toastText}}</div>
+  </sc-if>
+
+  <button onClick="{{toggleDice}}" aria-label="Dice" aria-expanded="{{diceOpenStr}}" style="position: fixed; right: 0; top: 130px; z-index: 25; width: 40px; height: 52px; border: 0; padding: 0; border-radius: 12px 0 0 12px; background: #2B1D10; color: #D4AF5A; box-shadow: -6px 6px 16px -6px rgba(30,20,11,0.55); cursor: pointer; display: flex; align-items: center; justify-content: center">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"></rect><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor"></circle><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor"></circle><circle cx="12" cy="12" r="1.3" fill="currentColor"></circle></svg>
+  </button>
+  <button onClick="{{toggleBm}}" aria-label="Bookmark: Book {{bmBook}}, paragraph {{bmPara}}" aria-expanded="{{bmOpenStr}}" style="position: fixed; right: 0; top: 190px; z-index: 25; width: 40px; min-height: 76px; border: 0; padding: 8px 0; border-radius: 12px 0 0 12px; background: #D4AF5A; color: #1E140B; box-shadow: -6px 6px 16px -6px rgba(30,20,11,0.55); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"></path></svg>
+    <span style="writing-mode: vertical-rl; font-family: Cinzel, serif; font-size: 13px; font-weight: 700">§{{bmPara}}</span>
+  </button>
+
+  <sc-if value="{{bmOpen}}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-label="Bookmark" style="position: fixed; right: 48px; top: 130px; z-index: 35; width: min(320px, calc(100vw - 64px)); box-sizing: border-box; background: #1E140B; color: #E9DDBF; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 16px 40px -12px rgba(0,0,0,0.6)">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <span style="font-family: Cinzel, serif; font-size: 12px; letter-spacing: 0.16em; color: #D4AF5A">WHERE AM I?</span>
+        <button onClick="{{closeBm}}" aria-label="Close bookmark" style="width: 40px; height: 40px; border: 0; background: transparent; color: #E9DDBF; font: inherit; font-size: 22px; cursor: pointer; padding: 0">×</button>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px">
+        <sc-for list="{{bmBooks}}" as="bb" hint-placeholder-count="7">
+          <button onClick="{{bb.pick}}" aria-label="Book {{bb.n}}" aria-pressed="{{bb.pressed}}" style="height: 40px; border: 0; border-radius: 8px; background: {{bb.bg}}; color: {{bb.fg}}; font-family: Cinzel, serif; font-weight: 700; font-size: 16px; cursor: pointer; padding: 0">{{bb.n}}</button>
+        </sc-for>
+      </div>
+      <div style="display: flex; gap: 8px">
+        <label style="flex: 1; min-width: 0; box-sizing: border-box; display: flex; align-items: center; gap: 6px; height: 48px; padding: 0 12px; border: 1px solid #5A4326; border-radius: 12px; background: #2B1D10">
+          <span style="font-family: Cinzel, serif; font-size: 20px; color: #D4AF5A">§</span>
+          <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Paragraph</span>
+          <input value="{{bmDraft}}" onChange="{{onBmDraft}}" inputmode="numeric" style="flex: 1; width: 0; min-width: 0; border: 0; background: transparent; color: #F3E8CC; font-family: Cinzel, serif; font-size: 22px; font-weight: 600; outline: none">
+        </label>
+        <button onClick="{{setBm}}" style="flex: none; height: 48px; padding: 0 16px; border: 0; border-radius: 12px; background: #D4AF5A; color: #1E140B; font: inherit; font-size: 16px; font-weight: 600; cursor: pointer">Set</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-family: Cinzel, serif; font-size: 11px; letter-spacing: 0.16em; color: #A8977A">RECENT</span>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{history}}" as="h" hint-placeholder-count="12">
+            <button onClick="{{h.go}}" style="height: 40px; padding: 0 4px; border: 0; border-radius: 999px; background: #2E2012; color: #F3E8CC; font: inherit; font-size: 14px; white-space: nowrap; cursor: pointer">B{{h.book}} §{{h.para}}</button>
+          </sc-for>
+        </div>
+      </div>
+      <sc-if value="{{hasPlaces}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-family: Cinzel, serif; font-size: 11px; letter-spacing: 0.16em; color: #A8977A; padding-bottom: 4px">KNOWN PLACES</span>
+          <sc-for list="{{places}}" as="pl" hint-placeholder-count="2">
+            <button onClick="{{pl.go}}" style="display: flex; justify-content: space-between; align-items: center; min-height: 40px; padding: 0 10px; border: 0; border-radius: 10px; background: transparent; color: #E9DDBF; font: inherit; font-size: 16px; cursor: pointer"><span>{{pl.name}}</span><span style="color: #A8977A">B{{pl.book}} §{{pl.para}}</span></button>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{diceOpen}}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-label="Dice" style="position: fixed; right: 0; bottom: 0; z-index: 40; width: min(100vw, 440px); max-height: min(88vh, 860px); overflow: auto; box-sizing: border-box; background: #FBF6E8; border: 1px solid #C9B488; border-radius: 20px 20px 0 0; box-shadow: 0 -12px 40px -10px rgba(30,20,11,0.5); padding: 12px 16px 20px; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <div role="tablist" aria-label="Dice method" style="flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 3px; background: #E4D6B6; border-radius: 12px">
+          <button role="tab" onClick="{{tabCheck}}" aria-selected="{{tabCheckSel}}" style="height: 40px; border: 0; border-radius: 9px; background: {{tabCheckBg}}; font: inherit; font-size: 15px; color: #2B1D10; cursor: pointer; padding: 0">Ability check</button>
+          <button role="tab" onClick="{{tabFight}}" aria-selected="{{tabFightSel}}" style="height: 40px; border: 0; border-radius: 9px; background: {{tabFightBg}}; font: inherit; font-size: 15px; color: #2B1D10; cursor: pointer; padding: 0">Fight</button>
+          <button role="tab" onClick="{{tabSpare}}" aria-selected="{{tabSpareSel}}" style="height: 40px; border: 0; border-radius: 9px; background: {{tabSpareBg}}; font: inherit; font-size: 15px; color: #2B1D10; cursor: pointer; padding: 0">Spare dice</button>
+        </div>
+        <button onClick="{{closeDice}}" aria-label="Close dice" style="width: 44px; height: 44px; border: 0; background: transparent; font: inherit; font-size: 24px; color: #6B5537; cursor: pointer; padding: 0">×</button>
+      </div>
+
+      <button onClick="{{togglePhys}}" aria-pressed="{{physStr}}" style="display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid #E4D6B6; background: #F6EED9; color: #2B1D10; font: inherit; font-size: 16px; cursor: pointer">
+        I roll physical dice
+        <span style="width: 40px; height: 24px; border-radius: 12px; background: {{physBg}}; display: flex; align-items: center; padding: 2px; box-sizing: border-box; justify-content: {{physPos}}"><span style="width: 20px; height: 20px; border-radius: 50%; background: #FFFDF6"></span></span>
+      </button>
+      <sc-if value="{{physStd}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <span style="font-size: 15px; color: #6B5537">Your dice</span>
+          <input value="{{pd1}}" onChange="{{onPd1}}" inputmode="numeric" aria-label="First die" style="width: 52px; height: 48px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font-family: Cinzel, serif; font-size: 22px; text-align: center; color: #2B1D10">
+          <input value="{{pd2}}" onChange="{{onPd2}}" inputmode="numeric" aria-label="Second die" style="width: 52px; height: 48px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font-family: Cinzel, serif; font-size: 22px; text-align: center; color: #2B1D10">
+          <span style="font-size: 14px; color: #6B5537">1–6 each</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{diceErr}}" hint-placeholder-val="{{ false }}"><div style="font-size: 15px; color: #8E2A1E">Enter two dice values from 1 to 6.</div></sc-if>
+
+      <sc-if value="{{tabIsCheck}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="font-size: 15px; color: #6B5537">Roll 2d6 + ability. You succeed if the total is <b>higher</b> than the Difficulty.</div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+            <sc-for list="{{checkAbs}}" as="ca" hint-placeholder-count="6">
+              <button onClick="{{ca.pick}}" aria-pressed="{{ca.pressed}}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 58px; border-radius: 12px; border: 1px solid {{ca.border}}; background: {{ca.bg}}; color: {{ca.fg}}; font: inherit; cursor: pointer; padding: 0">
+                <span style="font-family: Cinzel, serif; font-size: 10px; letter-spacing: 0.08em">{{ca.upper}}</span>
+                <span style="font-family: Cinzel, serif; font-size: 20px; font-weight: 600">{{ca.eff}}</span>
+              </button>
+            </sc-for>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+            <span style="font-size: 17px">Difficulty</span>
+            <span style="display: flex; align-items: center; gap: 8px">
+              <button onClick="{{diffDown}}" aria-label="Lower difficulty" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; font-size: 20px; color: #2B1D10; cursor: pointer; padding: 0">−</button>
+              <span style="font-family: Cinzel, serif; font-size: 28px; font-weight: 600; min-width: 40px; text-align: center">{{diff}}</span>
+              <button onClick="{{diffUp}}" aria-label="Raise difficulty" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; font-size: 20px; color: #2B1D10; cursor: pointer; padding: 0">+</button>
+            </span>
+          </div>
+          <div style="font-size: 16px; color: #6B5537">{{needText}}</div>
+          <button onClick="{{doCheck}}" style="height: 52px; border-radius: 12px; border: 0; background: #8E2A1E; color: #FBF1DC; font: inherit; font-size: 18px; font-weight: 600; cursor: pointer">Roll {{checkAbLabel}} check</button>
+          <sc-if value="{{hasCheckRes}}" hint-placeholder-val="{{ false }}">
+            <div role="status" style="border-radius: 14px; padding: 14px; background: {{cr.bg}}; color: {{cr.fg}}; display: flex; flex-direction: column; gap: 10px">
+              <div style="display: flex; align-items: center; gap: 10px">
+                <span style="width: 44px; height: 44px; border-radius: 10px; background: #FFFDF6; color: #2B1D10; display: flex; align-items: center; justify-content: center; font-family: Cinzel, serif; font-size: 22px; font-weight: 700">{{cr.d1}}</span>
+                <span style="width: 44px; height: 44px; border-radius: 10px; background: #FFFDF6; color: #2B1D10; display: flex; align-items: center; justify-content: center; font-family: Cinzel, serif; font-size: 22px; font-weight: 700">{{cr.d2}}</span>
+                <span style="font-family: Cinzel, serif; font-size: 24px; font-weight: 700; margin-left: auto">{{cr.verdict}}</span>
+              </div>
+              <div style="font-size: 16px">{{cr.formula}}</div>
+              <sc-if value="{{canReroll}}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{rerollBlessing}}" style="height: 44px; border-radius: 10px; border: 1px solid currentColor; background: transparent; color: inherit; font: inherit; font-size: 16px; cursor: pointer">Reroll with {{checkAbLabel}} blessing (uses it up)</button>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{tabIsFight}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <sc-if value="{{fightIdle}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 10px">
+              <div style="font-size: 15px; color: #6B5537">Enter the enemy as the book lists it. Each hit does as much damage as the attack total beats the other side’s Defence.</div>
+              <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537">Enemy<input value="{{eName}}" onChange="{{onEName}}" placeholder="e.g. Bandit" style="height: 44px; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10"></label>
+              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+                <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537">COMBAT<input value="{{eCombat}}" onChange="{{onECombat}}" inputmode="numeric" style="height: 44px; min-width: 0; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font-family: Cinzel, serif; font-size: 20px; text-align: center; color: #2B1D10"></label>
+                <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537">Defence<input value="{{eDef}}" onChange="{{onEDef}}" inputmode="numeric" style="height: 44px; min-width: 0; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font-family: Cinzel, serif; font-size: 20px; text-align: center; color: #2B1D10"></label>
+                <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #6B5537">Stamina<input value="{{eStam}}" onChange="{{onEStam}}" inputmode="numeric" style="height: 44px; min-width: 0; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font-family: Cinzel, serif; font-size: 20px; text-align: center; color: #2B1D10"></label>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+                <span style="font-size: 16px">Strikes first</span>
+                <div role="group" aria-label="Who strikes first" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 3px; background: #E4D6B6; border-radius: 12px">
+                  <button onClick="{{firstYou}}" aria-pressed="{{firstYouSel}}" style="height: 38px; padding: 0 14px; border: 0; border-radius: 9px; background: {{firstYouBg}}; font: inherit; font-size: 15px; color: #2B1D10; cursor: pointer">You</button>
+                  <button onClick="{{firstEnemy}}" aria-pressed="{{firstEnemySel}}" style="height: 38px; padding: 0 14px; border: 0; border-radius: 9px; background: {{firstEnemyBg}}; font: inherit; font-size: 15px; color: #2B1D10; cursor: pointer">Enemy</button>
+                </div>
+              </div>
+              <div style="font-size: 15px; color: #6B5537">You: COMBAT {{effCombat}} · Defence {{defence}} · Stamina {{stam}}</div>
+              <sc-if value="{{fErr}}" hint-placeholder-val="{{ false }}"><div style="font-size: 15px; color: #8E2A1E">Enter numbers for COMBAT, Defence and Stamina.</div></sc-if>
+              <button onClick="{{startFight}}" style="height: 52px; border-radius: 12px; border: 0; background: #8E2A1E; color: #FBF1DC; font: inherit; font-size: 18px; font-weight: 600; cursor: pointer">Start fight</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{fOn}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 12px">
+              <div style="display: flex; align-items: baseline; justify-content: space-between">
+                <span style="font-family: Cinzel, serif; font-size: 18px; font-weight: 600">vs {{fName}}</span>
+                <span style="font-size: 15px; color: #6B5537">Round {{fRound}}</span>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+                <div style="display: flex; flex-direction: column; gap: 4px">
+                  <span style="font-size: 14px; color: #6B5537">You · Def {{defence}}</span>
+                  <span style="font-family: Cinzel, serif; font-size: 22px; font-weight: 600">{{stam}} / {{max}}</span>
+                  <div style="height: 8px; background: #E4D6B6; border-radius: 4px; overflow: hidden"><div style="height: 8px; width: {{stamPct}}; background: #2B1D10; border-radius: 4px"></div></div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px">
+                  <span style="font-size: 14px; color: #6B5537">{{fName}} · Def {{fDef}}</span>
+                  <span style="font-family: Cinzel, serif; font-size: 22px; font-weight: 600">{{fEs}} / {{fEmax}}</span>
+                  <div style="height: 8px; background: #E4D6B6; border-radius: 4px; overflow: hidden"><div style="height: 8px; width: {{fEPct}}; background: #8E2A1E; border-radius: 4px"></div></div>
+                </div>
+              </div>
+              <sc-if value="{{fRunning}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 8px">
+                  <div style="font-size: 15px; color: #6B5537">{{hitHint}}</div>
+                  <button onClick="{{fightStep}}" style="height: 56px; border-radius: 12px; border: 0; background: {{stepBg}}; color: #FBF1DC; font: inherit; font-size: 19px; font-weight: 600; cursor: pointer">{{stepLabel}}</button>
+                  <button onClick="{{flee}}" style="height: 44px; border-radius: 10px; border: 1px solid #D3C097; background: transparent; font: inherit; font-size: 16px; color: #6B5537; cursor: pointer">Flee (only if the book allows)</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{fEnded}}" hint-placeholder-val="{{ false }}">
+                <div role="status" style="border-radius: 14px; padding: 14px; background: {{fEndBg}}; color: #FBF1DC; display: flex; flex-direction: column; gap: 10px">
+                  <span style="font-family: Cinzel, serif; font-size: 22px; font-weight: 700">{{fEndTitle}}</span>
+                  <span style="font-size: 16px">{{fEndText}}</span>
+                  <button onClick="{{closeFight}}" style="height: 44px; border-radius: 10px; border: 1px solid currentColor; background: transparent; color: inherit; font: inherit; font-size: 16px; cursor: pointer">Close fight</button>
+                </div>
+              </sc-if>
+              <div style="display: flex; flex-direction: column; gap: 4px; border-top: 1px solid #EADDC0; padding-top: 8px">
+                <span style="font-family: Cinzel, serif; font-size: 11px; letter-spacing: 0.14em; color: #6B5537">FIGHT LOG</span>
+                <sc-for list="{{fLog}}" as="lg" hint-placeholder-count="2">
+                  <div style="font-size: 15px; line-height: 1.3; color: {{lg.color}}">{{lg.text}}</div>
+                </sc-for>
+                <sc-if value="{{noLog}}" hint-placeholder-val="{{ false }}"><div style="font-size: 15px; line-height: 1.3; color: #6B5537">No blows yet.</div></sc-if>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{tabIsSpare}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="font-size: 15px; color: #6B5537">Free D6 rolls for unexpected rolls the book does not tell you where to make. Choose how many dice.</div>
+          <div role="group" aria-label="Number of dice" style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px">
+            <sc-for list="{{spareCounts}}" as="sc" hint-placeholder-count="6">
+              <button onClick="{{sc.pick}}" aria-pressed="{{sc.pressed}}" aria-label="{{sc.label}}" style="height: 48px; border-radius: 12px; border: 1px solid {{sc.border}}; background: {{sc.bg}}; color: {{sc.fg}}; font-family: Cinzel, serif; font-size: 20px; font-weight: 600; cursor: pointer; padding: 0">{{sc.n}}</button>
+            </sc-for>
+          </div>
+          <sc-if value="{{spareApp}}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{spareRoll}}" style="height: 52px; border: 0; border-radius: 14px; background: #8E2A1E; color: #FBF1DC; font: inherit; font-size: 18px; font-weight: 600; cursor: pointer">{{spareRollText}}</button>
+          </sc-if>
+          <sc-if value="{{phys}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: 15px; color: #6B5537">Your dice (1–6 each)</span>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                <sc-for list="{{spareInputs}}" as="si" hint-placeholder-count="2">
+                  <input value="{{si.val}}" onChange="{{si.on}}" inputmode="numeric" aria-label="{{si.label}}" style="width: 52px; height: 48px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font-family: Cinzel, serif; font-size: 22px; text-align: center; color: #2B1D10; box-sizing: border-box">
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{hasSpare}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 14px; background: #F6EED9; border: 1px solid #E4D6B6">
+              <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                <sc-for list="{{spareFaces}}" as="f" hint-placeholder-count="2">
+                  <span style="width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid #C9B488; background: #FFFDF6; font-family: Cinzel, serif; font-size: 26px; font-weight: 600; color: #2B1D10">{{f.v}}</span>
+                </sc-for>
+              </div>
+              <div style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 15px; color: #6B5537">Total</span><b style="font-family: Cinzel, serif; font-size: 30px; color: #8E2A1E">{{spareTotal}}</b><span style="font-size: 14px; color: #6B5537">{{spareNote}}</span></div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{deadNotice}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 60; background: rgba(20,12,5,0.6); display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box">
+      <div role="alertdialog" aria-label="You have been killed" style="width: min(100%, 440px); background: #FBF6E8; border-radius: 20px; padding: 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 20px 50px -12px rgba(0,0,0,0.6)">
+        <div style="font-family: Cinzel, serif; font-size: 12px; letter-spacing: 0.16em; color: #8E2A1E">STAMINA 0</div>
+        <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 26px; font-weight: 600">You have been killed</h2>
+        <sc-if value="{{hasRes}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 12px; background: #F6EED9; border: 1px solid #E4D6B6">
+            <span style="font-size: 14px; color: #6B5537">Your resurrection</span>
+            <span style="font-size: 18px">{{resText}}</span>
+            <sc-if value="{{hasResPara}}" hint-placeholder-val="{{ true }}"><span style="font-size: 16px; color: #6B5537">Book {{resBookShown}}, §{{resPara}}</span></sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{noRes}}" hint-placeholder-val="{{ false }}">
+          <div style="font-size: 17px">No resurrection is arranged. Follow what the book tells you.</div>
+        </sc-if>
+        <div style="font-size: 15px; color: #6B5537">Nothing on your sheet has been reset. Adjust Stamina, money or possessions as the book instructs.</div>
+        <sc-if value="{{hasResPara}}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{goRes}}" style="height: 50px; border-radius: 12px; border: 0; background: #8E2A1E; color: #FBF1DC; font: inherit; font-size: 17px; font-weight: 600; cursor: pointer">Go to resurrection · §{{resPara}}</button>
+        </sc-if>
+        <button onClick="{{dismissDead}}" style="height: 46px; border-radius: 12px; border: 1px solid #D3C097; background: #FFFDF6; font: inherit; font-size: 16px; color: #2B1D10; cursor: pointer">Dismiss</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <button onClick="{{close}}" aria-label="Close menu" style="position: fixed; inset: 0; z-index: 48; border: 0; padding: 0; background: rgba(20,12,5,0.5); cursor: pointer"></button>
+  </sc-if>
+
+  <div style="position: fixed; top: 18px; right: 0; width: min(320px, 84vw); z-index: 50; transform: {{panelT}}; transition: transform 260ms cubic-bezier(.2,.8,.2,1)">
+    <button onClick="{{toggle}}" aria-expanded="{{openStr}}" aria-label="{{tabLabel}}" style="position: absolute; left: -40px; top: 0; width: 40px; height: 104px; border: 0; padding: 0; border-radius: 14px 0 0 14px; background: #8E2A1E; color: #FBF1DC; box-shadow: -6px 6px 16px -6px rgba(30,20,11,0.55); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px">
+      <sc-if value="{{dirty}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="position: absolute; left: 6px; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: #D4AF5A; box-shadow: 0 0 0 2px #8E2A1E"></span></sc-if>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"></path></svg>
+      <span style="writing-mode: vertical-rl; font-family: Cinzel, serif; font-size: 11px; font-weight: 700; letter-spacing: 0.2em">{{tabText}}</span>
+    </button>
+    <nav aria-label="Main" style="background: #1E140B; color: #E9DDBF; border-radius: 0 0 0 18px; padding: 16px 16px 18px; max-height: calc(100vh - 36px); overflow: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; box-shadow: -10px 10px 30px -10px rgba(0,0,0,0.6)">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <div style="font-family: Cinzel, serif; font-weight: 700; font-size: 14px; letter-spacing: 0.14em; color: #D4AF5A">FABLED LANDS</div>
+        <div style="display: flex; align-items: center; gap: 8px">
+          <span style="font-size: 15px; color: #BFAE8C; flex: none">{{firstName}} · Stamina</span>
+          <div style="flex: 1; height: 6px; background: #3D2C18; border-radius: 3px; overflow: hidden"><div style="height: 6px; width: {{stamPct}}; background: {{stamColor}}"></div></div>
+          <span style="font-size: 14px; color: #D9CBA8">{{stam}}/{{max}}</span>
+        </div>
+      </div>
+
+      <sc-if value="{{hasJumps}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="font-family: Cinzel, serif; font-size: 11px; letter-spacing: 0.16em; color: #A8977A">ON THIS PAGE</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px">
+            <sc-for list="{{jumps}}" as="j" hint-placeholder-count="4">
+              <a href="#{{j.id}}" onClick="{{close}}" style="min-height: 40px; display: flex; align-items: center; padding: 0 12px; border-radius: 999px; background: #2E2012; color: #F3E8CC; text-decoration: none; font-size: 15px">{{j.label}}</a>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{isCw}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="font-family: Cinzel, serif; font-size: 11px; letter-spacing: 0.16em; color: #A8977A">JUMP TO LETTER</div>
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+            <sc-for list="{{letters}}" as="L" hint-placeholder-count="7">
+              <a href="#cw-{{L.k}}" onClick="{{close}}" style="height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: #2E2012; font-family: Cinzel, serif; font-weight: 700; font-size: 18px; color: #D4AF5A; text-decoration: none">{{L.k}}</a>
+            </sc-for>
+          </div>
+          <button onClick="{{toggleMarked}}" aria-pressed="{{markedStr}}" style="display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid #3D2C18; background: transparent; color: #E9DDBF; font: inherit; font-size: 16px; cursor: pointer">
+            Marked only
+            <span style="width: 40px; height: 24px; border-radius: 12px; background: {{switchBg}}; display: flex; align-items: center; padding: 2px; box-sizing: border-box; justify-content: {{switchPos}}"><span style="width: 20px; height: 20px; border-radius: 50%; background: #FBF1DC"></span></span>
+          </button>
+        </div>
+      </sc-if>
+
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <div style="font-family: Cinzel, serif; font-size: 11px; letter-spacing: 0.16em; color: #A8977A; padding-bottom: 4px">GO TO</div>
+        <button onClick="{{goChar}}" aria-current="{{navChar.cur}}" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 10px; background: {{navChar.bg}}; color: {{navChar.fg}}; font: inherit; font-size: 17px; text-align: left; cursor: pointer"><span style="display: flex; color: {{navChar.ic}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg></span>Character</button>
+        <button onClick="{{goQuests}}" aria-current="{{navQuests.cur}}" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 10px; background: {{navQuests.bg}}; color: {{navQuests.fg}}; font: inherit; font-size: 17px; text-align: left; cursor: pointer"><span style="display: flex; color: {{navQuests.ic}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4"></path><path d="M5 4h12l-2.5 4L17 12H5"></path></svg></span><span style="flex: 1">Quests</span><span style="font-size: 13px; background: #3A2814; border-radius: 999px; padding: 1px 8px">{{questOpen}}</span></button>
+        <button onClick="{{goShips}}" aria-current="{{navShips.cur}}" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 10px; background: {{navShips.bg}}; color: {{navShips.fg}}; font: inherit; font-size: 17px; text-align: left; cursor: pointer"><span style="display: flex; color: {{navShips.ic}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="2"></circle><path d="M12 7v14"></path><path d="M5 13H3a9 8 0 0 0 18 0h-2"></path><path d="M8 11h8"></path></svg></span><span style="flex: 1">Ships</span><span style="font-size: 13px; background: #3A2814; border-radius: 999px; padding: 1px 8px">{{shipCount}}</span></button>
+        <button onClick="{{goCw}}" aria-current="{{navCw.cur}}" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 10px; background: {{navCw.bg}}; color: {{navCw.fg}}; font: inherit; font-size: 17px; text-align: left; cursor: pointer"><span style="display: flex; color: {{navCw.ic}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"></circle><path d="M10.8 12.2 20 3"></path><path d="M17 6l3 3"></path><path d="M14.5 8.5l2 2"></path></svg></span><span style="flex: 1">Codewords</span><span style="font-size: 13px; background: #3A2814; border-radius: 999px; padding: 1px 8px">{{markedCount}}</span></button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="font-family: Cinzel, serif; font-size: 11px; letter-spacing: 0.16em; color: #A8977A">BOOKS</div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{books}}" as="b" hint-placeholder-count="7">
+            <button onClick="{{b.go}}" aria-label="{{b.aria}}" style="height: 50px; border: 0; border-radius: 10px; background: {{b.bg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; font: inherit; cursor: pointer; padding: 0"><span style="font-family: Cinzel, serif; font-weight: 700; font-size: 17px; color: {{b.numFg}}">{{b.n}}</span><span style="font-size: 12px; color: {{b.subFg}}">{{b.prog}}</span></button>
+          </sc-for>
+        </div>
+      </div>
+
+      <button onClick="{{goSaves}}" style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 12px; border-radius: 12px; border: 1px solid #3D2C18; background: {{navSaves.bg}}; color: {{navSaves.fg}}; font: inherit; text-align: left; cursor: pointer">
+        <span style="display: flex; color: #D4AF5A"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="5" rx="1"></rect><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9"></path><path d="M10 13h4"></path></svg></span>
+        <span style="display: flex; flex-direction: column; line-height: 1.15"><span style="font-size: 16px">Saves &amp; Backup</span><span style="font-size: 13px; color: #A8977A">{{saveHint}}</span></span>
+      </button>
+    </nav>
+  </div>
+<p style="margin: 0">Ich brauche jetzt auch bitte einmal eine Visualisierung für das Ausklapp-Fähnchen „Where Am I“ für weitere Anpassungen.</p></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"screen":{"editor":"enum","options":["character","quests","ships","codewords","book","saves","create"],"default":"character"},"open":{"editor":"boolean","default":false},"dice":{"editor":"enum","options":["closed","check","fight","spare"],"default":"closed"},"dead":{"editor":"boolean","default":false},"bookmark":{"editor":"boolean","default":false},"exportDlg":{"editor":"boolean","default":false},"confirm":{"editor":"enum","options":["none","discard","delete-quest"],"default":"none"},"$preview":{"width":1440,"height":1100}}'>
+const AB = ['Charisma', 'Combat', 'Magic', 'Sanctity', 'Scouting', 'Thievery'];
+const PROFS = [
+  ['Priest', [4, 2, 3, 6, 4, 2]], ['Mage', [2, 2, 6, 1, 5, 3]], ['Rogue', [5, 4, 4, 1, 2, 6]],
+  ['Troubadour', [6, 3, 4, 3, 2, 4]], ['Warrior', [3, 6, 2, 4, 3, 2]], ['Wayfarer', [2, 5, 2, 3, 6, 4]]
+];
+const BLESS = ['Charisma', 'Combat', 'Magic', 'Sanctity', 'Scouting', 'Thievery', 'Immunity to Disease', 'Safety from Storms'];
+const WAYS = [0, 0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1];
+const CW = ["Acid","Afraid","Ague","Aid","Aklar","Alissia","Almanac","Aloft","Altitude","Altruist","Ambuscade","Amcha","Amends","Anchor","Anger","Animal","Anthem","Anvil","Apache","Appease","Apple","Ark","Armour","Artefact","Artery","Ashen","Aspen","Assassin","Assault","Assist","Attar","Auric","Avenge","Avert","Axe","Azure","Bait","Baluster","Barnacle","Bashful","Bastion","Beach","Beltane","Bilge","Bisect","Blemish","Bobbin","Bones","Bookworm","Bosky","Bounty","Boysen","Bridoon","Brisket","Brush","Bullion","Bullseye","Bumble","Bunting","Buzz","Cacogast","Calcium","Callid","Cancel","Catalyst","Cenotaph","Certain","Cerumen","Chance","Cheese","Cheops","Chill","Church","Cithara","Citrus","Civil","Clanger","Clutch","Colour","Coracle","Cosy","Covet","Crag","Crocus","Cruel","Cull","Curdle","Cushat","Cutlass","Cyclops","Cynosure","Dangle","Dare","Dark","Dawn","Dead","Deathless","Deep","Defend","Deliver","Diamond","Dim","Dirk","Dirty","Discover","Dismal","Dispel","Divest","Dog","Dotage","Double","Dove","Dragon","Drake","Drape","Draw","Dread","Dregs","Drifter","Drink","Drizzle","Drop","Duress","Dwarf","Earth","East","Ebb","Ebony","Echo","Eclipse","Ectoplasm","Ecumenical","Edifice","Edify","Eerie","Efreet","Egret","Elan","Eldritch","Elegant","Element","Elephant","Elite","Elk","Elude","Ember","Emerald","Enamel","Endless","Energy","Enigma","Entropy","Envoy","Epicure","Epistle","Erebus","Errant","Eternal","Ethereal","Evade","Evergreen","Evict","Evil","Exorcise","Expunge","Extinguish","Exultant","Face","Faded","Farm","Feral","Fern","Fire","Fist","Flag","Fleet","Flimsy","Flood","Flux","Fog","Foment","Fortress","Fossil","Fracas","Frame","Fresco","Fright","Friz","Frog","Fruit","Fuchsia","Fuligin","Fusty","Future","Gaggle","Gain","Gale","Gallivant","Gamble","Game","Gander","Gannet","Gargoyle","Garland","Gather","Gauche","Gauntlet","Gazelle","Genius","Gentle","Genuflect","Geode","Geyser","Ghastly","Giant","Gibbet","Giggle","Gin","Glacier","Gladden","Glade","Glass","Glide","Glimmer","Glimpse","Glitter","Gloat","Gloom","Glory","Glove","Glutton","Gnash","Gnat","Gnome","Gnu","Goblet","Golem","Gone","Goose","Gore","Gosling","Gossamer","Gourd","Govern","Grace","Graft","Grain","Granite","Granule","Grape","Grapple","Grateful","Grebe","Green","Grief","Grimace","Grime","Grind","Grog","Grotto","Grove","Growl","Grub","Guard","Guilt","Guise","Gulf","Gully","Gush"];
+const BOOKS = {"1":{"paras":["10","16","19","91","100","116","160","169","175","199","207","232","233","264","305","310","331","337","361","398","403","409","446","454","473","496","504","542","610","612","619","635","645","649","655","667"],"notes":{"10":"(4×) | Money Invested","91":"104 Money Invested","100":"(Town House)","169":"177 Items in Town House","232":"300 Items in Town House","310":"327 Items in Cache","398":"400 Items in Town House","454":"434 Items in Town House","542":"605 Money Banked"},"multi":{"10":4,"19":3}},"2":{"paras":["2","48","57","71","160","217","253","254","391","416","443","465","542","547","567","586","648","679","710","718","727","728","754","757","760","762","777"],"notes":{"2":"(Town House) | 36 Money Banked","48":"(Town House)","71":"(Town House) | 39 Money Invested","253":"49 Money Invested","416":"85 Money Invested","542":"(3×) | 154 Money Invested","567":"Amulet / Tresses / Katana","648":"211 Items in Town House","718":"278 Items in Town House","754":"348 Items in Town House","762":"661 Locker Box"},"multi":{"542":3}},"3":{"paras":["44","49","56","57","68","84","105","120","143","183","216","351","466","470","477","494","509","515","572","576","651","659","680","692","719"],"notes":{"44":"(Shack) | 74 Items in Shack","143":"335 Items in House","351":"(3×)","509":"607 Items in College","572":"(College)","719":"652 Money Invested"},"multi":{"351":3}},"4":{"paras":["10","40","63","127","173","181","195","210","243","259","265","326","360","376","395","428","429","437","440","467","491","500","513","522","545","583","605","704"],"notes":{"10":"(Town House) | 450 Items Protected by Brotherhood","195":"468 Items in Hordeth's Villa","360":"509 Items in Town House","440":"(3×) | 526 Money Invested","467":"(3×)","545":"586 Items Left Behind","704":"600 Money Banked"},"multi":{"440":3,"467":3}},"5":{"paras":["16","44","93","113","120","126","153","165","195","204","216","227","239","247","269","325","335","467","493","498","520","534","584","592","596","602","622","644","648","672","697","714"],"notes":{"16":"115 Money Invested","126":"245 Items in Castle","216":"401 Status Points","325":"560 Items in Cellar","520":"586 Items in Room","602":"601 Money Banked","697":"624 Palace Rooms"},"multi":{}},"6":{"paras":["68","79","92","106","109","123","155","164","174","233","244","258","263","328","345","517","539","569","604","650","668"],"notes":{"68":"175 Money Invested","79":"(Town House)","109":"238 Items in Town House","155":"(Town House)","164":"(4×)","174":"276 Worldly Goods","263":"284 Items in Town House","539":"414 Items in Town House","668":"440 Money Invested"},"multi":{"164":4}},"7":{"paras":["17","23","34","40","42","58","94","117","120","124","132","135","141","146","161","178","204","225","233","266","270","292","299","305","307","313","316","333","354","356","407","412","424","426","486","506","557","560","588","610","618","629","635","645","653","690","694","729","777","793","847","865","880","899","911","912","927","946","947","962","963","976","1043","1057","1061","1067","1136","1145","1184","1189","1190"],"notes":{"17":"129 Items in Town House","23":"(4×)","42":"(Town House)","120":"250 Items Held in Storage","141":"250 Duties Remaining","204":"263 Items Held in Spire","225":"(Town House)","270":"307 Items Held in Theatre","307":"(2×) | 405 Items in Town House","333":"(Town House)","354":"486 Items in Town House","560":"Sword / Storm / Horse","588":"2nd/3rd/4th Trial | 150 Items in Quarters","610":"599 Items in Atotl's Home","694":"624 Items in Clifftop House","777":"(3×)","899":"788 Flask of Oblivion","963":"974 Stolen Items","1061":"(2×)","1145":"1150 Items in Town House","1190":"(5×)"},"multi":{"23":4,"307":2,"777":3,"1061":2,"1190":5}}};
+const BOOK_TITLES = {"1":"The War-Torn Kingdom","2":"Cities of Gold and Glory","3":"Over the Blood-Dark Sea","4":"The Plains of Howling Darkness","5":"The Court of Hidden Faces","6":"Lords of the Rising Sun","7":"The Serpent King's Domain"};
+const JUMPS = {
+  character: [["stamina","Stamina"],["defence","Defence & money"],["abilities","Abilities"],["possessions","Possessions"],["honours","Blessings"]],
+  book: [["paragraphs","Paragraphs"],["houses","Houses"],["banks","Banks"],["places","Known places"],["notes","Notes"]],
+  saves: [["slots","Save slots"],["backup","Backup"],["new","New adventure"]]
+};
+function pAtLeast(n) {
+  if (n <= 2) return 1;
+  if (n > 12) return 0;
+  let w = 0;
+  for (let k = n; k <= 12; k++) w += WAYS[k];
+  return w / 36;
+}
+function int(v) { const n = parseInt(v, 10); return isNaN(n) ? null : n; }
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const p = props || {};
+    this.state = {
+      screen: p.screen || 'character', open: !!p.open,
+      name: 'Aldric Vane', prof: 'Wayfarer', god: 'Tyrnai', rank: 3,
+      base: { Charisma: 2, Combat: 5, Magic: 2, Sanctity: 3, Scouting: 6, Thievery: 4 },
+      stam: p.dead ? 0 : 12, max: 16, money: 47, moneyAmt: '', defAdj: 0,
+      rankDlg: false, rankGain: '',
+      items: [
+        { name: 'Sword', type: '', bonus: 0 },
+        { name: 'Leather jerkin', type: 'Defence', bonus: 1 },
+        { name: 'Lockpicks', type: 'Thievery', bonus: 1 },
+        { name: 'Magic lockpicks', type: 'Thievery', bonus: 2 },
+        { name: 'Lantern', type: '', bonus: 0 },
+        { name: 'Rope', type: '', bonus: 0 },
+        { name: 'Map of Sokara', type: '', bonus: 0 },
+        { name: 'Silver holy symbol', type: 'Sanctity', bonus: 1 }
+      ],
+      itemDraft: '', itemType: '', itemBonus: '1',
+      blessings: { Combat: true, 'Safety from Storms': true },
+      resText: 'Temple of Tyrnai, Marlock City', resBook: '1', resPara: '100',
+      titles: ['Initiate of Tyrnai'], titleDraft: '', example: true,
+      ships: [{ id: 's1', name: 'Grey Gull', type: 'Barque', crew: 'Average', cap: '1', cargo: 'Grain', dock: 'Yellowport', notes: '' }],
+      toast: '',
+      deadNotice: !!p.dead,
+      bmBook: '1', bmPara: '175', bmOpen: !!p.bookmark, bmDraft: '175',
+      history: [['1','175'],['1','169'],['1','160'],['1','10'],['1','100'],['1','75'],['1','48'],['1','302'],['1','23'],['1','412'],['1','8'],['1','339']].map(([book, para]) => ({ book, para })),
+      places: [{ name: 'Yellowport', book: '1', para: '10' }, { name: 'Marlock City', book: '1', para: '100' }],
+      plName: '', plPara: '',
+      q: '', onlyMarked: false,
+      cf: p.confirm === 'discard' ? { kind: 'newchar' } : (p.confirm === 'delete-quest' ? { kind: 'quest', id: 1 } : null),
+      marked: { Aklar: 1, Anchor: 1, Assassin: 1, Bounty: 1, Coracle: 1, Dirk: 1, Eldritch: 1, Fog: 1, Gauntlet: 1 },
+      filter: 'all',
+      houses: { '1': [
+        { id: 'h1', book: '1', para: '100', items: [{ id: 'i1', text: 'Spare sword' }, { id: 'i2', text: 'Rope' }, { id: 'i3', text: 'Healing potion' }] }
+      ] },
+      banks: { '1': [{ id: 'b1', book: '1', para: '104', amount: '120' }] },
+      book: '1', ticks: { '1': { '10': 2, '19': 1, '100': 1, '175': 1, '232': 1, '305': 1, '542': 1, '610': 1 } },
+      quests: [
+        { id: 1, what: 'Deliver the sealed letter', from: 'Guard captain, Marlock City', where: 'Yellowport', done: false },
+        { id: 2, what: 'Find the lost amulet', from: 'Old priest', where: 'Shadar Tor', done: true }
+      ],
+      qFilter: 'open',
+      active: 'Example – Aldric Vane', snapDraft: '', dirty: true, savedWhen: 'today 14:32', exportDlg: !!p.exportDlg, exportNote: 'Last export: 12 Oct 2026',
+      slots: [
+        { name: 'Example – Aldric Vane', meta: 'Wayfarer · Rank 3 · Book 1 §175 · today 14:32' },
+        { name: 'Before the Shadar Tor', meta: 'Rank 2 · Book 1 §496 · 15 Oct' },
+        { name: 'Mira – Priestess', meta: 'Rank 1 · Book 2 §48 · 2 Oct' }
+      ],
+      wStep: 1, wName: '', wProf: '', wGod: '', wErr: '',
+      dice: (p.dice && p.dice !== 'closed') ? p.dice : null,
+      phys: false, pd1: '', pd2: '', diceErr: false, spareN: 2, spareRes: null, spareVals: ['', '', '', '', '', ''],
+      checkAb: 'Charisma', diff: 9, checkRes: null,
+      eName: 'Bandit', eCombat: '4', eDef: '7', eStam: '8', first: 'you', fErr: false,
+      fOn: p.dice === 'fight', fName: 'Bandit', fCombat: 4, fDef: 7, fEs: 5, fEmax: 8, fTurn: 'enemy', fRound: 1, fOver: '',
+      fLog: p.dice === 'fight' ? [{ text: 'R1 · You: 4 + 3 + 5 = 12 vs Def 7 → 5 damage', who: 'you' }] : []
+    };
+  }
+  componentDidUpdate(prev) {
+    const p = this.props;
+    if (prev.screen !== p.screen && p.screen) this.setState({ screen: p.screen });
+    if (prev.open !== p.open) this.setState({ open: !!p.open });
+    if (prev.bookmark !== p.bookmark) this.setState({ bmOpen: !!p.bookmark });
+    if (prev.dice !== p.dice) this.setState({ dice: (p.dice && p.dice !== 'closed') ? p.dice : null });
+    if (prev.exportDlg !== p.exportDlg) this.setState({ exportDlg: !!p.exportDlg });
+    if (prev.confirm !== p.confirm) this.setState({ cf: p.confirm === 'discard' ? { kind: 'newchar' } : (p.confirm === 'delete-quest' ? { kind: 'quest', id: 1 } : null) });
+  }
+  showToast(msg) {
+    clearTimeout(this._tt);
+    this.setState({ toast: msg });
+    this._tt = setTimeout(() => this.setState({ toast: '' }), 2600);
+  }
+  startCreate() {
+    this.setState({ wStep: 1, wName: '', wProf: '', wGod: '', wErr: '', cf: null });
+    this.go('create');
+  }
+  runConfirm() {
+    const s = this.state, c = s.cf;
+    if (!c) return;
+    this.setState({ cf: null });
+    if (c.kind === 'cw') {
+      const m = Object.assign({}, s.marked); delete m[c.w];
+      this.setState({ marked: m });
+    } else if (c.kind === 'quest') {
+      this.setState({ quests: s.quests.filter((y) => y.id !== c.id) });
+    } else if (c.kind === 'ship') {
+      this.setState({ ships: s.ships.filter((y) => y.id !== c.id) });
+    } else if (c.kind === 'house') {
+      this.setState({ houses: Object.assign({}, s.houses, { [c.book]: (s.houses[c.book] || []).filter((x) => x.id !== c.id) }) });
+    } else if (c.kind === 'bank') {
+      this.setState({ banks: Object.assign({}, s.banks, { [c.book]: (s.banks[c.book] || []).filter((x) => x.id !== c.id) }) });
+    } else if (c.kind === 'slotdel') {
+      this.setState({ slots: s.slots.filter((x) => x.name !== c.name) });
+    } else if (c.kind === 'newchar') {
+      this.startCreate();
+    } else if (c.kind === 'load') {
+      this.loadSlot(c.name);
+    }
+  }
+  loadSlot(name) {
+    this.setState({ active: name, dirty: false, example: name === 'Example – Aldric Vane' });
+    this.showToast('Loaded “' + name + '”.');
+    this.go('character');
+  }
+  go(screen) {
+    this.setState({ screen, open: false, bmOpen: false });
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
+  best(type, items) {
+    let b = 0, src = '', idx = -1;
+    (items || this.state.items).forEach((it, i) => { if (it.type === type && it.bonus > b) { b = it.bonus; src = it.name; idx = i; } });
+    return { b, src, idx };
+  }
+  eff(ab) {
+    return Math.max(1, Math.min(12, this.state.base[ab] + this.best(ab).b));
+  }
+  defence() {
+    return this.eff('Combat') + this.state.rank + this.best('Defence').b + this.state.defAdj;
+  }
+  setStam(n) {
+    const v = Math.max(0, n);
+    const killed = v <= 0 && this.state.stam > 0;
+    this.setState({ stam: v, deadNotice: killed ? true : this.state.deadNotice });
+    return v;
+  }
+  setBookmark(book, para) {
+    const b = String(book), pa = String(para);
+    const hist = [{ book: b, para: pa }].concat(this.state.history.filter((h) => !(h.book === b && h.para === pa))).slice(0, 12);
+    this.setState({ bmBook: b, bmPara: pa, bmDraft: pa, history: hist });
+  }
+  rollDice() {
+    const s = this.state;
+    if (s.phys) {
+      const a = int(s.pd1), b = int(s.pd2);
+      if (!a || !b || a < 1 || a > 6 || b < 1 || b > 6) { this.setState({ diceErr: true }); return null; }
+      this.setState({ diceErr: false, pd1: '', pd2: '' });
+      return [a, b];
+    }
+    this.setState({ diceErr: false });
+    return [1 + Math.floor(Math.random() * 6), 1 + Math.floor(Math.random() * 6)];
+  }
+  doCheck(rerolled) {
+    const d = this.rollDice();
+    if (!d) return;
+    const ab = this.state.checkAb, v = this.eff(ab), total = d[0] + d[1] + v, diff = this.state.diff;
+    this.setState({ checkRes: { d1: d[0], d2: d[1], v, total, diff, ok: total > diff, ab, rerolled: !!rerolled } });
+  }
+  fightStep() {
+    const s = this.state;
+    const d = this.rollDice();
+    if (!d) return;
+    const log = s.fLog.slice();
+    let upd = {};
+    if (s.fTurn === 'you') {
+      const c = this.eff('Combat'), total = d[0] + d[1] + c, dmg = Math.max(0, total - s.fDef);
+      const es = Math.max(0, s.fEs - dmg);
+      log.unshift({ who: 'you', text: 'R' + s.fRound + ' · You: ' + d[0] + ' + ' + d[1] + ' + ' + c + ' = ' + total + ' vs Def ' + s.fDef + (dmg ? ' → ' + dmg + ' damage' : ' → miss') });
+      upd = { fEs: es, fTurn: 'enemy', fOver: es <= 0 ? 'won' : '' };
+    } else {
+      const def = this.defence(), total = d[0] + d[1] + s.fCombat, dmg = Math.max(0, total - def);
+      log.unshift({ who: 'enemy', text: 'R' + s.fRound + ' · ' + s.fName + ': ' + d[0] + ' + ' + d[1] + ' + ' + s.fCombat + ' = ' + total + ' vs Def ' + def + (dmg ? ' → you lose ' + dmg : ' → miss') });
+      const v = this.setStam(s.stam - dmg);
+      upd = { fTurn: 'you', fOver: v <= 0 ? 'lost' : '' };
+    }
+    const second = s.first === 'you' ? 'enemy' : 'you';
+    if (s.fTurn === second) upd.fRound = s.fRound + 1;
+    upd.fLog = log;
+    this.setState(upd);
+  }
+  renderVals() {
+    const s = this.state;
+    const scr = s.screen;
+    const navStyle = (on) => ({ bg: on ? '#3A2814' : 'transparent', fg: on ? '#FBF1DC' : '#D9CBA8', ic: on ? '#D4AF5A' : 'currentColor', cur: on ? 'page' : 'false' });
+    const pct = s.max ? Math.min(100, Math.round(100 * s.stam / s.max)) : 0;
+    const effC = this.eff('Combat');
+    const arm = this.best('Defence');
+    const defence = this.defence();
+
+    // codewords
+    const q = s.q.trim().toLowerCase();
+    const groups = {};
+    CW.forEach((w) => {
+      const on = !!s.marked[w];
+      if (q && w.toLowerCase().indexOf(q) === -1) return;
+      if (s.onlyMarked && !on) return;
+      const k = w[0];
+      (groups[k] = groups[k] || []).push({
+        word: w, on, onStr: on ? 'true' : 'false',
+        bg: on ? '#8E2A1E' : '#FBF6E8', fg: on ? '#FBF1DC' : '#2B1D10',
+        border: on ? '#8E2A1E' : '#DCCBA4', weight: on ? '600' : '400',
+        toggle: () => {
+          if (this.state.marked[w]) { this.setState({ cf: { kind: 'cw', w } }); return; }
+          const m = Object.assign({}, this.state.marked); m[w] = 1;
+          this.setState({ marked: m });
+        }
+      });
+    });
+    const keys = Object.keys(groups).sort();
+
+    // book
+    const stats = (n) => {
+      const B0 = BOOKS[n], t0 = s.ticks[n] || {};
+      let d0 = 0, b0 = 0;
+      B0.paras.forEach((q) => { const m = B0.multi[q] || 1; b0 += m; d0 += Math.min(m, t0[q] || 0); });
+      return { d0, b0 };
+    };
+    const BK = s.book, BD = BOOKS[BK], TK = s.ticks[BK] || {};
+    const cur = stats(BK), done = cur.d0, boxes = cur.b0;
+    const uid = () => 'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const HS = s.houses[BK] || [], BS = s.banks[BK] || [];
+    const setH = (fn) => this.setState({ houses: Object.assign({}, this.state.houses, { [BK]: fn(this.state.houses[BK] || []) }) });
+    const setB = (fn) => this.setState({ banks: Object.assign({}, this.state.banks, { [BK]: fn(this.state.banks[BK] || []) }) });
+    const paras = [];
+    BD.paras.forEach((n) => {
+      const mx = BD.multi[n] || 1;
+      const t = TK[n] || 0;
+      const full = t >= mx;
+      if (s.filter === 'open' && full) return;
+      if (s.filter === 'done' && t === 0) return;
+      const raw = BD.notes[n] || '';
+      const note = raw.replace(/\(\d+×\)\s*\|?\s*/g, '').replace(/^\(|\)$/g, '').replace(/\s*\|\s*/g, ' · ').trim();
+      const pips = [];
+      for (let i = 0; i < mx; i++) pips.push({ fill: i < t ? (full ? '#F3E8CC' : '#8E2A1E') : 'transparent', ring: full ? '#F3E8CC' : '#8E2A1E' });
+      paras.push({
+        n, full, isMulti: mx > 1, pips, note, hasNote: !!note,
+        aria: '§' + n + (mx > 1 ? ', ' + t + ' of ' + mx + ' ticked' : (full ? ', visited' : ', not visited')),
+        bg: full ? '#2B1D10' : (t > 0 ? '#F3E3C4' : '#FBF6E8'),
+        fg: full ? '#F3E8CC' : '#2B1D10',
+        noteFg: full ? '#CDBB97' : '#6B5537',
+        border: full ? '#2B1D10' : (t > 0 ? '#C9A267' : '#DCCBA4'),
+        tick: () => {
+          const all = Object.assign({}, this.state.ticks);
+          const m = Object.assign({}, all[BK] || {});
+          const c0 = m[n] || 0;
+          m[n] = c0 >= mx ? 0 : c0 + 1;
+          if (!m[n]) delete m[n];
+          all[BK] = m;
+          this.setState({ ticks: all });
+        }
+      });
+    });
+    const mk = (key, label) => ({ label, pressed: s.filter === key ? 'true' : 'false', bg: s.filter === key ? '#FBF6E8' : 'transparent', pick: () => this.setState({ filter: key }) });
+    const isBook = scr === 'book';
+    const books = ['1', '2', '3', '4', '5', '6', '7'].map((n) => {
+      const st = stats(n), on = isBook && BK === n;
+      return { n, prog: st.d0 + '/' + st.b0, aria: 'Book ' + n, bg: on ? '#D4AF5A' : '#2E2012', numFg: on ? '#1E140B' : '#D4AF5A', subFg: on ? '#2B1D10' : '#BFAE8C',
+        go: () => { this.setState({ book: n, filter: 'all' }); this.go('book'); } };
+    });
+
+    // items
+    const bestIdx = {};
+    ['Defence'].concat(AB).forEach((t) => { const b = this.best(t); if (b.idx >= 0) bestIdx[t] = b.idx; });
+    const items = s.items.map((it, i) => {
+      const counted = it.type && bestIdx[it.type] === i;
+      return {
+        name: it.name, hasBonus: !!it.type && it.bonus > 0,
+        bonusText: it.type + ' +' + it.bonus + (it.type && !counted ? ' · not counted' : ''),
+        chipBg: counted ? '#2B1D10' : '#EADDC0', chipFg: counted ? '#F3E8CC' : '#7A6447',
+        remove: () => this.setState({ items: this.state.items.filter((_, j) => j !== i) })
+      };
+    });
+
+    // wizard
+    const wp = PROFS.find((x) => x[0] === s.wProf);
+    const wTitles = { 1: 'Name your adventurer', 2: 'Choose a profession', 3: 'Ready to begin' };
+
+    // check
+    const cAbV = this.eff(s.checkAb);
+    const need = s.diff - cAbV + 1;
+    const chance = Math.round(100 * pAtLeast(need));
+    const needText = need <= 2 ? 'Automatic success – any roll beats ' + s.diff + '.' : (need > 12 ? 'Impossible – even a 12 cannot beat ' + s.diff + '.' : 'Need ' + need + '+ on 2d6 · ' + chance + ' % chance');
+    const cr = s.checkRes;
+    const crV = cr ? {
+      d1: cr.d1, d2: cr.d2, verdict: cr.ok ? 'Success' : 'Failure',
+      formula: cr.d1 + ' + ' + cr.d2 + ' + ' + cr.v + ' (' + cr.ab + ') = ' + cr.total + (cr.ok ? ' > ' : ' ≤ ') + cr.diff + (cr.rerolled ? ' · rerolled' : ''),
+      bg: cr.ok ? '#2F5D3A' : '#8E2A1E', fg: '#FBF1DC'
+    } : { d1: '', d2: '', verdict: '', formula: '', bg: '#FBF6E8', fg: '#2B1D10' };
+
+    // fight
+    const youNeed = s.fDef - effC + 1;
+    const enNeed = defence - s.fCombat + 1;
+    const fRunning = s.fOn && !s.fOver;
+    const endMap = {
+      won: ['Victory', s.fName + ' is defeated. Continue as the book tells you.', '#2F5D3A'],
+      lost: ['You have been killed', 'Your Stamina reached 0. See the notice for your resurrection.', '#8E2A1E'],
+      fled: ['You fled', 'The fight is over. Follow the book’s instructions for fleeing.', '#5A4326']
+    };
+    const end = endMap[s.fOver] || ['', '', '#5A4326'];
+
+    let spareShow = null;
+    if (s.phys) {
+      const sv = s.spareVals.slice(0, s.spareN).map(int);
+      if (sv.every((x) => x && x >= 1 && x <= 6)) spareShow = sv;
+    } else if (s.spareRes && s.spareRes.length === s.spareN) spareShow = s.spareRes;
+
+    const firstName = (s.name || '').split(' ')[0] || 'You';
+
+    const cfc = s.cf;
+    const cfT = !cfc ? ['', '', '', 'Remove'] : ({
+      cw: ['Lost the codeword ', cfc.w, '?', 'Remove'],
+      quest: ['Delete this quest?', '', '', 'Delete'],
+      ship: ['Remove this ship?', '', '', 'Remove'],
+      house: ['Remove this house and its list?', '', '', 'Remove'],
+      bank: ['Remove this bank entry?', '', '', 'Remove'],
+      slotdel: ['Delete the save ', cfc.name, ' for good?', 'Delete'],
+      newchar: ['You have unsaved changes. Start a new character and discard them?', '', '', 'Discard and continue'],
+      load: ['You have unsaved changes. Load another save and discard them?', '', '', 'Discard and load']
+    })[cfc.kind];
+    const hitHint = s.fTurn === 'you'
+      ? (youNeed <= 2 ? 'You always hit.' : youNeed > 12 ? 'You cannot hit this enemy.' : 'You hit on 2d6 ≥ ' + youNeed + ' (' + Math.round(100 * pAtLeast(youNeed)) + ' %).')
+      : (enNeed <= 2 ? s.fName + ' always hits.' : enNeed > 12 ? s.fName + ' cannot hit you.' : s.fName + ' hits on 2d6 ≥ ' + enNeed + ' (' + Math.round(100 * pAtLeast(enNeed)) + ' %).');
+
+    return {
+      isQuests: scr === 'quests', navQuests: navStyle(scr === 'quests'), goQuests: () => this.go('quests'),
+      questOpen: s.quests.filter((x) => !x.done).length, questDone: s.quests.filter((x) => x.done).length,
+      qFilters: [['open', 'Open'], ['done', 'Done'], ['all', 'All']].map(([k, label]) => ({
+        label, on: s.qFilter === k ? 'true' : 'false', bg: s.qFilter === k ? '#2B1D10' : 'transparent', fg: s.qFilter === k ? '#F3E8CC' : '#4A3620',
+        pick: () => this.setState({ qFilter: k })
+      })),
+      quests: s.quests.filter((x) => s.qFilter === 'all' || (s.qFilter === 'open' ? !x.done : x.done)).map((x) => {
+        const upd = (k) => (e) => this.setState({ quests: s.quests.map((y) => y.id === x.id ? { ...y, [k]: e.target.value } : y) });
+        return {
+          what: x.what, from: x.from, where: x.where,
+          onWhat: upd('what'), onFrom: upd('from'), onWhere: upd('where'), 
+          tag: x.done ? 'DONE' : 'OPEN', tagBg: x.done ? '#D9E4D2' : '#F1DFB0', tagFg: x.done ? '#274A30' : '#5A3E0C',
+          bg: x.done ? '#F3EDDA' : '#FBF6E8', op: x.done ? '0.85' : '1',
+          btnText: x.done ? 'Reopen quest' : 'Mark as done', btnBg: x.done ? 'transparent' : '#2B1D10', btnFg: x.done ? '#2B1D10' : '#F3E8CC', btnBorder: x.done ? '#8E7A52' : '#2B1D10',
+          toggle: () => this.setState({ quests: s.quests.map((y) => y.id === x.id ? { ...y, done: !y.done } : y) }),
+          remove: () => this.setState({ cf: { kind: 'quest', id: x.id } })
+        };
+      }),
+      questsEmpty: s.quests.filter((x) => s.qFilter === 'all' || (s.qFilter === 'open' ? !x.done : x.done)).length === 0,
+      questsEmptyText: s.qFilter === 'done' ? 'No finished quests yet.' : 'No open quests. Tap “Add quest” when the book gives you a task.',
+      addQuest: () => this.setState({ quests: [...s.quests, { id: Date.now(), what: '', from: '', where: '', done: false }], qFilter: s.qFilter === 'done' ? 'open' : s.qFilter }),
+      isChar: scr === 'character', isShips: scr === 'ships', isCw: scr === 'codewords', isBook, isSaves: scr === 'saves', isCreate: scr === 'create',
+      isExample: s.example, dirty: s.dirty,
+      noItems: s.items.length === 0,
+      titles: s.titles.map((t, i) => ({ text: t, remove: () => this.setState({ titles: this.state.titles.filter((_, j) => j !== i) }) })),
+      noTitles: s.titles.length === 0, titleDraft: s.titleDraft,
+      onTitleDraft: (e) => this.setState({ titleDraft: e.target.value }),
+      addTitle: () => { const t = s.titleDraft.trim(); if (t) this.setState({ titles: s.titles.concat([t]), titleDraft: '' }); },
+      navShips: navStyle(scr === 'ships'), goShips: () => this.go('ships'),
+      shipCount: s.ships.length,
+      shipSub: s.ships.length + (s.ships.length === 1 ? ' ship' : ' ships') + ' · cargo capacity is counted in Cargo Units',
+      noShips: s.ships.length === 0,
+      addShip: () => this.setState({ ships: s.ships.concat([{ id: 's' + Date.now().toString(36), name: '', type: '', crew: 'Average', cap: '', cargo: '', dock: '', notes: '' }]) }),
+      ships: s.ships.map((x, i) => {
+        const upd = (k) => (e) => this.setState({ ships: this.state.ships.map((y) => y.id === x.id ? { ...y, [k]: e.target.value } : y) });
+        return {
+          n: i + 1, name: x.name, type: x.type, crew: x.crew, cap: x.cap, cargo: x.cargo, dock: x.dock, notes: x.notes,
+          onName: upd('name'), onType: upd('type'), onCrew: upd('crew'), onCap: upd('cap'), onCargo: upd('cargo'), onDock: upd('dock'), onNotes: upd('notes'),
+          remove: () => this.setState({ cf: { kind: 'ship', id: x.id } })
+        };
+      }),
+      bookBar: ['1', '2', '3', '4', '5', '6', '7'].map((n) => {
+        const on = BK === n;
+        return { label: n + ' · ' + BOOK_TITLES[n], pressed: on ? 'true' : 'false', bg: on ? '#2B1D10' : '#FBF6E8', fg: on ? '#F3E8CC' : '#2B1D10', border: on ? '#2B1D10' : '#DCCBA4', pick: () => this.setState({ book: n }) };
+      }),
+      noParas: paras.length === 0, noPlaces: s.places.length === 0, hasPlaces: s.places.length > 0,
+      emptyText: s.onlyMarked && !s.q ? 'No codewords marked yet.' : 'No codeword matches “' + s.q + '”.',
+      cfOn: !!s.cf, cfPre: cfT[0], cfName: cfT[1], cfPost: cfT[2], cfOkLabel: cfT[3],
+      cfCancel: () => this.setState({ cf: null }), cfOk: () => this.runConfirm(),
+      toastOn: !!s.toast && !s.cf, toastText: s.toast,
+      hasJumps: !!JUMPS[scr],
+      jumps: (JUMPS[scr] || []).map(([id, label]) => ({ id, label })),
+      navChar: navStyle(scr === 'character'), navCw: navStyle(scr === 'codewords'),
+      navSaves: { bg: scr === 'saves' ? '#3A2814' : 'transparent', fg: scr === 'saves' ? '#FBF1DC' : '#E9DDBF' },
+      goChar: () => this.go('character'), goCw: () => this.go('codewords'),
+      goBook: () => { this.setState({ book: this.state.bmBook, filter: 'all' }); this.go('book'); }, goSaves: () => this.go('saves'),
+      goCreate: () => { if (this.state.dirty) { this.setState({ cf: { kind: 'newchar' } }); return; } this.startCreate(); },
+      books, firstName,
+
+      open: s.open, openStr: s.open ? 'true' : 'false',
+      panelT: s.open ? 'translateX(0)' : 'translateX(100%)',
+      tabText: s.open ? 'CLOSE' : 'MENU',
+      tabLabel: s.open ? 'Close menu' : 'Open menu',
+      toggle: () => this.setState({ open: !this.state.open, bmOpen: false }),
+      close: () => this.setState({ open: false }),
+
+      // character
+      name: s.name, prof: s.prof, god: s.god, godLine: s.god || 'No god', rank: s.rank, nextRank: s.rank + 1,
+      onName: (e) => this.setState({ name: e.target.value }),
+      onGod: (e) => this.setState({ god: e.target.value }),
+      stam: s.stam, max: s.max, money: s.money,
+      stamPct: pct + '%', stamLow: s.stam > 0 && s.stam <= 3,
+      stamColor: s.stam <= 3 ? '#C2412D' : '#D4AF5A',
+      stamNumColor: s.stam <= 3 ? '#F2A493' : '#F3E8CC',
+      stamDown: () => this.setStam(this.state.stam - 1),
+      stamUp: () => this.setState({ stam: Math.min(this.state.max, this.state.stam + 1) }),
+      stamFull: () => this.setState({ stam: this.state.max }),
+      maxDown: () => this.setState({ max: Math.max(1, s.max - 1), stam: Math.min(s.stam, Math.max(1, s.max - 1)) }),
+      maxUp: () => this.setState({ max: s.max + 1 }),
+      rankDlg: s.rankDlg, rankDlgClosed: !s.rankDlg, rankGain: s.rankGain,
+      openRank: () => this.setState({ rankDlg: true, rankGain: '' }),
+      closeRank: () => this.setState({ rankDlg: false }),
+      onRankGain: (e) => this.setState({ rankGain: e.target.value }),
+      rollRankGain: () => this.setState({ rankGain: String(1 + Math.floor(Math.random() * 6)) }),
+      confirmRank: () => {
+        const g = Math.max(0, int(this.state.rankGain) || 0), nr = this.state.rank + 1;
+        this.setState({ rank: nr, max: this.state.max + g, stam: this.state.stam + g, rankDlg: false });
+        this.showToast('You are now Rank ' + nr + '.');
+      },
+      defence,
+      defBreakdown: 'Combat ' + effC + ' + Rank ' + s.rank + ' + ' + (arm.b ? arm.src + ' ' + arm.b : 'no armour 0') + (s.defAdj ? ' ' + (s.defAdj > 0 ? '+ ' : '− ') + Math.abs(s.defAdj) + ' adjustment' : '') + ' = ' + defence,
+      defAdjText: s.defAdj > 0 ? '+' + s.defAdj : String(s.defAdj),
+      adjDown: () => this.setState({ defAdj: s.defAdj - 1 }),
+      adjUp: () => this.setState({ defAdj: s.defAdj + 1 }),
+      moneyAmt: s.moneyAmt,
+      onMoneyAmt: (e) => this.setState({ moneyAmt: e.target.value }),
+      moneyM10: () => this.setState({ money: Math.max(0, s.money - 10) }),
+      moneyM1: () => this.setState({ money: Math.max(0, s.money - 1) }),
+      moneyP1: () => this.setState({ money: s.money + 1 }),
+      moneyP10: () => this.setState({ money: s.money + 10 }),
+      moneySpend: () => { const a = int(s.moneyAmt); if (!a) return; if (Math.abs(a) > s.money) { this.showToast('You only have ' + s.money + ' Shards.'); return; } this.setState({ money: s.money - Math.abs(a), moneyAmt: '' }); },
+      moneyGain: () => { const a = int(s.moneyAmt); if (a) this.setState({ money: s.money + Math.abs(a), moneyAmt: '' }); },
+      abilities: AB.map((ab) => {
+        const base = s.base[ab], bb = this.best(ab), e = this.eff(ab);
+        return {
+          label: ab, upper: ab.toUpperCase(), eff: e,
+          detail: bb.b ? base + ' + ' + bb.b + ' ' + bb.src : 'base ' + base,
+          atMin: base <= 1, atMax: base >= 12, downOp: base <= 1 ? '0.4' : '1', upOp: base >= 12 ? '0.4' : '1',
+          down: () => { const nb = Object.assign({}, this.state.base); nb[ab] = Math.max(1, nb[ab] - 1); this.setState({ base: nb }); },
+          up: () => { const nb = Object.assign({}, this.state.base); nb[ab] = Math.min(12, nb[ab] + 1); this.setState({ base: nb }); },
+          roll: () => this.setState({ dice: 'check', checkAb: ab, checkRes: null, bmOpen: false })
+        };
+      }),
+      itemCount: s.items.length, itemsFull: s.items.length >= 12,
+      itemCountColor: s.items.length >= 12 ? '#8E2A1E' : '#6B5537',
+      items,
+      itemDraft: s.itemDraft, itemType: s.itemType, itemBonus: s.itemBonus,
+      onItemDraft: (e) => this.setState({ itemDraft: e.target.value }),
+      onItemType: (e) => this.setState({ itemType: e.target.value }),
+      onItemBonus: (e) => this.setState({ itemBonus: e.target.value }),
+      addItem: () => {
+        const t = s.itemDraft.trim();
+        if (!t || s.items.length >= 12) return;
+        const bonus = s.itemType ? Math.max(0, int(s.itemBonus) || 0) : 0;
+        this.setState({ items: s.items.concat([{ name: t, type: bonus ? s.itemType : '', bonus }]), itemDraft: '', itemType: '', itemBonus: '1' });
+      },
+      blessings: BLESS.map((b) => ({
+        label: b, on: !!s.blessings[b], off: !s.blessings[b],
+        use: () => { const nb = Object.assign({}, this.state.blessings); delete nb[b]; this.setState({ blessings: nb }); this.showToast(b + ' blessing used.'); },
+        add: () => { const nb = Object.assign({}, this.state.blessings); nb[b] = true; this.setState({ blessings: nb }); }
+      })),
+      resText: s.resText, resBook: s.resBook, resPara: s.resPara,
+      onResText: (e) => this.setState({ resText: e.target.value }),
+      onResBook: (e) => this.setState({ resBook: e.target.value }),
+      onResPara: (e) => this.setState({ resPara: e.target.value }),
+
+      // death
+      deadNotice: s.deadNotice,
+      hasRes: !!s.resText.trim(), noRes: !s.resText.trim(),
+      hasResPara: !!s.resText.trim() && !!s.resPara, resBookShown: s.resBook || '1',
+      goRes: () => { this.setBookmark(s.resBook || '1', s.resPara || '1'); this.setState({ deadNotice: false }); this.go('book'); },
+      dismissDead: () => this.setState({ deadNotice: false }),
+
+      // wizard
+      wStep: s.wStep, wTitle: wTitles[s.wStep], wIs1: s.wStep === 1, wIs2: s.wStep === 2, wIs3: s.wStep === 3,
+      wDots: [1, 2, 3].map((i) => ({ bg: i <= s.wStep ? '#8E2A1E' : '#DCCBA4' })),
+      wName: s.wName, wGod: s.wGod, wProf: s.wProf,
+      onWName: (e) => this.setState({ wName: e.target.value, wErr: '' }),
+      onWGod: (e) => this.setState({ wGod: e.target.value }),
+      wError: !!s.wErr, wErrorText: s.wErr,
+      wStats: wp ? AB.map((a, i) => a + ' ' + wp[1][i]).join(' · ') : '',
+      wDef: wp ? wp[1][1] + 2 : '',
+      profCards: PROFS.map(([pn, vals]) => {
+        const sel = s.wProf === pn;
+        const top = Math.max.apply(null, vals);
+        return {
+          name: pn, pressed: sel ? 'true' : 'false',
+          border: sel ? '#8E2A1E' : '#DCCBA4', bg: sel ? '#FFF8E8' : '#FBF6E8',
+          best: AB.filter((a, i) => vals[i] === top).join(', ') + ' ' + top,
+          bars: AB.map((a, i) => ({ label: a, v: vals[i], w: Math.round(vals[i] / 6 * 100) + '%', color: vals[i] >= 5 ? '#8E2A1E' : '#B8975A' })),
+          pick: () => this.setState({ wProf: pn, wErr: '' })
+        };
+      }),
+      wBackLabel: s.wStep === 1 ? 'Cancel' : 'Back',
+      wNextLabel: s.wStep === 3 ? 'Begin adventure' : 'Next',
+      wBack: () => { if (s.wStep === 1) this.go('saves'); else this.setState({ wStep: s.wStep - 1, wErr: '' }); },
+      wNext: () => {
+        if (s.wStep === 1) { if (!s.wName.trim()) { this.setState({ wErr: 'Please enter a name.' }); return; } this.setState({ wStep: 2 }); return; }
+        if (s.wStep === 2) { if (!s.wProf) { this.setState({ wErr: 'Please choose a profession.' }); return; } this.setState({ wStep: 3 }); return; }
+        const base = {}; AB.forEach((a, i) => { base[a] = wp[1][i]; });
+        const nm = s.wName.trim();
+        this.setState({
+          name: nm, prof: s.wProf, god: s.wGod.trim(), rank: 1, base, stam: 9, max: 9, money: 16, defAdj: 0,
+          items: [{ name: 'Sword', type: '', bonus: 0 }, { name: 'Leather jerkin', type: 'Defence', bonus: 1 }],
+          blessings: {}, resText: '', resBook: '', resPara: '', deadNotice: false,
+          marked: {}, ticks: {}, places: [], history: [{ book: '1', para: '1' }],
+          bmBook: '1', bmPara: '1', bmDraft: '1', active: nm,
+          slots: [{ name: nm, meta: s.wProf + ' · Rank 1 · Book 1 §1 · just now' }].concat(s.slots),
+          example: false, titles: [], dirty: false, savedWhen: 'just now'
+        });
+        this.showToast('Welcome, ' + nm + '. Turn to Book 1, §1.');
+        this.go('character');
+      },
+
+      // bookmark
+      bmBook: s.bmBook, bmPara: s.bmPara, bmOpen: s.bmOpen, bmOpenStr: s.bmOpen ? 'true' : 'false', bmDraft: s.bmDraft,
+      toggleBm: () => this.setState({ bmOpen: !this.state.bmOpen, bmDraft: this.state.bmPara, open: false }),
+      openBm: () => this.setState({ bmOpen: true, bmDraft: this.state.bmPara }),
+      closeBm: () => this.setState({ bmOpen: false }),
+      onBmDraft: (e) => this.setState({ bmDraft: e.target.value }),
+      setBm: () => { const pa = int(s.bmDraft); if (!pa) { this.showToast('Enter a paragraph number.'); return; } this.setBookmark(s.bmBook, pa); this.setState({ bmOpen: false }); this.showToast('Bookmark set to Book ' + s.bmBook + ', §' + pa + '.'); },
+      bmBooks: ['1', '2', '3', '4', '5', '6', '7'].map((n) => ({ n, pressed: s.bmBook === n ? 'true' : 'false', bg: s.bmBook === n ? '#D4AF5A' : '#2E2012', fg: s.bmBook === n ? '#1E140B' : '#D4AF5A', pick: () => this.setState({ bmBook: n }) })),
+      history: s.history.map((h) => ({ book: h.book, para: h.para, go: () => { this.setBookmark(h.book, h.para); this.setState({ bmOpen: false }); } })),
+      places: s.places.map((pl, i) => ({
+        name: pl.name, book: pl.book, para: pl.para,
+        go: () => { this.setBookmark(pl.book, pl.para); this.setState({ bmOpen: false }); this.showToast('Bookmark set to ' + pl.name + ', §' + pl.para + '.'); },
+        remove: () => this.setState({ places: this.state.places.filter((_, j) => j !== i) })
+      })),
+      plName: s.plName, plPara: s.plPara,
+      onPlName: (e) => this.setState({ plName: e.target.value }),
+      onPlPara: (e) => this.setState({ plPara: e.target.value }),
+      addPlace: () => { const n = s.plName.trim(), pa = int(s.plPara); if (!n || !pa) { this.showToast('Enter a place name and a paragraph.'); return; } this.setState({ places: s.places.concat([{ name: n, book: s.book, para: String(pa) }]), plName: '', plPara: '' }); },
+
+      // codewords
+      q: s.q, onSearch: (e) => this.setState({ q: e.target.value }),
+      total: CW.length, markedCount: Object.keys(s.marked).length,
+      markedStr: s.onlyMarked ? 'true' : 'false',
+      switchBg: s.onlyMarked ? '#8E2A1E' : '#5A4326',
+      switchPos: s.onlyMarked ? 'flex-end' : 'flex-start',
+      toggleMarked: () => this.setState({ onlyMarked: !this.state.onlyMarked }),
+      letters: keys.map((k) => ({ k })),
+      empty: keys.length === 0,
+      groups: keys.map((k) => {
+        const n = groups[k].filter((x) => x.on).length;
+        return { k, words: groups[k], info: groups[k].length + ' words' + (n ? ' · ' + n + ' marked' : '') };
+      }),
+
+      houses: HS.map((h) => ({
+        book: h.book, para: h.para,
+        onBook: (e) => setH((l) => l.map((x) => x.id === h.id ? { ...x, book: e.target.value } : x)),
+        onPara: (e) => setH((l) => l.map((x) => x.id === h.id ? { ...x, para: e.target.value } : x)),
+        remove: () => { if (h.para || h.items.some((y) => (y.text || '').trim())) this.setState({ cf: { kind: 'house', id: h.id, book: BK } }); else setH((l) => l.filter((x) => x.id !== h.id)); },
+        addItem: () => setH((l) => l.map((x) => x.id === h.id ? { ...x, items: x.items.concat([{ id: uid(), text: '' }]) } : x)),
+        items: h.items.map((it) => ({
+          text: it.text,
+          onText: (e) => setH((l) => l.map((x) => x.id === h.id ? { ...x, items: x.items.map((y) => y.id === it.id ? { ...y, text: e.target.value } : y) } : x)),
+          remove: () => setH((l) => l.map((x) => x.id === h.id ? { ...x, items: x.items.filter((y) => y.id !== it.id) } : x))
+        }))
+      })),
+      noHouses: HS.length === 0,
+      addHouse: () => setH((l) => l.concat([{ id: uid(), book: BK, para: '', items: [{ id: uid(), text: '' }] }])),
+      banks: BS.map((b) => ({
+        book: b.book, para: b.para, amount: b.amount,
+        onBook: (e) => setB((l) => l.map((x) => x.id === b.id ? { ...x, book: e.target.value } : x)),
+        onPara: (e) => setB((l) => l.map((x) => x.id === b.id ? { ...x, para: e.target.value } : x)),
+        onAmount: (e) => setB((l) => l.map((x) => x.id === b.id ? { ...x, amount: e.target.value } : x)),
+        remove: () => { if (b.para || b.amount) this.setState({ cf: { kind: 'bank', id: b.id, book: BK } }); else setB((l) => l.filter((x) => x.id !== b.id)); }
+      })),
+      noBanks: BS.length === 0,
+      addBank: () => setB((l) => l.concat([{ id: uid(), book: BK, para: '', amount: '' }])),
+      paras, done, boxes, bookNum: BK, bookTitle: BOOK_TITLES[BK],
+      pct: Math.round(100 * done / boxes) + '%',
+      filters: [mk('all', 'All'), mk('open', 'Not yet'), mk('done', 'Ticked')],
+
+      // saves
+      activeName: s.active,
+      exportDlg: s.exportDlg, exportNote: s.exportNote,
+      openExport: () => this.setState({ exportDlg: true }),
+      closeExport: () => this.setState({ exportDlg: false }),
+      exportJson: () => this.setState({ exportDlg: false, exportNote: 'Backup file (JSON) is ready. Choose where to save it.' }),
+      exportPdf: () => this.setState({ exportDlg: false, exportNote: 'Overview (PDF) is ready. Choose where to save it.' }),
+      saveStatus: s.dirty ? 'Unsaved changes' : 'All changes saved', saveHint: s.dirty ? 'Unsaved changes' : 'All saved', savedWhen: s.savedWhen,
+      saveNow: () => { this.setState({ dirty: false, savedWhen: 'just now' }); this.showToast('Saved “' + s.active + '”.'); },
+      snapDraft: s.snapDraft,
+      onSnapDraft: (e) => this.setState({ snapDraft: e.target.value }),
+      snapshot: () => {
+        const n = s.snapDraft.trim() || ('Snapshot ' + (s.slots.length + 1));
+        this.setState({ slots: [{ name: n, meta: s.prof + ' · Rank ' + s.rank + ' · Book ' + s.bmBook + ' §' + s.bmPara + ' · just now' }].concat(s.slots), snapDraft: '' });
+        this.showToast('Saved a copy as “' + n + '”.');
+      },
+      slots: s.slots.map((sl) => {
+        const active = sl.name === s.active;
+        return {
+          name: sl.name, meta: sl.meta, initial: sl.name[0], active,
+          showActions: !active,
+          badgeBg: active ? '#8E2A1E' : '#EFE1BC', badgeFg: active ? '#FBF1DC' : '#6B4A12',
+          load: () => { if (this.state.dirty) { this.setState({ cf: { kind: 'load', name: sl.name } }); return; } this.loadSlot(sl.name); },
+          ask: () => this.setState({ cf: { kind: 'slotdel', name: sl.name } })
+        };
+      }),
+
+      // dice panel
+      diceOpen: !!s.dice, diceOpenStr: s.dice ? 'true' : 'false',
+      toggleDice: () => this.setState({ dice: this.state.dice ? null : 'check', bmOpen: false, open: false }),
+      closeDice: () => this.setState({ dice: null }),
+      tabIsCheck: s.dice === 'check', tabIsFight: s.dice === 'fight', tabIsSpare: s.dice === 'spare',
+      tabCheck: () => this.setState({ dice: 'check', diceErr: false }), tabFight: () => this.setState({ dice: 'fight', diceErr: false }), tabSpare: () => this.setState({ dice: 'spare', diceErr: false }),
+      tabSpareSel: s.dice === 'spare' ? 'true' : 'false', tabSpareBg: s.dice === 'spare' ? '#FBF6E8' : 'transparent',
+      physStd: s.phys && s.dice !== 'spare',
+      spareApp: !s.phys,
+      spareCounts: [1, 2, 3, 4, 5, 6].map((n) => ({ n, label: n + (n === 1 ? ' die' : ' dice'), pressed: s.spareN === n ? 'true' : 'false', bg: s.spareN === n ? '#2B1D10' : '#FFFDF6', fg: s.spareN === n ? '#F3E8CC' : '#2B1D10', border: s.spareN === n ? '#2B1D10' : '#D3C097', pick: () => this.setState({ spareN: n, spareRes: null }) })),
+      spareRollText: 'Roll ' + s.spareN + (s.spareN === 1 ? ' die' : ' dice'),
+      spareRoll: () => this.setState({ spareRes: Array.from({ length: s.spareN }, () => 1 + Math.floor(Math.random() * 6)) }),
+      spareInputs: Array.from({ length: s.spareN }, (_, i) => ({ val: s.spareVals[i], label: 'Die ' + (i + 1), on: (e) => { const v = s.spareVals.slice(); v[i] = e.target.value; this.setState({ spareVals: v }); } })),
+      hasSpare: !!spareShow,
+      spareFaces: (spareShow || []).map((v) => ({ v })),
+      spareTotal: spareShow ? spareShow.reduce((a, b) => a + b, 0) : 0,
+      spareNote: spareShow ? spareShow.length + (spareShow.length === 1 ? ' die' : ' dice') : '',
+      tabCheckSel: s.dice === 'check' ? 'true' : 'false', tabFightSel: s.dice === 'fight' ? 'true' : 'false',
+      tabCheckBg: s.dice === 'check' ? '#FBF6E8' : 'transparent', tabFightBg: s.dice === 'fight' ? '#FBF6E8' : 'transparent',
+      phys: s.phys, physStr: s.phys ? 'true' : 'false',
+      physBg: s.phys ? '#8E2A1E' : '#C9B488', physPos: s.phys ? 'flex-end' : 'flex-start',
+      togglePhys: () => this.setState({ phys: !this.state.phys, diceErr: false }),
+      pd1: s.pd1, pd2: s.pd2,
+      onPd1: (e) => this.setState({ pd1: e.target.value }),
+      onPd2: (e) => this.setState({ pd2: e.target.value }),
+      diceErr: s.diceErr,
+      checkAbs: AB.map((ab) => {
+        const sel = s.checkAb === ab;
+        return { upper: ab.toUpperCase(), eff: this.eff(ab), pressed: sel ? 'true' : 'false', bg: sel ? '#2B1D10' : '#F6EED9', fg: sel ? '#F3E8CC' : '#2B1D10', border: sel ? '#2B1D10' : '#E4D6B6', pick: () => this.setState({ checkAb: ab, checkRes: null }) };
+      }),
+      checkAbLabel: s.checkAb,
+      diff: s.diff,
+      diffDown: () => this.setState({ diff: Math.max(2, s.diff - 1), checkRes: null }),
+      diffUp: () => this.setState({ diff: Math.min(30, s.diff + 1), checkRes: null }),
+      needText,
+      doCheck: () => this.doCheck(false),
+      hasCheckRes: !!cr, cr: crV,
+      canReroll: !!cr && !cr.ok && !cr.rerolled && !!s.blessings[cr.ab],
+      rerollBlessing: () => { const nb = Object.assign({}, this.state.blessings); delete nb[this.state.checkRes.ab]; this.setState({ blessings: nb }); this.doCheck(true); },
+      effCombat: effC,
+      eName: s.eName, eCombat: s.eCombat, eDef: s.eDef, eStam: s.eStam,
+      onEName: (e) => this.setState({ eName: e.target.value }),
+      onECombat: (e) => this.setState({ eCombat: e.target.value }),
+      onEDef: (e) => this.setState({ eDef: e.target.value }),
+      onEStam: (e) => this.setState({ eStam: e.target.value }),
+      firstYou: () => this.setState({ first: 'you' }), firstEnemy: () => this.setState({ first: 'enemy' }),
+      firstYouSel: s.first === 'you' ? 'true' : 'false', firstEnemySel: s.first === 'enemy' ? 'true' : 'false',
+      firstYouBg: s.first === 'you' ? '#FBF6E8' : 'transparent', firstEnemyBg: s.first === 'enemy' ? '#FBF6E8' : 'transparent',
+      fErr: s.fErr,
+      fightIdle: !s.fOn, fOn: s.fOn,
+      startFight: () => {
+        const c = int(s.eCombat), d = int(s.eDef), st = int(s.eStam);
+        if (c === null || d === null || !st) { this.setState({ fErr: true }); return; }
+        this.setState({ fErr: false, fOn: true, fName: s.eName.trim() || 'Enemy', fCombat: c, fDef: d, fEs: st, fEmax: st, fTurn: s.first, fRound: 1, fOver: '', fLog: [] });
+      },
+      fName: s.fName, fDef: s.fDef, fEs: s.fEs, fEmax: s.fEmax, fRound: s.fRound,
+      fEPct: s.fEmax ? Math.round(100 * s.fEs / s.fEmax) + '%' : '0%',
+      fRunning, fEnded: s.fOn && !!s.fOver,
+      hitHint,
+      stepLabel: s.fTurn === 'you' ? 'Your attack' : s.fName + ' attacks',
+      stepBg: s.fTurn === 'you' ? '#8E2A1E' : '#2B1D10',
+      fightStep: () => this.fightStep(),
+      flee: () => this.setState({ fOver: 'fled' }),
+      fEndTitle: end[0], fEndText: end[1], fEndBg: end[2],
+      closeFight: () => this.setState({ fOn: false, fOver: '', fLog: [] }),
+      noLog: s.fLog.length === 0,
+      fLog: s.fLog.map((l) => ({ text: l.text, color: l.who === 'you' ? '#2B1D10' : '#8E2A1E' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

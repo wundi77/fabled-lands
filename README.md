@@ -20,9 +20,10 @@ index.html     – gesamte App (HTML + CSS + JS)
 manifest.json  – PWA-Manifest
 sw.js          – Service Worker (Offline-Cache)
 icon*.png/svg  – App-Icons
+design/        – Optik-Entwürfe (Quelldateien des Design-Canvas, siehe design/README.md)
 NOTIZ.md       – detaillierte Projektnotizen
 CLAUDE.md      – Arbeitsanweisungen für Claude
 ```
 
 ## Entwicklung
-Kein Build nötig. Nach Änderungen committen und auf `main` pushen, GitHub Pages deployed automatisch.
+Kein Build nötig. Lokal arbeiten und auf `main` committen; gepusht wird nur auf Anweisung, danach deployed GitHub Pages automatisch.

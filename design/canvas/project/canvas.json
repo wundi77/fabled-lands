@@ -1,0 +1,230 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Web.dc.html": {
+      "expand": "fill",
+      "h": 1100,
+      "is_interactive": true,
+      "title": "Responsive web app (390 – 1920 px)",
+      "w": 1440,
+      "x": 0,
+      "y": 3752
+    },
+    "WebDesktop.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "title": "Web @ 1920 – Character",
+      "w": 1920,
+      "x": 0,
+      "y": 5066
+    },
+    "WebDesktopBook.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "title": "Web @ 1920 – Book 1",
+      "w": 1920,
+      "x": 2000,
+      "y": 5066
+    },
+    "WebDesktopBookmark.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "title": "Web @ 1920 – Where am I?",
+      "w": 1920,
+      "x": 470,
+      "y": 7466
+    },
+    "WebDesktopCheck.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "title": "Web @ 1920 – Ability check",
+      "w": 1920,
+      "x": 1410,
+      "y": 6266
+    },
+    "WebDesktopCodewords.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "title": "Web @ 1920 – Codewords",
+      "w": 1920,
+      "x": 4000,
+      "y": 5066
+    },
+    "WebDesktopQuests.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "title": "Web @ 1920 – Quests",
+      "w": 1920,
+      "x": 6000,
+      "y": 5066
+    },
+    "WebPhone.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "Web @ 390 – Character",
+      "w": 390,
+      "x": 1520,
+      "y": 3752
+    },
+    "WebPhoneBookmark.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "Web @ 390 – Where am I?",
+      "w": 390,
+      "x": 0,
+      "y": 7466
+    },
+    "WebPhoneCreate.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "Web @ 390 – New character",
+      "w": 390,
+      "x": 940,
+      "y": 6266
+    },
+    "WebPhoneDeath.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "Web @ 390 – Killed notice",
+      "w": 390,
+      "x": 470,
+      "y": 6266
+    },
+    "WebPhoneFight.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "Web @ 390 – Fight",
+      "w": 390,
+      "x": 0,
+      "y": 6266
+    },
+    "WebPhoneQuests.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "Web @ 390 – Quests",
+      "w": 390,
+      "x": 3410,
+      "y": 6266
+    },
+    "WebTablet.dc.html": {
+      "h": 1194,
+      "is_interactive": true,
+      "radius": 18,
+      "title": "Web @ 834 – Character",
+      "w": 834,
+      "x": 1990,
+      "y": 3752
+    },
+    "WebDesktopSaves.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "title": "Web @ 1920 – Saves & Backup",
+      "w": 1920,
+      "x": 2470,
+      "y": 7466
+    },
+    "WebPhoneSaves.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "Web @ 390 – Saves & Backup",
+      "w": 390,
+      "x": 4470,
+      "y": 7466
+    },
+    "WebPhoneSpare.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "Web @ 390 – Spare dice",
+      "w": 390,
+      "x": 3880,
+      "y": 6266
+    },
+    "WebDesktopShips.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "title": "Web @ 1920 – Ships",
+      "w": 1920,
+      "x": 0,
+      "y": 8666
+    },
+    "WebPhoneShips.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "Web @ 390 – Ships",
+      "w": 390,
+      "x": 2000,
+      "y": 8666
+    },
+    "WebPhoneExport.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "Web @ 390 – Export",
+      "w": 390,
+      "x": 2470,
+      "y": 8666
+    },
+    "WebPhoneDiscard.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "Web @ 390 – Unsaved changes",
+      "w": 390,
+      "x": 2940,
+      "y": 8666
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-19T10:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "webTitle": {
+      "kind": "title1",
+      "maxW": 5920,
+      "text": "Responsive web – one layout, 390 to 1920 px",
+      "w": 240,
+      "x": 0,
+      "y": 3492
+    }
+  },
+  "order": [
+    "Web.dc.html",
+    "WebPhone.dc.html",
+    "WebTablet.dc.html",
+    "WebDesktop.dc.html",
+    "WebDesktopBook.dc.html",
+    "WebDesktopCodewords.dc.html",
+    "WebPhoneFight.dc.html",
+    "WebPhoneDeath.dc.html",
+    "WebPhoneCreate.dc.html",
+    "WebDesktopCheck.dc.html",
+    "WebDesktopQuests.dc.html",
+    "WebPhoneQuests.dc.html",
+    "WebPhoneBookmark.dc.html",
+    "WebDesktopBookmark.dc.html",
+    "WebDesktopSaves.dc.html",
+    "WebPhoneSaves.dc.html",
+    "WebPhoneSpare.dc.html",
+    "WebDesktopShips.dc.html",
+    "WebPhoneShips.dc.html",
+    "WebPhoneExport.dc.html",
+    "WebPhoneDiscard.dc.html"
+  ],
+  "pages": [],
+  "title": "Fabled Lands – iPad Redesign"
+}

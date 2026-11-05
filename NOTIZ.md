@@ -1,7 +1,7 @@
 # Fabled Lands – Companion App
 ## Projektstand & Entwicklungsnotizen
 
-**Letzter Stand:** 02.11.2026 – Design-Canvas an den Code-Stand angeglichen (Code unverändert seit 23.10.)  
+**Letzter Stand:** 05.11.2026 – Design-Canvas als Kopie im Repo (`design/`), Arbeitsweise auf „lokal bearbeiten, Push nur auf Anweisung“ umgestellt (Code unverändert seit 23.10.)  
 **Live-URL:** https://wundi77.github.io/fabled-lands/  
 **Repository:** https://github.com/wundi77/fabled-lands  
 
@@ -19,12 +19,15 @@ Eine offline-fähige PWA als digitaler Begleiter für die **Fabled Lands** Gameb
 fabled-lands/
 ├── index.html              ← Gesamte App (HTML + CSS + JS, ~1275 Zeilen)
 ├── manifest.json           ← PWA-Manifest (start_url ./, Icons any + maskable)
-├── sw.js                   ← Service Worker (Cache fabled-lands-v2 + Font-Cache)
+├── sw.js                   ← Service Worker (Cache fabled-lands-v3 + Font-Cache)
 ├── icon.svg                ← Favicon
 ├── icon-192.png            ← PWA-Icon
 ├── icon-512.png            ← PWA-Icon
 ├── icon-maskable-512.png   ← PWA-Icon (maskable)
 ├── apple-touch-icon.png    ← iOS-Home-Screen-Icon
+├── design/                 ← Optik-Entwürfe: versionierte Kopie des Design-Canvas
+│   ├── README.md           ← Aufbau, Sync-Stand, Arbeitsablauf, Wiederherstellung
+│   └── canvas/project/     ← canvas.json + Web.dc.html + 20 Artboards (*.dc.html)
 ├── CLAUDE.md               ← Arbeitsanweisungen für Claude
 ├── NOTIZ.md                ← Diese Datei
 └── README.md               ← Kurzbeschreibung
@@ -116,17 +119,27 @@ fabled-lands/
 
 ## Design-Canvas
 
-Die Layout-Entwürfe liegen als Canvas auf claude.ai: „Fabled Lands – iPad Redesign“ (https://claude.ai/artifact/DkwfobReC7WsjYv2KPt1Qv). Er enthält Artboards für Web, Desktop (Book, Bookmark, Check, Codewords, Quests, Saves), Tablet und Phone (Bookmark, Create, Death, Fight, Quests, Saves, Spare dice). Optik-Änderungen werden zuerst dort vorgenommen und danach in `index.html` übertragen. Stand 02.11.2026: Der Canvas wurde an den Code (Commit a58125d) angeglichen und enthält zusätzlich die Artboards Ships (Desktop/Phone), Export-Dialog und „Unsaved changes“-Rückfrage (Phone). Bewusst nicht übernommen: Fehlermeldungen und Datei-Aktionen (Export/Import/Zwischenablage), die im Canvas nichts speichern können; der Würfel-Schalter „I roll physical dice“ liegt im Canvas gemeinsam über den Tabs, im Code je Tab. Nur im Canvas vorhanden: zwei Platzhalter-Slots und ein loser deutscher Hinweistext am Ende von `Web.dc.html` (sichtbar auf jedem Artboard).
+Die Layout-Entwürfe sind ein Design-Canvas auf claude.ai: „Fabled Lands – iPad Redesign“ (https://claude.ai/artifact/DkwfobReC7WsjYv2KPt1Qv). **Die Quelldateien liegen zusätzlich versioniert im Repo unter `design/canvas/project/`** (Details, Sync-Stand und Wiederherstellung: `design/README.md`). Auf claude.ai lässt sich der Canvas grafisch ansehen und bearbeiten; im Repo ist er gesichert.
+
+- Artboards: Web (Hauptkomponente), Desktop 1920 (Character, Book, Where am I?, Ability check, Codewords, Quests, Saves, Ships), Tablet 834 (Character), Phone 390 (Character, Where am I?, New character, Killed notice, Unsaved changes, Export, Fight, Quests, Saves, Ships, Spare dice).
+- Ablauf bei Optik-Wünschen: Canvas zuerst neu laden und mit `design/` abgleichen, Änderung im Canvas vornehmen, Dateien zurück nach `design/` kopieren, danach in `index.html` übertragen.
+- Stand 05.11.2026: Der Canvas entspricht dem Code (Commit `a58125d`) inklusive Ships-Screen, Export-Dialog und „Unsaved changes“-Rückfrage.
+- Bewusst nicht übernommen: Fehlermeldungen und Datei-Aktionen (Export/Import/Zwischenablage), die im Canvas nichts speichern können; der Würfel-Schalter „I roll physical dice“ liegt im Canvas gemeinsam über den Tabs, im Code je Tab; Bearbeitungen setzen im Canvas nicht „ungespeichert“.
+- Nur im Canvas vorhanden: zwei Platzhalter-Slots und ein loser deutscher Hinweistext am Ende von `Web.dc.html` (sichtbar auf jedem Artboard, Entscheidung offen).
+- Das zweite Artifact „Fabled Lands“ (`KJhAMFiccRtGztYGKesqdy`) ist eine Einzelseiten-Fassung der App mit identischem Script wie `index.html` und braucht keine eigene Sicherung.
 
 ---
 
 ## Weiterentwicklung mit Claude
 
-Arbeitsregeln stehen in `CLAUDE.md` (Repo-Überblick zu Sitzungsbeginn, Doku vor jedem Push aktualisieren, direkt auf `main` arbeiten, Skills prüfen).
+Arbeitsregeln stehen in `CLAUDE.md`. Kurzfassung: lokal arbeiten und committen, **Push zu GitHub nur auf ausdrückliche Anweisung** (vorher `NOTIZ.md` und `README.md` aktualisieren), direkt auf `main` ohne Feature-Branches, Design-Entwürfe liegen in `design/`.
 
 ```bash
-git clone https://github.com/wundi77/fabled-lands.git
+git clone https://github.com/wundi77/fabled-lands.git   # einmalig
 cd fabled-lands
+git pull                                                # Stand von GitHub holen
+# ... lokal mit Claude Code arbeiten, committen ...
+git push origin main                                    # nur auf Anweisung
 ```
 
-GitHub Pages deployed automatisch nach jedem Push auf `main` (ca. 1–2 Minuten).
+GitHub Pages deployed automatisch nach jedem Push auf `main` (ca. 1–2 Minuten). Hinweis: Ist das Repo öffentlich (Voraussetzung für Pages im Free-Tarif), ist auch `design/` öffentlich lesbar.
