@@ -102,7 +102,6 @@ fabled-lands/
 - [x] PDF-Export des Charakterbogens (Overview) umgesetzt
 - [ ] PDF-Layout bei Bedarf noch verfeinern (aktuell reine Textübersicht)
 - [ ] Mehrsprachigkeit (aktuell: Englisch)
-- [ ] Alter Branch `claude/awesome-allen-uet0qq` auf GitHub manuell löschen (Löschen per Tool/Push wurde mit 403 abgelehnt)
 
 ---
 
