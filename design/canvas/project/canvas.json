@@ -182,6 +182,32 @@
       "w": 390,
       "x": 2940,
       "y": 8666
+    },
+    "WebDesktopBook7.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "title": "Web @ 1920 – Character, Book 7 (Nahual, * and †)",
+      "w": 1920,
+      "x": 3410,
+      "y": 8666
+    },
+    "WebPhoneSpirit.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "Web @ 390 – Spiritual combat",
+      "w": 390,
+      "x": 5410,
+      "y": 8666
+    },
+    "WebPhoneHeat.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "Web @ 390 – Fight with heat penalty",
+      "w": 390,
+      "x": 5880,
+      "y": 8666
     }
   },
   "createdOnFiles": {
@@ -223,7 +249,10 @@
     "WebDesktopShips.dc.html",
     "WebPhoneShips.dc.html",
     "WebPhoneExport.dc.html",
-    "WebPhoneDiscard.dc.html"
+    "WebPhoneDiscard.dc.html",
+    "WebDesktopBook7.dc.html",
+    "WebPhoneSpirit.dc.html",
+    "WebPhoneHeat.dc.html"
   ],
   "pages": [],
   "title": "Fabled Lands – iPad Redesign"

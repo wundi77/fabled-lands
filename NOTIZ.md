@@ -27,7 +27,7 @@ fabled-lands/
 ├── apple-touch-icon.png    ← iOS-Home-Screen-Icon
 ├── design/                 ← Optik-Entwürfe: versionierte Kopie des Design-Canvas
 │   ├── README.md           ← Aufbau, Sync-Stand, Arbeitsablauf, Wiederherstellung
-│   └── canvas/project/     ← canvas.json + Web.dc.html + 20 Artboards (*.dc.html)
+│   └── canvas/project/     ← canvas.json + Web.dc.html + 23 Artboards (*.dc.html)
 ├── CLAUDE.md               ← Arbeitsanweisungen für Claude
 ├── NOTIZ.md                ← Diese Datei
 └── README.md               ← Kurzbeschreibung

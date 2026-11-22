@@ -154,17 +154,22 @@ body{margin:0}
             <sc-for list="{{items}}" as="it" hint-placeholder-count="6">
               <div style="display: flex; align-items: center; gap: 8px; min-height: 46px; border-bottom: 1px solid #EADDC0">
                 <span style="flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px">
-                  <span style="font-size: 17px">{{it.name}}</span>
+                  <span style="font-size: 17px">{{it.label}}</span>
                   <sc-if value="{{it.hasBonus}}" hint-placeholder-val="{{ false }}">
                     <span style="font-size: 13px; padding: 2px 8px; border-radius: 999px; background: {{it.chipBg}}; color: {{it.chipFg}}">{{it.bonusText}}</span>
                   </sc-if>
                 </span>
+                <sc-if value="{{it.isArmour}}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{it.toggleHot}}" aria-pressed="{{it.hotStr}}" aria-label="Hot-climate armour (*): {{it.name}}" title="Hot-climate armour (*)" style="width: 40px; height: 40px; flex: none; border-radius: 10px; border: 1px {{it.hotBorder}} #C9B488; background: {{it.hotBg}}; color: {{it.hotFg}}; font-family: Cinzel, serif; font-size: 20px; line-height: 1; cursor: pointer; padding: 0">*</button>
+                </sc-if>
+                <button onClick="{{it.toggleSpirit}}" aria-pressed="{{it.spiritStr}}" aria-label="Usable in spiritual combat (†): {{it.name}}" title="Usable in spiritual combat (†)" style="width: 40px; height: 40px; flex: none; border-radius: 10px; border: 1px {{it.spiritBorder}} #C9B488; background: {{it.spiritBg}}; color: {{it.spiritFg}}; font-family: Cinzel, serif; font-size: 18px; line-height: 1; cursor: pointer; padding: 0">†</button>
                 <button onClick="{{it.remove}}" aria-label="Remove {{it.name}}" style="width: 44px; height: 44px; flex: none; border: 0; background: transparent; color: #8A7250; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
               </div>
             </sc-for>
           </div>
           <sc-if value="{{noItems}}" hint-placeholder-val="{{ false }}"><div style="font-size: 17px; color: #6B5537; padding: 4px 0">Nothing carried.</div></sc-if>
           <div style="font-size: 14px; color: #6B5537">Faded bonuses don’t count – only the best item per ability or armour applies.</div>
+          <div style="font-size: 14px; color: #6B5537">Book 7: <b style="font-family: Cinzel, serif">*</b> armour for a hot climate (no heat penalty) · <b style="font-family: Cinzel, serif">†</b> usable in spiritual combat.</div>
           <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px dashed #C9B488; border-radius: 12px">
             <label style="display: flex; min-width: 0"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">New item</span><input value="{{itemDraft}}" onChange="{{onItemDraft}}" placeholder="Add an item…" style="flex: 1; min-width: 0; height: 44px; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10"></label>
             <div style="display: flex; gap: 6px">
@@ -182,6 +187,10 @@ body{margin:0}
               </label>
               <label style="display: flex; align-items: center; gap: 4px; font-size: 15px; color: #6B5537">+<input value="{{itemBonus}}" onChange="{{onItemBonus}}" inputmode="numeric" aria-label="Bonus value" style="width: 48px; height: 44px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; text-align: center; color: #2B1D10"></label>
               <button onClick="{{addItem}}" style="height: 44px; padding: 0 16px; border-radius: 10px; border: 0; background: #8E2A1E; color: #FBF1DC; font: inherit; font-size: 16px; cursor: pointer">Add</button>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px">
+              <button onClick="{{toggleNewHot}}" aria-pressed="{{newHot.str}}" style="min-height: 40px; padding: 0 12px; border-radius: 999px; border: 1px {{newHot.border}} #C9B488; background: {{newHot.bg}}; color: {{newHot.fg}}; font: inherit; font-size: 15px; cursor: pointer">* Hot-climate armour</button>
+              <button onClick="{{toggleNewSpirit}}" aria-pressed="{{newSpirit.str}}" style="min-height: 40px; padding: 0 12px; border-radius: 999px; border: 1px {{newSpirit.border}} #C9B488; background: {{newSpirit.bg}}; color: {{newSpirit.fg}}; font: inherit; font-size: 15px; cursor: pointer">† Spiritual combat</button>
             </div>
             <sc-if value="{{itemsFull}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; color: #8E2A1E">You can carry 12 possessions. Drop something first.</div></sc-if>
           </div>
@@ -205,6 +214,9 @@ body{margin:0}
           <div style="display: flex; flex-direction: column; gap: 8px">
             <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">TITLES &amp; HONOURS</h2>
             <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <sc-if value="{{hasNahual}}" hint-placeholder-val="{{ false }}">
+                <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 2px 2px 12px; border-radius: 999px; background: #2B1D10; color: #F3E8CC; font-size: 16px">Nahual<b style="min-width: 24px; text-align: center; font-family: Cinzel, serif; font-size: 18px; color: #D4AF5A">{{nahual}}</b><button onClick="{{nahDown}}" aria-label="Lower Nahual" style="width: 40px; height: 40px; border: 0; border-radius: 999px; background: #3A2814; color: #F3E8CC; font: inherit; font-size: 20px; cursor: pointer; padding: 0">−</button><button onClick="{{nahUp}}" aria-label="Raise Nahual" style="width: 40px; height: 40px; border: 0; border-radius: 999px; background: #3A2814; color: #F3E8CC; font: inherit; font-size: 20px; cursor: pointer; padding: 0">+</button></span>
+              </sc-if>
               <sc-for list="{{titles}}" as="tt" hint-placeholder-count="1">
                 <span style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 999px; background: #EFE1BC; font-size: 16px">{{tt.text}}<button onClick="{{tt.remove}}" aria-label="Remove {{tt.text}}" style="width: 32px; height: 32px; margin: -6px -8px -6px 0; border: 0; background: transparent; color: #8A7250; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></span>
               </sc-for>
@@ -214,6 +226,7 @@ body{margin:0}
               <label style="flex: 1; display: flex; min-width: 0"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">New title</span><input value="{{titleDraft}}" onChange="{{onTitleDraft}}" placeholder="Add a title…" style="flex: 1; min-width: 0; height: 44px; padding: 0 12px; border: 1px solid #D3C097; border-radius: 10px; background: #FFFDF6; font: inherit; font-size: 17px; color: #2B1D10"></label>
               <button onClick="{{addTitle}}" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #2B1D10; background: #2B1D10; color: #F3E8CC; font: inherit; font-size: 16px; cursor: pointer">Add</button>
             </div>
+            <sc-if value="{{noNahual}}" hint-placeholder-val="{{ true }}"><div style="font-size: 14px; color: #6B5537">Book 7: add the title “Nahual” to record your Nahual value.</div></sc-if>
           </div>
           <div style="display: flex; flex-direction: column; gap: 8px">
             <h2 style="margin: 0; font-family: Cinzel, serif; font-size: 13px; letter-spacing: 0.14em; color: #8E2A1E">RESURRECTION</h2>
@@ -744,7 +757,20 @@ body{margin:0}
                   <button onClick="{{firstEnemy}}" aria-pressed="{{firstEnemySel}}" style="height: 38px; padding: 0 14px; border: 0; border-radius: 9px; background: {{firstEnemyBg}}; font: inherit; font-size: 15px; color: #2B1D10; cursor: pointer">Enemy</button>
                 </div>
               </div>
-              <div style="font-size: 15px; color: #6B5537">You: COMBAT {{effCombat}} · Defence {{defence}} · Stamina {{stam}}</div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: 16px">Kind of fight</span>
+                <div role="group" aria-label="Kind of fight" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 3px; background: #E4D6B6; border-radius: 12px">
+                  <sc-for list="{{fModes}}" as="fm" hint-placeholder-count="3">
+                    <button onClick="{{fm.pick}}" aria-pressed="{{fm.on}}" style="height: 38px; padding: 0 6px; border: 0; border-radius: 9px; background: {{fm.bg}}; font: inherit; font-size: 15px; color: #2B1D10; cursor: pointer">{{fm.label}}</button>
+                  </sc-for>
+                </div>
+                <sc-if value="{{fModeHasHint}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; color: #6B5537">{{fModeHint}}</div></sc-if>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 2px; font-size: 15px; color: #6B5537">
+                <span>You attack with <b style="color: #2B1D10">{{fsAtt}}</b> · {{fsAttTxt}}</span>
+                <span>Your Defence <b style="color: #2B1D10">{{fsDef}}</b> · {{fsDefTxt}}</span>
+                <span>Stamina {{stam}}</span>
+              </div>
               <sc-if value="{{fErr}}" hint-placeholder-val="{{ false }}"><div style="font-size: 15px; color: #8E2A1E">Enter numbers for COMBAT, Defence and Stamina.</div></sc-if>
               <button onClick="{{startFight}}" style="height: 52px; border-radius: 12px; border: 0; background: #8E2A1E; color: #FBF1DC; font: inherit; font-size: 18px; font-weight: 600; cursor: pointer">Start fight</button>
             </div>
@@ -752,12 +778,12 @@ body{margin:0}
           <sc-if value="{{fOn}}" hint-placeholder-val="{{ false }}">
             <div style="display: flex; flex-direction: column; gap: 12px">
               <div style="display: flex; align-items: baseline; justify-content: space-between">
-                <span style="font-family: Cinzel, serif; font-size: 18px; font-weight: 600">vs {{fName}}</span>
+                <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px"><span style="font-family: Cinzel, serif; font-size: 18px; font-weight: 600">vs {{fName}}</span><sc-if value="{{fRunModeOn}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; padding: 2px 8px; border-radius: 999px; background: #2B1D10; color: #F3E8CC">{{fRunModeLabel}}</span></sc-if></span>
                 <span style="font-size: 15px; color: #6B5537">Round {{fRound}}</span>
               </div>
               <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
                 <div style="display: flex; flex-direction: column; gap: 4px">
-                  <span style="font-size: 14px; color: #6B5537">You · Def {{defence}}</span>
+                  <span style="font-size: 14px; color: #6B5537">You · Att {{fAttYou}} · Def {{fDefYou}}</span>
                   <span style="font-family: Cinzel, serif; font-size: 22px; font-weight: 600">{{stam}} / {{max}}</span>
                   <div style="height: 8px; background: #E4D6B6; border-radius: 4px; overflow: hidden"><div style="height: 8px; width: {{stamPct}}; background: #2B1D10; border-radius: 4px"></div></div>
                 </div>
@@ -923,7 +949,7 @@ body{margin:0}
   </div>
 <p style="margin: 0">Ich brauche jetzt auch bitte einmal eine Visualisierung für das Ausklapp-Fähnchen „Where Am I“ für weitere Anpassungen.</p></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"screen":{"editor":"enum","options":["character","quests","ships","codewords","book","saves","create"],"default":"character"},"open":{"editor":"boolean","default":false},"dice":{"editor":"enum","options":["closed","check","fight","spare"],"default":"closed"},"dead":{"editor":"boolean","default":false},"bookmark":{"editor":"boolean","default":false},"exportDlg":{"editor":"boolean","default":false},"confirm":{"editor":"enum","options":["none","discard","delete-quest"],"default":"none"},"$preview":{"width":1440,"height":1100}}'>
+<script type="text/x-dc" data-dc-script data-props='{"screen":{"editor":"enum","options":["character","quests","ships","codewords","book","saves","create"],"default":"character"},"open":{"editor":"boolean","default":false},"dice":{"editor":"enum","options":["closed","check","fight","spare"],"default":"closed"},"dead":{"editor":"boolean","default":false},"bookmark":{"editor":"boolean","default":false},"exportDlg":{"editor":"boolean","default":false},"confirm":{"editor":"enum","options":["none","discard","delete-quest"],"default":"none"},"demo7":{"editor":"boolean","default":false},"fightMode":{"editor":"enum","options":["normal","heat","spirit"],"default":"normal"},"fightSetup":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":1100}}'>
 const AB = ['Charisma', 'Combat', 'Magic', 'Sanctity', 'Scouting', 'Thievery'];
 const PROFS = [
   ['Priest', [4, 2, 3, 6, 4, 2]], ['Mage', [2, 2, 6, 1, 5, 3]], ['Rogue', [5, 4, 4, 1, 2, 6]],
@@ -957,7 +983,16 @@ class Component extends DCLogic {
       base: { Charisma: 2, Combat: 5, Magic: 2, Sanctity: 3, Scouting: 6, Thievery: 4 },
       stam: p.dead ? 0 : 12, max: 16, money: 47, moneyAmt: '', defAdj: 0,
       rankDlg: false, rankGain: '',
-      items: [
+      items: p.demo7 ? [
+        { name: 'Sword', type: '', bonus: 0 },
+        { name: 'Chainmail armour', type: 'Defence', bonus: 3 },
+        { name: 'Quilted armour', type: 'Defence', bonus: 2, hot: true },
+        { name: 'Crystal knife', type: 'Combat', bonus: 2, spirit: true },
+        { name: 'Lockpicks', type: 'Thievery', bonus: 1 },
+        { name: 'Lantern', type: '', bonus: 0 },
+        { name: 'Rope', type: '', bonus: 0 },
+        { name: 'Silver holy symbol', type: 'Sanctity', bonus: 1 }
+      ] : [
         { name: 'Sword', type: '', bonus: 0 },
         { name: 'Leather jerkin', type: 'Defence', bonus: 1 },
         { name: 'Lockpicks', type: 'Thievery', bonus: 1 },
@@ -967,7 +1002,8 @@ class Component extends DCLogic {
         { name: 'Map of Sokara', type: '', bonus: 0 },
         { name: 'Silver holy symbol', type: 'Sanctity', bonus: 1 }
       ],
-      itemDraft: '', itemType: '', itemBonus: '1',
+      itemDraft: '', itemType: '', itemBonus: '1', itemHot: false, itemSpirit: false,
+      nahual: p.demo7 ? 2 : 0,
       blessings: { Combat: true, 'Safety from Storms': true },
       resText: 'Temple of Tyrnai, Marlock City', resBook: '1', resPara: '100',
       titles: ['Initiate of Tyrnai'], titleDraft: '', example: true,
@@ -1003,8 +1039,9 @@ class Component extends DCLogic {
       phys: false, pd1: '', pd2: '', diceErr: false, spareN: 2, spareRes: null, spareVals: ['', '', '', '', '', ''],
       checkAb: 'Charisma', diff: 9, checkRes: null,
       eName: 'Bandit', eCombat: '4', eDef: '7', eStam: '8', first: 'you', fErr: false,
-      fOn: p.dice === 'fight', fName: 'Bandit', fCombat: 4, fDef: 7, fEs: 5, fEmax: 8, fTurn: 'enemy', fRound: 1, fOver: '',
-      fLog: p.dice === 'fight' ? [{ text: 'R1 · You: 4 + 3 + 5 = 12 vs Def 7 → 5 damage', who: 'you' }] : []
+      fMode: p.fightMode || 'normal', fRunMode: p.fightMode || 'normal',
+      fOn: p.dice === 'fight' && !p.fightSetup, fName: 'Bandit', fCombat: 4, fDef: 7, fEs: (p.demo7 && p.fightMode === 'heat') ? 4 : 5, fEmax: 8, fTurn: 'enemy', fRound: 1, fOver: '',
+      fLog: p.dice === 'fight' ? [{ text: (p.demo7 && p.fightMode === 'heat') ? 'R1 · You: 4 + 3 + 4 = 11 vs Def 7 → 4 damage' : 'R1 · You: 4 + 3 + 5 = 12 vs Def 7 → 5 damage', who: 'you' }] : []
     };
   }
   componentDidUpdate(prev) {
@@ -1014,6 +1051,7 @@ class Component extends DCLogic {
     if (prev.bookmark !== p.bookmark) this.setState({ bmOpen: !!p.bookmark });
     if (prev.dice !== p.dice) this.setState({ dice: (p.dice && p.dice !== 'closed') ? p.dice : null });
     if (prev.exportDlg !== p.exportDlg) this.setState({ exportDlg: !!p.exportDlg });
+    if (prev.fightMode !== p.fightMode) this.setState({ fMode: p.fightMode || 'normal', fRunMode: p.fightMode || 'normal' });
     if (prev.confirm !== p.confirm) this.setState({ cf: p.confirm === 'discard' ? { kind: 'newchar' } : (p.confirm === 'delete-quest' ? { kind: 'quest', id: 1 } : null) });
   }
   showToast(msg) {
@@ -1068,6 +1106,34 @@ class Component extends DCLogic {
   defence() {
     return this.eff('Combat') + this.state.rank + this.best('Defence').b + this.state.defAdj;
   }
+  // Attack and Defence for one kind of fight (Book 7 special rules). The sheet's eff()/defence() stay untouched.
+  fightVals(mode) {
+    const s = this.state;
+    if (mode === 'spirit') {
+      const sp = s.items.filter((it) => it.spirit);
+      const sb = (t) => this.best(t, sp);
+      const n = s.nahual || 0, wpn = sb('Combat'), arm = sb('Defence');
+      const ab = (a) => Math.max(1, Math.min(12, s.base[a] + sb(a).b));
+      const mg = ab('Magic'), sa = ab('Sanctity');
+      const hi = sa > mg ? ['SANCTITY', sa] : ['MAGIC', mg];
+      return {
+        att: n + wpn.b, def: n + hi[1] + arm.b,
+        attTxt: 'Nahual ' + n + (wpn.b ? ' + ' + wpn.src + '† ' + wpn.b : ''),
+        defTxt: 'Nahual ' + n + ' + ' + hi[0] + ' ' + hi[1] + (arm.b ? ' + ' + arm.src + '† ' + arm.b : '') + ', no Rank'
+      };
+    }
+    const c = this.eff('Combat'), d = this.defence();
+    if (mode === 'heat') {
+      const arm = this.best('Defence'), worn = arm.idx >= 0 ? s.items[arm.idx] : null;
+      const pen = worn && !worn.hot ? arm.b : 0;
+      return {
+        att: c - pen, def: d,
+        attTxt: pen ? 'COMBAT ' + c + ' − ' + pen + ' heat (' + arm.src + ')' : (worn ? 'COMBAT ' + c + ', ' + arm.src + '* has no heat penalty' : 'COMBAT ' + c + ', no armour'),
+        defTxt: 'armour counts as normal'
+      };
+    }
+    return { att: c, def: d, attTxt: 'COMBAT', defTxt: 'Combat + Rank + armour' };
+  }
   setStam(n) {
     const v = Math.max(0, n);
     const killed = v <= 0 && this.state.stam > 0;
@@ -1102,13 +1168,14 @@ class Component extends DCLogic {
     if (!d) return;
     const log = s.fLog.slice();
     let upd = {};
+    const fv = this.fightVals(s.fRunMode);
     if (s.fTurn === 'you') {
-      const c = this.eff('Combat'), total = d[0] + d[1] + c, dmg = Math.max(0, total - s.fDef);
+      const c = fv.att, total = d[0] + d[1] + c, dmg = Math.max(0, total - s.fDef);
       const es = Math.max(0, s.fEs - dmg);
       log.unshift({ who: 'you', text: 'R' + s.fRound + ' · You: ' + d[0] + ' + ' + d[1] + ' + ' + c + ' = ' + total + ' vs Def ' + s.fDef + (dmg ? ' → ' + dmg + ' damage' : ' → miss') });
       upd = { fEs: es, fTurn: 'enemy', fOver: es <= 0 ? 'won' : '' };
     } else {
-      const def = this.defence(), total = d[0] + d[1] + s.fCombat, dmg = Math.max(0, total - def);
+      const def = fv.def, total = d[0] + d[1] + s.fCombat, dmg = Math.max(0, total - def);
       log.unshift({ who: 'enemy', text: 'R' + s.fRound + ' · ' + s.fName + ': ' + d[0] + ' + ' + d[1] + ' + ' + s.fCombat + ' = ' + total + ' vs Def ' + def + (dmg ? ' → you lose ' + dmg : ' → miss') });
       const v = this.setStam(s.stam - dmg);
       upd = { fTurn: 'you', fOver: v <= 0 ? 'lost' : '' };
@@ -1201,10 +1268,17 @@ class Component extends DCLogic {
     // items
     const bestIdx = {};
     ['Defence'].concat(AB).forEach((t) => { const b = this.best(t); if (b.idx >= 0) bestIdx[t] = b.idx; });
+    const flagStyle = (on) => ({ str: on ? 'true' : 'false', border: on ? 'solid' : 'dashed', bg: on ? '#2B1D10' : 'transparent', fg: on ? '#D4AF5A' : '#6B5537' });
     const items = s.items.map((it, i) => {
       const counted = it.type && bestIdx[it.type] === i;
+      const fh = flagStyle(!!it.hot), fsp = flagStyle(!!it.spirit);
+      const flip = (k) => () => this.setState({ items: this.state.items.map((x, j) => j === i ? { ...x, [k]: !x[k] } : x) });
       return {
-        name: it.name, hasBonus: !!it.type && it.bonus > 0,
+        name: it.name, label: it.name + (it.hot ? '*' : '') + (it.spirit ? '†' : ''),
+        isArmour: it.type === 'Defence',
+        hotStr: fh.str, hotBorder: fh.border, hotBg: fh.bg, hotFg: fh.fg, toggleHot: flip('hot'),
+        spiritStr: fsp.str, spiritBorder: fsp.border, spiritBg: fsp.bg, spiritFg: fsp.fg, toggleSpirit: flip('spirit'),
+        hasBonus: !!it.type && it.bonus > 0,
         bonusText: it.type + ' +' + it.bonus + (it.type && !counted ? ' · not counted' : ''),
         chipBg: counted ? '#2B1D10' : '#EADDC0', chipFg: counted ? '#F3E8CC' : '#7A6447',
         remove: () => this.setState({ items: this.state.items.filter((_, j) => j !== i) })
@@ -1228,8 +1302,13 @@ class Component extends DCLogic {
     } : { d1: '', d2: '', verdict: '', formula: '', bg: '#FBF6E8', fg: '#2B1D10' };
 
     // fight
-    const youNeed = s.fDef - effC + 1;
-    const enNeed = defence - s.fCombat + 1;
+    const fs = this.fightVals(s.fMode), fr = this.fightVals(s.fRunMode);
+    const youNeed = s.fDef - fr.att + 1;
+    const enNeed = fr.def - s.fCombat + 1;
+    const modeHints = {
+      heat: 'Only when the book says heat penalties apply. Armour without * lowers your COMBAT by its Defence bonus until the fight ends.',
+      spirit: 'Only for fights the book calls spiritual. Nahual replaces COMBAT, Rank doesn’t count, only † items help.'
+    };
     const fRunning = s.fOn && !s.fOver;
     const endMap = {
       won: ['Victory', s.fName + ' is defeated. Continue as the book tells you.', '#2F5D3A'],
@@ -1287,9 +1366,18 @@ class Component extends DCLogic {
       isExample: s.example, dirty: s.dirty,
       noItems: s.items.length === 0,
       titles: s.titles.map((t, i) => ({ text: t, remove: () => this.setState({ titles: this.state.titles.filter((_, j) => j !== i) }) })),
-      noTitles: s.titles.length === 0, titleDraft: s.titleDraft,
+      noTitles: s.titles.length === 0 && !(s.nahual > 0), titleDraft: s.titleDraft,
+      hasNahual: s.nahual > 0, noNahual: !(s.nahual > 0), nahual: s.nahual,
+      nahDown: () => this.setState({ nahual: Math.max(0, this.state.nahual - 1) }),
+      nahUp: () => this.setState({ nahual: this.state.nahual + 1 }),
       onTitleDraft: (e) => this.setState({ titleDraft: e.target.value }),
-      addTitle: () => { const t = s.titleDraft.trim(); if (t) this.setState({ titles: s.titles.concat([t]), titleDraft: '' }); },
+      addTitle: () => {
+        const t = s.titleDraft.trim();
+        if (!t) return;
+        const m = /^nahual(?:\s+(\d+))?$/i.exec(t);
+        if (m) { const n = m[1] ? int(m[1]) : (s.nahual || 0) + 1; this.setState({ nahual: n, titleDraft: '' }); this.showToast('Nahual is now ' + n + '.'); return; }
+        this.setState({ titles: s.titles.concat([t]), titleDraft: '' });
+      },
       navShips: navStyle(scr === 'ships'), goShips: () => this.go('ships'),
       shipCount: s.ships.length,
       shipSub: s.ships.length + (s.ships.length === 1 ? ' ship' : ' ships') + ' · cargo capacity is counted in Cargo Units',
@@ -1382,11 +1470,21 @@ class Component extends DCLogic {
       onItemDraft: (e) => this.setState({ itemDraft: e.target.value }),
       onItemType: (e) => this.setState({ itemType: e.target.value }),
       onItemBonus: (e) => this.setState({ itemBonus: e.target.value }),
+      newHot: flagStyle(s.itemHot), newSpirit: flagStyle(s.itemSpirit),
+      toggleNewHot: () => this.setState({ itemHot: !this.state.itemHot }),
+      toggleNewSpirit: () => this.setState({ itemSpirit: !this.state.itemSpirit }),
       addItem: () => {
-        const t = s.itemDraft.trim();
+        let t = s.itemDraft.trim();
         if (!t || s.items.length >= 12) return;
+        // "quilted armour*" or "crystal knife†" typed as in the book: take the marks as flags
+        const marks = (/[*†]+$/.exec(t) || [''])[0];
+        t = t.slice(0, t.length - marks.length).trim();
+        if (!t) return;
         const bonus = s.itemType ? Math.max(0, int(s.itemBonus) || 0) : 0;
-        this.setState({ items: s.items.concat([{ name: t, type: bonus ? s.itemType : '', bonus }]), itemDraft: '', itemType: '', itemBonus: '1' });
+        const it = { name: t, type: bonus ? s.itemType : '', bonus };
+        if (s.itemHot || marks.includes('*')) it.hot = true;
+        if (s.itemSpirit || marks.includes('†')) it.spirit = true;
+        this.setState({ items: s.items.concat([it]), itemDraft: '', itemType: '', itemBonus: '1', itemHot: false, itemSpirit: false });
       },
       blessings: BLESS.map((b) => ({
         label: b, on: !!s.blessings[b], off: !s.blessings[b],
@@ -1440,7 +1538,7 @@ class Component extends DCLogic {
           marked: {}, ticks: {}, places: [], history: [{ book: '1', para: '1' }],
           bmBook: '1', bmPara: '1', bmDraft: '1', active: nm,
           slots: [{ name: nm, meta: s.wProf + ' · Rank 1 · Book 1 §1 · just now' }].concat(s.slots),
-          example: false, titles: [], dirty: false, savedWhen: 'just now'
+          example: false, titles: [], nahual: 0, dirty: false, savedWhen: 'just now'
         });
         this.showToast('Welcome, ' + nm + '. Turn to Book 1, §1.');
         this.go('character');
@@ -1586,8 +1684,15 @@ class Component extends DCLogic {
       startFight: () => {
         const c = int(s.eCombat), d = int(s.eDef), st = int(s.eStam);
         if (c === null || d === null || !st) { this.setState({ fErr: true }); return; }
-        this.setState({ fErr: false, fOn: true, fName: s.eName.trim() || 'Enemy', fCombat: c, fDef: d, fEs: st, fEmax: st, fTurn: s.first, fRound: 1, fOver: '', fLog: [] });
+        this.setState({ fErr: false, fOn: true, fRunMode: s.fMode, fName: s.eName.trim() || 'Enemy', fCombat: c, fDef: d, fEs: st, fEmax: st, fTurn: s.first, fRound: 1, fOver: '', fLog: [] });
       },
+      fModes: [['normal', 'Normal'], ['heat', 'Heat'], ['spirit', 'Spiritual']].map(([k, label]) => ({
+        label, on: s.fMode === k ? 'true' : 'false', bg: s.fMode === k ? '#FBF6E8' : 'transparent', pick: () => this.setState({ fMode: k })
+      })),
+      fModeHasHint: s.fMode !== 'normal', fModeHint: modeHints[s.fMode] || '',
+      fsAtt: fs.att, fsAttTxt: fs.attTxt, fsDef: fs.def, fsDefTxt: fs.defTxt,
+      fAttYou: fr.att, fDefYou: fr.def,
+      fRunModeOn: s.fRunMode !== 'normal', fRunModeLabel: s.fRunMode === 'spirit' ? 'Spiritual combat' : 'Heat penalty',
       fName: s.fName, fDef: s.fDef, fEs: s.fEs, fEmax: s.fEmax, fRound: s.fRound,
       fEPct: s.fEmax ? Math.round(100 * s.fEs / s.fEmax) + '%' : '0%',
       fRunning, fEnded: s.fOn && !!s.fOver,

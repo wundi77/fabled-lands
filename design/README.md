@@ -10,9 +10,9 @@ https://claude.ai/artifact/DkwfobReC7WsjYv2KPt1Qv
 design/canvas/project/
 ├── canvas.json            ← Index: Position/Größe aller Artboards, Reihenfolge, Notizen
 ├── Web.dc.html            ← Hauptkomponente (die gesamte App als Entwurf, ~156 KB)
-└── Web*.dc.html           ← 20 Artboards (dünne Hüllen um Web.dc.html)
-                             Desktop 1920: Character, Book, Bookmark, Check, Codewords, Quests, Saves, Ships
-                             Phone 390:    Character, Bookmark, Create, Death, Discard, Export, Fight, Quests, Saves, Ships, Spare
+└── Web*.dc.html           ← 23 Artboards (dünne Hüllen um Web.dc.html)
+                             Desktop 1920: Character, Book, Book7, Bookmark, Check, Codewords, Quests, Saves, Ships
+                             Phone 390:    Character, Bookmark, Create, Death, Discard, Export, Fight, Heat, Quests, Saves, Ships, Spare, Spirit
                              Tablet 834:   Character
 ```
 
@@ -22,9 +22,9 @@ Nicht enthalten, weil nicht Teil des Projekts: `support.js`, Editor und Runtime.
 
 | | |
 |---|---|
-| Letzter Abgleich | 05.11.2026 |
-| Artifact-Version | `1793646911-1d78` |
-| Code-Stand | `index.html` aus Commit `a58125d` |
+| Letzter Abgleich | 22.11.2026 |
+| Artifact-Version | `1795345158-e0f3` (Version 57) |
+| Code-Stand | `index.html` aus Commit `a58125d`; der Canvas hat zusätzlich den Entwurf für die Buch-7-Regeln (Nahual, Markierungen * und †, Kampfart Normal/Heat/Spiritual), der noch nicht im Code ist |
 
 Hat sich der Canvas auf claude.ai nach diesem Datum geändert (z. B. per Hand), ist diese Kopie veraltet. Vor jeder Design-Arbeit deshalb zuerst neu herunterladen.
 
