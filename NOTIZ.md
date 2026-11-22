@@ -1,7 +1,7 @@
 # Fabled Lands – Companion App
 ## Projektstand & Entwicklungsnotizen
 
-**Letzter Stand:** 05.11.2026 – Design-Canvas als Kopie im Repo (`design/`), Arbeitsweise auf „lokal bearbeiten, Push nur auf Anweisung“ umgestellt, erledigten Punkt „alten Branch löschen“ entfernt (auf GitHub gibt es nur noch `main`; Code unverändert seit 23.10.)  
+**Letzter Stand:** 22.11.2026 – Sonderregeln aus Buch 7 (The Serpent King's Domain): Nahual-Wert, Markierungen * (Hitze) und † (Geisterkampf) an Gegenständen, Kampfart Normal/Heat/Spiritual im Würfel-Dialog; zuerst im Design-Canvas entworfen  
 **Live-URL:** https://wundi77.github.io/fabled-lands/  
 **Repository:** https://github.com/wundi77/fabled-lands  
 
@@ -17,7 +17,7 @@ Eine offline-fähige PWA als digitaler Begleiter für die **Fabled Lands** Gameb
 
 ```
 fabled-lands/
-├── index.html              ← Gesamte App (HTML + CSS + JS, ~1275 Zeilen)
+├── index.html              ← Gesamte App (HTML + CSS + JS, ~1555 Zeilen)
 ├── manifest.json           ← PWA-Manifest (start_url ./, Icons any + maskable)
 ├── sw.js                   ← Service Worker (Cache fabled-lands-v3 + Font-Cache)
 ├── icon.svg                ← Favicon
@@ -46,8 +46,9 @@ fabled-lands/
 - Name und Beruf werden beim Anlegen gewählt und stehen im Kopf; im Bogen ist nur noch **God** änderbar (volle Breite), Rang per Aktion „Rank advance“
 - Stamina (aktuell/max) mit Leiste, Defence mit Anpassung, Geld
 - 6 Fähigkeiten (Charisma, Combat, Magic, Sanctity, Scouting, Thievery) mit Berufs-Startwerten
-- Besitztümer mit Typ und Bonus (fließen in Fähigkeiten/Defence ein)
+- Besitztümer mit Typ und Bonus (fließen in Fähigkeiten/Defence ein); Markierungen für Buch 7 je Gegenstand umschaltbar: **\*** (Rüstung für heißes Klima, nur bei Rüstungen) und **†** (im Geisterkampf nutzbar). Beim Anlegen per Schalter oder wie im Buch an den Namen gehängt („quilted armour\*“)
 - Segen (6 Fähigkeiten, Immunity to Disease, Safety from Storms), Titel & Ehren, Wiederbelebung (Text + Buch/Paragraph)
+- **Nahual** (Buch 7): eigener Wert `char.nahual`, erscheint unter Titel & Ehren als Chip mit −/+ nur, wenn er über 0 liegt. Titel „Nahual“ eintragen gibt +1, „Nahual 3“ setzt den Wert; sonst Hinweis unter dem Eingabefeld
 
 ### Quests / Ships
 - Quests mit What / From / Where (je volle Breite, kein Reward-Feld); kleiner Link „Mark as done“ / „Reopen quest“ neben dem Status; kleiner Button „Add quest“ neben dem Filter (Open/Done/All) legt eine leere Quest am Ende an; Zähler im Menü
@@ -69,6 +70,7 @@ fabled-lands/
 ### Würfel-Dialog
 - **Ability check:** 2d6 + Fähigkeit gegen Schwierigkeit, zeigt nötigen Wurf und Erfolgswahrscheinlichkeit, Neuwurf mit passendem Segen (verbraucht ihn)
 - **Fight:** Kampf-Simulator (Gegner mit Combat/Defence/Stamina, wer zuerst schlägt, Runden, Kampflog, Flucht, Sieg/Niederlage)
+- **Kampfart** (Buch 7, „Special rules“ im Buch): *Normal*; *Heat* – trägt man Rüstung ohne \*, sinkt COMBAT beim Angriff um ihren Defence-Bonus, die Defence zählt die Rüstung normal; *Spiritual* – Angriff = Nahual + bester †-Waffenbonus, Defence = Nahual + höherer Wert von MAGIC/SANCTITY (Grundwert + †-Gegenstände) + bester †-Rüstungsbonus, ohne Rang und ohne manuelle Anpassung. Die Kampfart wird beim Start festgehalten und im Kampf als Chip angezeigt. Bogen-Werte (`eff()`, `defence()`) bleiben unverändert, gerechnet wird in `fightVals(mode)`
 - **Spare dice:** freie W6-Würfe für unerwartete Würfe (1–6 Würfel wählbar, Anzeige der Einzelwürfe und der Summe)
 - Option „I roll physical dice": echte Würfel eingeben statt App-Wurf (bei Spare dice ein Feld je gewähltem Würfel)
 
@@ -122,7 +124,7 @@ Die Layout-Entwürfe sind ein Design-Canvas auf claude.ai: „Fabled Lands – i
 
 - Artboards: Web (Hauptkomponente), Desktop 1920 (Character, Book, Where am I?, Ability check, Codewords, Quests, Saves, Ships), Tablet 834 (Character), Phone 390 (Character, Where am I?, New character, Killed notice, Unsaved changes, Export, Fight, Quests, Saves, Ships, Spare dice).
 - Ablauf bei Optik-Wünschen: Canvas zuerst neu laden und mit `design/` abgleichen, Änderung im Canvas vornehmen, Dateien zurück nach `design/` kopieren, danach in `index.html` übertragen.
-- Stand 05.11.2026: Der Canvas entspricht dem Code (Commit `a58125d`) inklusive Ships-Screen, Export-Dialog und „Unsaved changes“-Rückfrage.
+- Stand 22.11.2026: Der Canvas entspricht dem Code inklusive Ships-Screen, Export-Dialog, „Unsaved changes“-Rückfrage und den Buch-7-Regeln. Drei Artboards zeigen ein Buch-7-Beispiel (Character Book 7, Spiritual combat, Fight with heat penalty); im Canvas schalten die Props `demo7`, `fightMode` und `fightSetup` das Beispiel ein.
 - Bewusst nicht übernommen: Fehlermeldungen und Datei-Aktionen (Export/Import/Zwischenablage), die im Canvas nichts speichern können; der Würfel-Schalter „I roll physical dice“ liegt im Canvas gemeinsam über den Tabs, im Code je Tab; Bearbeitungen setzen im Canvas nicht „ungespeichert“.
 - Nur im Canvas vorhanden: zwei Platzhalter-Slots und ein loser deutscher Hinweistext am Ende von `Web.dc.html` (sichtbar auf jedem Artboard, Entscheidung offen).
 - Das zweite Artifact „Fabled Lands“ (`KJhAMFiccRtGztYGKesqdy`) ist eine Einzelseiten-Fassung der App mit identischem Script wie `index.html` und braucht keine eigene Sicherung.

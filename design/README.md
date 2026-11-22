@@ -24,7 +24,7 @@ Nicht enthalten, weil nicht Teil des Projekts: `support.js`, Editor und Runtime.
 |---|---|
 | Letzter Abgleich | 22.11.2026 |
 | Artifact-Version | `1795345158-e0f3` (Version 57) |
-| Code-Stand | `index.html` aus Commit `a58125d`; der Canvas hat zusätzlich den Entwurf für die Buch-7-Regeln (Nahual, Markierungen * und †, Kampfart Normal/Heat/Spiritual), der noch nicht im Code ist |
+| Code-Stand | Canvas und `index.html` entsprechen sich, inklusive Buch-7-Regeln (Nahual, Markierungen * und †, Kampfart Normal/Heat/Spiritual) |
 
 Hat sich der Canvas auf claude.ai nach diesem Datum geändert (z. B. per Hand), ist diese Kopie veraltet. Vor jeder Design-Arbeit deshalb zuerst neu herunterladen.
 

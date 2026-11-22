@@ -155,6 +155,13 @@ select.field { padding: 0 8px; font-size: 16px; }
 .list-row:last-child { border-bottom: 0; }
 .bonus { font-size: 13px; padding: 2px 8px; border-radius: 999px; background: var(--ink); color: var(--cream); white-space: nowrap; }
 .bonus.off { background: var(--line3); color: #7A6447; }
+.flag { width: 40px; height: 40px; flex: none; border-radius: 10px; border: 1px dashed #C9B488; background: transparent; color: var(--muted); font-family: var(--display); font-size: 20px; line-height: 1; padding: 0; }
+.flag[aria-pressed="true"] { border-style: solid; border-color: var(--ink); background: var(--ink); color: var(--gold); }
+.flagpill { min-height: 40px; border-radius: 999px; border: 1px dashed #C9B488; background: transparent; color: var(--muted); font-size: 15px; padding: 0 12px; }
+.flagpill[aria-pressed="true"] { border-style: solid; border-color: var(--ink); background: var(--ink); color: var(--gold); }
+.nahual { display: inline-flex; align-items: center; gap: 4px; padding: 2px 2px 2px 12px; border-radius: 999px; background: var(--ink); color: var(--cream); font-size: 16px; }
+.nahual b { min-width: 24px; text-align: center; font-family: var(--display); font-size: 18px; color: var(--gold); }
+.nahual button { width: 40px; height: 40px; border: 0; border-radius: 999px; background: #3A2814; color: var(--cream); font-size: 20px; padding: 0; }
 
 /* abilities */
 .abgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(146px, 1fr)); gap: 8px; }
@@ -398,7 +405,7 @@ function newGame(o) {
     char: {
       name: o.name, prof: o.prof, god: o.god || '', rank: 1, base, stam: 9, max: 9, money: 16, defAdj: 0,
       items: [{ id: uid(), name: 'Sword', type: '', bonus: 0 }, { id: uid(), name: 'Leather jerkin', type: 'Defence', bonus: 1 }],
-      blessings: {}, titles: [], resText: '', resBook: '', resPara: ''
+      blessings: {}, titles: [], nahual: 0, resText: '', resBook: '', resPara: ''
     },
     codewords: {}, ticks: {}, notes: {},
     bookmark: { book: '1', para: '1' }, history: [{ book: '1', para: '1' }], places: [],
@@ -471,12 +478,12 @@ const UI = {
   menu: false, dice: null, bm: false, bmBook: '1', bmDraft: '',
   dead: false, confirm: null, toast: '', rankDlg: false, rankGain: '',
   q: '', onlyMarked: false, paraFilter: 'all', questFilter: 'open',
-  item: { name: '', type: '', bonus: '1' }, title: '', money: '', place: { name: '', para: '' },
+  item: { name: '', type: '', bonus: '1', hot: false, spirit: false }, title: '', money: '', place: { name: '', para: '' },
   quest: { what: '', from: '', where: '', for: '' }, snap: '',
   wiz: { step: 1, name: '', prof: '', god: '', err: '' },
   phys: false, pd1: '', pd2: '', diceErr: '', spareN: 2, spareRes: null, spareVals: ['', '', '', '', '', ''],
   checkAb: 'Combat', diff: 9, check: null,
-  enemy: { name: '', combat: '', def: '', stam: '', first: 'you' }, fErr: '', fight: null
+  enemy: { name: '', combat: '', def: '', stam: '', first: 'you' }, fErr: '', fight: null, fMode: 'normal'
 };
 let toastTimer = null;
 function toast(msg) { UI.toast = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => { UI.toast = ''; renderLayer(); }, 2600); }
@@ -489,6 +496,42 @@ function best(type) {
 }
 const eff = (a) => clamp(G.char.base[a] + best(a).b, 1, 12);
 const defence = () => eff('Combat') + G.char.rank + best('Defence').b + G.char.defAdj;
+const nahual = () => G.char.nahual || 0;
+const itemLabel = (it) => it.name + (it.hot ? '*' : '') + (it.spirit ? '†' : '');
+/* Attack and Defence for one kind of fight (Book 7 special rules). eff()/defence() of the sheet stay untouched.
+   heat: armour without * lowers COMBAT by its Defence bonus for the attack; Defence counts the armour as normal.
+   spirit: Nahual replaces COMBAT; Defence = Nahual + higher of MAGIC/SANCTITY; no Rank; only † items count. */
+function fightVals(mode) {
+  const c = G.char;
+  if (mode === 'spirit') {
+    const sb = (t) => { let b = 0, src = ''; c.items.forEach((it) => { if (it.spirit && it.type === t && it.bonus > b) { b = it.bonus; src = it.name; } }); return { b, src }; };
+    const n = nahual(), wpn = sb('Combat'), arm = sb('Defence');
+    const ab = (a) => clamp(c.base[a] + sb(a).b, 1, 12);
+    const mg = ab('Magic'), sa = ab('Sanctity');
+    const hi = sa > mg ? ['SANCTITY', sa] : ['MAGIC', mg];
+    return {
+      att: n + wpn.b, def: n + hi[1] + arm.b,
+      attTxt: `Nahual ${n}${wpn.b ? ` + ${wpn.src}† ${wpn.b}` : ''}`,
+      defTxt: `Nahual ${n} + ${hi[0]} ${hi[1]}${arm.b ? ` + ${arm.src}† ${arm.b}` : ''}, no Rank`
+    };
+  }
+  const cb = eff('Combat'), d = defence();
+  if (mode === 'heat') {
+    const arm = best('Defence'), worn = arm.id ? c.items.find((i) => i.id === arm.id) : null;
+    const pen = worn && !worn.hot ? arm.b : 0;
+    return {
+      att: cb - pen, def: d,
+      attTxt: pen ? `COMBAT ${cb} − ${pen} heat (${arm.src})` : (worn ? `COMBAT ${cb}, ${arm.src}* has no heat penalty` : `COMBAT ${cb}, no armour`),
+      defTxt: 'armour counts as normal'
+    };
+  }
+  return { att: cb, def: d, attTxt: 'COMBAT', defTxt: 'Combat + Rank + armour' };
+}
+const FIGHT_MODES = [['normal', 'Normal'], ['heat', 'Heat'], ['spirit', 'Spiritual']];
+const FIGHT_HINTS = {
+  heat: 'Only when the book says heat penalties apply. Armour without * lowers your COMBAT by its Defence bonus until the fight ends.',
+  spirit: 'Only for fights the book calls spiritual. Nahual replaces COMBAT, Rank doesn’t count, only † items help.'
+};
 function bookStats(n) {
   const B = BOOKS[n], t = G.ticks[n] || {};
   let done = 0, boxes = 0;
@@ -601,10 +644,13 @@ function scrCharacter() {
       <div class="row between base"><h2 class="h2">Possessions</h2><span class="s15" style="color:${c.items.length >= 12 ? 'var(--red)' : 'var(--muted)'}">${c.items.length} / 12</span></div>
       <div>
         ${c.items.map((it) => `<div class="list-row">
-          <span class="grow row wrapr" style="gap:4px 8px"><span>${esc(it.name)}</span>${it.type && it.bonus ? `<span class="bonus${counted[it.type] === it.id ? '' : ' off'}">${esc(it.type)} +${it.bonus}${counted[it.type] === it.id ? '' : ' · not counted'}</span>` : ''}</span>
+          <span class="grow row wrapr" style="gap:4px 8px"><span>${esc(itemLabel(it))}</span>${it.type && it.bonus ? `<span class="bonus${counted[it.type] === it.id ? '' : ' off'}">${esc(it.type)} +${it.bonus}${counted[it.type] === it.id ? '' : ' · not counted'}</span>` : ''}</span>
+          ${it.type === 'Defence' ? `<button class="flag" data-act="item-flag" data-id="${it.id}" data-k="hot" aria-pressed="${pressed(!!it.hot)}" aria-label="Hot-climate armour (*): ${esc(it.name)}" title="Hot-climate armour (*)">*</button>` : ''}
+          <button class="flag" style="font-size:18px" data-act="item-flag" data-id="${it.id}" data-k="spirit" aria-pressed="${pressed(!!it.spirit)}" aria-label="Usable in spiritual combat (†): ${esc(it.name)}" title="Usable in spiritual combat (†)">†</button>
           <button class="x" data-act="item-remove" data-id="${it.id}" aria-label="Remove ${esc(it.name)}">${IC.x}</button></div>`).join('') || '<div class="muted">Nothing carried.</div>'}
       </div>
       <div class="small muted">Faded bonuses don’t count – only the best item per ability or armour applies.</div>
+      <div class="small muted">Book 7: <b style="font-family:var(--display)">*</b> armour for a hot climate (no heat penalty) · <b style="font-family:var(--display)">†</b> usable in spiritual combat.</div>
       <div class="stack" style="padding:10px;border:1px dashed #C9B488;border-radius:12px">
         <label class="sr" for="item-name">New item</label>
         <input id="item-name" class="field" placeholder="Add an item…" data-bind="UI.item.name" value="${esc(UI.item.name)}" data-enter="item-add">
@@ -617,6 +663,10 @@ function scrCharacter() {
           <label class="row s15 muted" for="item-bonus" style="gap:4px">+</label>
           <input id="item-bonus" class="field num" style="width:52px" inputmode="numeric" data-bind="UI.item.bonus" value="${esc(UI.item.bonus)}">
           <button class="btn primary" data-act="item-add">Add</button>
+        </div>
+        <div class="row wrapr" style="gap:6px">
+          <button class="flagpill" data-act="item-new-flag" data-k="hot" aria-pressed="${pressed(!!UI.item.hot)}">* Hot-climate armour</button>
+          <button class="flagpill" data-act="item-new-flag" data-k="spirit" aria-pressed="${pressed(!!UI.item.spirit)}">† Spiritual combat</button>
         </div>
         ${c.items.length >= 12 ? '<div class="small" style="color:var(--red)">You can carry 12 possessions. Drop something first.</div>' : ''}
       </div>
@@ -634,8 +684,9 @@ function scrCharacter() {
       </div>
       <div class="stack">
         <h2 class="h2">Titles &amp; honours</h2>
-        <div class="row wrapr">${c.titles.map((t, i) => `<span class="chip">${esc(t)}<button class="x" data-act="title-remove" data-i="${i}" aria-label="Remove ${esc(t)}">${IC.x}</button></span>`).join('') || '<span class="muted">None yet.</span>'}</div>
+        <div class="row wrapr">${nahual() > 0 ? `<span class="nahual">Nahual<b>${nahual()}</b><button data-act="nahual" data-d="-1" aria-label="Lower Nahual">−</button><button data-act="nahual" data-d="1" aria-label="Raise Nahual">+</button></span>` : ''}${c.titles.map((t, i) => `<span class="chip">${esc(t)}<button class="x" data-act="title-remove" data-i="${i}" aria-label="Remove ${esc(t)}">${IC.x}</button></span>`).join('') || (nahual() > 0 ? '' : '<span class="muted">None yet.</span>')}</div>
         <div class="row"><label class="sr" for="title-new">New title</label><input id="title-new" class="field grow" placeholder="Add a title…" data-bind="UI.title" value="${esc(UI.title)}" data-enter="title-add"><button class="btn ink" data-act="title-add">Add</button></div>
+        ${nahual() > 0 ? '' : '<div class="small muted">Book 7: add the title “Nahual” to record your Nahual value.</div>'}
       </div>
       <div class="stack">
         <h2 class="h2">Resurrection</h2>
@@ -972,11 +1023,15 @@ function diceHTML() {
           <label class="lbl" for="en-stam">Stamina<input id="en-stam" class="field" style="text-align:center;font-family:var(--display);font-size:20px" inputmode="numeric" data-bind="UI.enemy.stam" value="${esc(e.stam)}"></label>
         </div>
         <div class="row between"><span>Strikes first</span><div class="seg" role="group" aria-label="Who strikes first"><button data-act="first" data-w="you" aria-pressed="${pressed(e.first === 'you')}">You</button><button data-act="first" data-w="enemy" aria-pressed="${pressed(e.first === 'enemy')}">Enemy</button></div></div>
-        <div class="s15 muted">You: COMBAT ${eff('Combat')} · Defence ${defence()} · Stamina ${c.stam}</div>
+        <div class="stack" style="gap:6px"><span>Kind of fight</span>
+          <div class="seg" role="group" aria-label="Kind of fight" style="display:grid">${FIGHT_MODES.map(([k, l]) => `<button data-act="fight-mode" data-m="${k}" aria-pressed="${pressed(UI.fMode === k)}">${l}</button>`).join('')}</div>
+          ${FIGHT_HINTS[UI.fMode] ? `<div class="small muted">${FIGHT_HINTS[UI.fMode]}</div>` : ''}</div>
+        ${(() => { const fs = fightVals(UI.fMode); return `<div class="stack s15 muted" style="gap:2px"><span>You attack with <b style="color:var(--ink)">${fs.att}</b> · ${esc(fs.attTxt)}</span><span>Your Defence <b style="color:var(--ink)">${fs.def}</b> · ${esc(fs.defTxt)}</span><span>Stamina ${c.stam}</span></div>`; })()}
         ${UI.fErr ? `<div class="s15" style="color:var(--red)">${UI.fErr}</div>` : ''}
         <button class="btn primary lg" data-act="fight-start">Start fight</button>`;
     } else {
-      const myNeed = f.def - eff('Combat') + 1, enNeed = defence() - f.combat + 1;
+      const fv = fightVals(f.mode);
+      const myNeed = f.def - fv.att + 1, enNeed = fv.def - f.combat + 1;
       const hint = f.turn === 'you'
         ? (myNeed <= 2 ? 'You always hit.' : myNeed > 12 ? 'You cannot hit this enemy.' : `You hit on 2d6 ≥ ${myNeed} (${pct(pAtLeast(myNeed))}).`)
         : (enNeed <= 2 ? `${esc(f.name)} always hits.` : enNeed > 12 ? `${esc(f.name)} cannot hit you.` : `${esc(f.name)} hits on 2d6 ≥ ${enNeed} (${pct(pAtLeast(enNeed))}).`);
@@ -984,9 +1039,9 @@ function diceHTML() {
       const end = ends[f.over];
       const sp = c.max ? clamp(Math.round(100 * c.stam / c.max), 0, 100) : 0;
       body = `
-        <div class="row between base"><span style="font-family:var(--display);font-size:18px;font-weight:600">vs ${esc(f.name)}</span><span class="s15 muted">Round ${f.round}</span></div>
+        <div class="row between base"><span class="row wrapr" style="gap:4px 8px"><span style="font-family:var(--display);font-size:18px;font-weight:600">vs ${esc(f.name)}</span>${f.mode && f.mode !== 'normal' ? `<span class="bonus">${f.mode === 'spirit' ? 'Spiritual combat' : 'Heat penalty'}</span>` : ''}</span><span class="s15 muted">Round ${f.round}</span></div>
         <div class="g2" style="gap:10px">
-          <div class="stack" style="gap:4px"><span class="small muted">You · Def ${defence()}</span><span class="big" style="font-size:22px">${c.stam} / ${c.max}</span><div class="bar"><i style="width:${sp}%;background:var(--ink)"></i></div></div>
+          <div class="stack" style="gap:4px"><span class="small muted">You · Att ${fv.att} · Def ${fv.def}</span><span class="big" style="font-size:22px">${c.stam} / ${c.max}</span><div class="bar"><i style="width:${sp}%;background:var(--ink)"></i></div></div>
           <div class="stack" style="gap:4px"><span class="small muted">${esc(f.name)} · Def ${f.def}</span><span class="big" style="font-size:22px">${f.es} / ${f.emax}</span><div class="bar"><i style="width:${Math.round(100 * f.es / f.emax)}%"></i></div></div>
         </div>
         ${end ? `<div class="result ${end[2]}" role="status"><span style="font-family:var(--display);font-size:22px;font-weight:700">${end[0]}</span><span>${end[1]}</span><button class="btn" data-act="fight-close">Close fight</button></div>`
@@ -1121,13 +1176,14 @@ function doCheck(rerolled) {
 function fightStep() {
   const f = UI.fight, d = roll2();
   if (!d) return;
+  const fv = fightVals(f.mode);
   if (f.turn === 'you') {
-    const c = eff('Combat'), total = d[0] + d[1] + c, dmg = Math.max(0, total - f.def);
+    const c = fv.att, total = d[0] + d[1] + c, dmg = Math.max(0, total - f.def);
     f.es = Math.max(0, f.es - dmg);
     f.log.unshift({ who: 'you', text: `R${f.round} · You: ${d[0]} + ${d[1]} + ${c} = ${total} vs Def ${f.def} → ${dmg ? dmg + ' damage' : 'miss'}` });
     if (f.es <= 0) f.over = 'won';
   } else {
-    const def = defence(), total = d[0] + d[1] + f.combat, dmg = Math.max(0, total - def);
+    const def = fv.def, total = d[0] + d[1] + f.combat, dmg = Math.max(0, total - def);
     f.log.unshift({ who: 'enemy', text: `R${f.round} · ${f.name}: ${d[0]} + ${d[1]} + ${f.combat} = ${total} vs Def ${def} → ${dmg ? 'you lose ' + dmg : 'miss'}` });
     if (setStam(G.char.stam - dmg) <= 0) f.over = 'lost';
     save();
@@ -1234,10 +1290,12 @@ function overviewLines(g, slotName) {
   H('Abilities');
   AB.forEach((a) => { const b = bestOf(a); T(`${a}: ${effOf(a)}${b ? `   (base ${c.base[a]}, +${b} item)` : ''}`); });
   H('Possessions');
-  if (c.items.length) c.items.forEach((i) => T(`• ${i.name}${i.type && i.bonus ? `   (${i.type} +${i.bonus})` : ''}`)); else T('None.');
+  if (c.items.length) c.items.forEach((i) => T(`• ${i.name}${i.hot ? '*' : ''}${i.spirit ? ' (spirit)' : ''}${i.type && i.bonus ? `   (${i.type} +${i.bonus})` : ''}`)); else T('None.');
+  if (c.items.some((i) => i.hot || i.spirit)) T('* = armour for a hot climate · (spirit) = usable in spiritual combat (Book 7)', { size: 9, gap: 2 });
   H('Blessings, titles and resurrection');
   const bl = Object.keys(c.blessings || {}); T(`Blessings: ${bl.length ? bl.join(', ') : 'none'}`);
-  T(`Titles and honours: ${(c.titles || []).length ? c.titles.join(', ') : 'none'}`);
+  const tl = (c.nahual > 0 ? [`Nahual ${c.nahual}`] : []).concat(c.titles || []);
+  T(`Titles and honours: ${tl.length ? tl.join(', ') : 'none'}`);
   T(`Resurrection: ${c.resText ? c.resText + (c.resPara ? ` (Book ${c.resBook || '1'}, §${c.resPara})` : '') : 'not set'}`);
   const cws = Object.keys(g.codewords || {}).sort();
   H(`Codewords (${cws.length})`); T(cws.length ? cws.join(', ') : 'None.');
@@ -1329,17 +1387,33 @@ const A = {
   'ab': (d) => { G.char.base[d.ab] = clamp(G.char.base[d.ab] + (+d.d), 1, 12); save(); },
   'ab-roll': (d) => { UI.dice = 'check'; UI.checkAb = d.ab; UI.check = null; UI.bm = false; UI.menu = false; },
   'item-add': () => {
-    const t = UI.item.name.trim();
+    let t = UI.item.name.trim();
     if (!t) return;
     if (G.char.items.length >= 12) { toast('You can carry 12 possessions.'); return; }
+    // "quilted armour*" or "crystal knife†" typed as in the book: take the marks as flags
+    const marks = (/[*†]+$/.exec(t) || [''])[0];
+    t = t.slice(0, t.length - marks.length).trim();
+    if (!t) return;
     const bonus = UI.item.type ? Math.max(0, int(UI.item.bonus) || 0) : 0;
-    G.char.items.push({ id: uid(), name: t, type: bonus ? UI.item.type : '', bonus });
-    UI.item = { name: '', type: '', bonus: '1' }; save();
+    const it = { id: uid(), name: t, type: bonus ? UI.item.type : '', bonus };
+    if (UI.item.hot || marks.includes('*')) it.hot = true;
+    if (UI.item.spirit || marks.includes('†')) it.spirit = true;
+    G.char.items.push(it);
+    UI.item = { name: '', type: '', bonus: '1', hot: false, spirit: false }; save();
   },
   'item-remove': (d) => { G.char.items = G.char.items.filter((i) => i.id !== d.id); save(); },
+  'item-flag': (d) => { const it = G.char.items.find((i) => i.id === d.id); if (!it) return; if (it[d.k]) delete it[d.k]; else it[d.k] = true; save(); },
+  'item-new-flag': (d) => { UI.item[d.k] = !UI.item[d.k]; },
+  'nahual': (d) => { G.char.nahual = Math.max(0, nahual() + (+d.d)); save(); },
   'bless-add': (d) => { G.char.blessings[d.b] = true; save(); },
   'bless-use': (d) => { delete G.char.blessings[d.b]; save(); toast(`${d.b} blessing used.`); },
-  'title-add': () => { const t = UI.title.trim(); if (!t) return; G.char.titles.push(t); UI.title = ''; save(); },
+  'title-add': () => {
+    const t = UI.title.trim(); if (!t) return;
+    // Book 7: the title "Nahual" carries a number; "Nahual" adds 1, "Nahual 3" sets it
+    const m = /^nahual(?:\s+(\d+))?$/i.exec(t);
+    if (m) { G.char.nahual = m[1] ? int(m[1]) : nahual() + 1; UI.title = ''; save(); toast(`Nahual is now ${G.char.nahual}.`); return; }
+    G.char.titles.push(t); UI.title = ''; save();
+  },
   'title-remove': (d) => { G.char.titles.splice(+d.i, 1); save(); },
   'cw': (d) => { if (G.codewords[d.w]) ask(`Lost the codeword <b>${esc(d.w)}</b>?`, { a: 'cw-remove', w: d.w }); else { G.codewords[d.w] = true; save(); } },
   'cw-remove': (d) => { delete G.codewords[d.w]; save(); },
@@ -1413,8 +1487,9 @@ const A = {
     const e = UI.enemy, c = int(e.combat), df = int(e.def), st = int(e.stam);
     if (c === null || df === null || !st) { UI.fErr = 'Enter numbers for COMBAT, Defence and Stamina.'; return; }
     UI.fErr = '';
-    UI.fight = { name: e.name.trim() || 'Enemy', combat: c, def: df, es: st, emax: st, first: e.first, turn: e.first, round: 1, over: '', log: [] };
+    UI.fight = { name: e.name.trim() || 'Enemy', combat: c, def: df, es: st, emax: st, first: e.first, turn: e.first, round: 1, over: '', log: [], mode: UI.fMode };
   },
+  'fight-mode': (d) => { UI.fMode = d.m; },
   'fight-step': () => fightStep(),
   'fight-flee': () => { UI.fight.over = 'fled'; },
   'fight-close': () => { UI.fight = null; UI.enemy = { name: '', combat: '', def: '', stam: '', first: 'you' }; },
